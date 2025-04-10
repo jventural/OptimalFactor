@@ -46,7 +46,7 @@ print(result_cfa$log)
 GPL-3
 
 # Citation
-Ventura-León, J. (2024). OptimalFactor [Software]. GitHub. https://github.com/jventuraleon/OptimalFactor
+Ventura-León, J. (2024). _OptimalFactor_ [Software]. GitHub. https://github.com/jventuraleon/OptimalFactor
 
 # Author
 José Ventura-León jventuraleon@gmail.com
