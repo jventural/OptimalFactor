@@ -11,8 +11,10 @@ if (!require("devtools")) {
 devtools::install_github("jventuraleon/OptimalFactor")
 ```
 # Examples
+
 ## EFA Model Refinement with OptimalFactor
 Refine an Exploratory Factor Analysis model by iteratively removing problematic items based on RMSEA improvement and loading thresholds. For example:
+
 ```r
 result <- stepwise_efa_removal_structure(
   data = your_data,
