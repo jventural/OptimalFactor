@@ -1,16 +1,14 @@
 Package: OptimalFactor
-Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Authors@R: c(
-    person(
-      "Jane", "Doe",
-      email = "jane@example.com",
-      role = c("aut", "cre")
-    )
-  )
-Description: More about what it does (maybe more than one line).
-    Continuation lines should be indented.
-License: What license is it under?
+Version: 1.0.0
+Date: 2025-04-10
+Title: Optimal Factor Analysis Tools for Model Refinement in EFA and CFA
 Encoding: UTF-8
-LazyData: true
+Author: José Ventura-León <jventuraleon@gmail.com>
+Maintainer: José Ventura-León <jventuraleon@gmail.com>
+Depends: R (>= 4.0.0)
+Imports: tidyverse, lavaan, psych, stringr, broom, dplyr, tidyr, ggplot2, reshape2, gridExtra, gtable
+Description: OptimalFactor is a comprehensive package designed to enhance and optimize factor analysis models in social sciences.
+License: GPL (>= 3)
+URL: https://github.com/jventuralon/OptimalFactor
+Packaged: 2024-01-27 10:50:11 UTC; José Ventura-León
+Suggests: testthat (>= 3.0.0)
