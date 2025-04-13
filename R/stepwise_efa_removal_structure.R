@@ -1,39 +1,30 @@
 stepwise_efa_removal_structure <- function(data,
-                                           items = NULL,
-                                           n_factors = 5,
-                                           n_items = NULL,
-                                           name_items = "PPTQ",
-                                           estimator = "WLSMV",
-                                           rotation = "oblimin",
-                                           threshold_rmsea = 0.08,
-                                           threshold_loading = 0.30,
-                                           min_items_per_factor = 2,
-                                           apply_threshold = TRUE,
-                                           max_steps = NULL,
-                                           model_index = NULL,
-                                           verbose = TRUE,
-                                           ...) {
+                                            items = NULL,
+                                            n_factors = 5,
+                                            n_items = NULL,
+                                            name_items = "PPTQ",
+                                            estimator = "WLSMV",
+                                            rotation = "oblimin",
+                                            threshold_rmsea = 0.08,
+                                            threshold_loading = 0.30,
+                                            min_items_per_factor = 2,
+                                            apply_threshold = TRUE,
+                                            max_steps = NULL,
+                                            model_index = NULL,
+                                            verbose = TRUE,
+                                            exclude_items = character(0),
+                                            ...) {
   # Función interna para comprobar e instalar los paquetes necesarios
   check_install_packages <- function() {
-    # Verificar e instalar 'devtools' si no está disponible (necesario para instalar paquetes desde GitHub)
     if (!require("devtools", quietly = TRUE)) {
       install.packages("devtools")
       library(devtools)
     }
-
-    # Instalar condicionalmente PsyMetricTools desde GitHub (forzando la instalación)
     if (!require("PsyMetricTools", quietly = TRUE)) {
       devtools::install_github("jventural/PsyMetricTools", force = TRUE)
     }
-
-    # Si se requiere otro paquete usado en el flujo, se puede agregar condicionalmente aquí.
-    # Por ejemplo, si se necesita BayesPsyMetrics, se puede usar:
-    # if (!require("BayesPsyMetrics", quietly = TRUE)) {
-    #   devtools::install_github("jventural/BayesPsyMetrics")
-    # }
+    # Se pueden incluir otros paquetes condicionalmente si es necesario.
   }
-
-  # Llamar a la función interna para asegurar que los paquetes necesarios estén instalados
   check_install_packages()
 
   # 1. Determinar los ítems a usar
@@ -64,9 +55,7 @@ stepwise_efa_removal_structure <- function(data,
 
   # 3. Función auxiliar para evaluar la estructura factorial
   evaluate_structure <- function(loadings_df, threshold_loading) {
-    # Se asume que las columnas que contienen las cargas comienzan con "f"
     loadings_mat <- as.matrix(loadings_df[, grep("^f", names(loadings_df))])
-    # Se asume que la tabla tiene una columna "Items" con los nombres de los ítems
     item_names <- loadings_df$Items
     n_items_load <- nrow(loadings_mat)
     ok_items <- rep(FALSE, n_items_load)
@@ -93,7 +82,6 @@ stepwise_efa_removal_structure <- function(data,
       }
     }
 
-    # Cantidad de ítems por factor con carga > threshold_loading
     factor_counts <- colSums(loadings_mat > threshold_loading, na.rm = TRUE)
     structure_ok <- all(ok_items) && all(factor_counts >= min_items_per_factor)
 
@@ -108,8 +96,8 @@ stepwise_efa_removal_structure <- function(data,
 
   # 4. Bucle iterativo hasta cumplir ambos criterios o agotarse las posibilidades
   repeat {
-    # Verificamos que queden suficientes ítems para asignar al menos min_items_per_factor por factor
-    current_items <- setdiff(items, removed_items)
+    # Excluir de los candidatos tanto los ítems removidos como los pre-especificados en exclude_items
+    current_items <- setdiff(items, c(exclude_items, removed_items))
     if (length(current_items) < n_factors * min_items_per_factor) {
       if (verbose) {
         cat("No quedan ítems suficientes para tener al menos", min_items_per_factor,
@@ -122,7 +110,7 @@ stepwise_efa_removal_structure <- function(data,
       break
     }
 
-    # Estimar el modelo EFA actual
+    # Estimar el modelo EFA actual combinando los exclude_items externos y los removidos
     current_model <- tryCatch({
       EFA_modern(data = data,
                  n_factors = n_factors,
@@ -131,7 +119,7 @@ stepwise_efa_removal_structure <- function(data,
                  estimator = estimator,
                  rotation = rotation,
                  apply_threshold = apply_threshold,
-                 exclude_items = removed_items,
+                 exclude_items = c(exclude_items, removed_items),
                  ...)
     }, error = function(e) {
       stop("Error en EFA_modern: ", e$message)
@@ -155,7 +143,6 @@ stepwise_efa_removal_structure <- function(data,
     if (verbose) {
       cat("Items por factor (carga > ", threshold_loading, "): ",
           paste(names(structure_eval$factor_counts), structure_eval$factor_counts, collapse = " | "), "\n")
-
       problematic <- which(!structure_eval$ok_items)
       if (length(problematic) > 0) {
         cat("Ítems problemáticos según carga:\n")
@@ -166,18 +153,16 @@ stepwise_efa_removal_structure <- function(data,
       }
     }
 
-    # Comprobamos si se cumplen ambos criterios: RMSEA y estructura
+    # Comprobar si se cumplen los criterios: RMSEA y estructura
     if (!is.na(current_rmsea) && (current_rmsea <= threshold_rmsea) && structure_eval$structure_ok) {
       if (verbose) {
-        cat("Modelo aceptable encontrado: RMSEA =", round(current_rmsea,4),
+        cat("Modelo aceptable encontrado: RMSEA =", round(current_rmsea, 4),
             "y estructura factorial aceptable.\n")
       }
       break
     }
 
-    # Decisión de eliminación:
-    # Prioridad 1: si el RMSEA es demasiado alto (mayor al umbral), se intenta mejorar el ajuste.
-    # Prioridad 2: si el RMSEA es aceptable pero la estructura falla, se eliminan ítems problemáticos.
+    # Decisión de eliminación según RMSEA o estructura
     decision_method <- NULL
     if (!is.na(current_rmsea) && current_rmsea > threshold_rmsea) {
       decision_method <- "rmsea"
@@ -186,12 +171,12 @@ stepwise_efa_removal_structure <- function(data,
     }
 
     if (decision_method == "rmsea") {
-      # Evaluar la exclusión de cada ítem candidato para ver cuál mejora más el RMSEA.
+      # Evaluar la exclusión de cada ítem candidato para ver cuál mejora más el RMSEA
       candidate_rmsea <- numeric(length(current_items))
       names(candidate_rmsea) <- current_items
 
       for (it in current_items) {
-        temp_removed <- c(removed_items, it)
+        temp_removed <- c(exclude_items, removed_items, it)
         temp_model <- tryCatch({
           EFA_modern(data = data,
                      n_factors = n_factors,
@@ -219,7 +204,7 @@ stepwise_efa_removal_structure <- function(data,
       best_item <- names(which.min(candidate_rmsea))
       best_rmsea <- min(candidate_rmsea, na.rm = TRUE)
 
-      # Solo se remueve si se logra mejorar el RMSEA
+      # Se remueve el ítem solo si mejora el RMSEA
       if (!is.na(best_rmsea) && best_rmsea < current_rmsea) {
         removed_items <- c(removed_items, best_item)
         step_counter <- step_counter + 1
@@ -231,10 +216,9 @@ stepwise_efa_removal_structure <- function(data,
                                       stringsAsFactors = FALSE))
         if (verbose) {
           cat("Paso", step_counter, "- Se remueve", best_item, "por mejora en RMSEA:",
-              round(current_rmsea,4), "->", round(best_rmsea,4), "\n")
+              round(current_rmsea, 4), "->", round(best_rmsea, 4), "\n")
         }
       } else {
-        # Si no se mejora el RMSEA, se pasa a evaluar la estructura
         decision_method <- "structure"
       }
     }
@@ -243,7 +227,7 @@ stepwise_efa_removal_structure <- function(data,
       # Seleccionar entre los ítems problemáticos el que tenga el peor desempeño (score mínimo)
       problematic_indices <- which(!structure_eval$ok_items)
       if (length(problematic_indices) == 0) {
-        if (verbose) cat("No se identificaron ítems problemáticos según la estructura, pero aún falla el modelo.\n")
+        if (verbose) cat("No se identificaron ítems problemáticos según la estructura, pero el modelo sigue fallando.\n")
         break
       }
       remove_index <- problematic_indices[which.min(structure_eval$scores[problematic_indices])]
@@ -261,9 +245,9 @@ stepwise_efa_removal_structure <- function(data,
             "por problemas en la estructura:", structure_eval$reasons[remove_index], "\n")
       }
     }
-  }  # Fin del repeat
+  }  # Fin del bucle repeat
 
-  # Se retorna el modelo final (tabla de cargas), los ítems removidos, y el log del proceso
+  # Retornar el modelo final, los ítems removidos y el log del proceso
   list(final_structure = if (exists("loadings_df")) loadings_df else NULL,
        removed_items = removed_items,
        steps_log = steps_log,
