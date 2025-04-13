@@ -16,6 +16,7 @@ stepwise_cfa_improvement(initial_model, data, rmsea_threshold = 0.08, mi_thresho
   \item{verbose}{A logical value. If \code{TRUE}, informative messages are printed during each iteration of the process.}
   \item{debug}{A logical value. If \code{TRUE}, additional debugging information is printed.}
   \item{filter_expr}{An optional expression to filter the data prior to model estimation. If \code{NULL} no filtering is applied.}
+  \item{exclude_items}{It is an argument for eliminating items}
   \item{...}{Additional arguments to be passed to the \code{lavaan::cfa} function.}
 }
 \details{
@@ -52,7 +53,8 @@ result <- stepwise_cfa_improvement(
   filter_expr      = NULL,
   estimator        = "WLSMV",
   mimic            = "Mplus",
-  ordered          = TRUE
+  ordered          = TRUE,
+  exclude_items = c("itemX", "itemY"),
 )
 
 # The output 'result' is a list containing the final and alternative models,

@@ -1,12 +1,13 @@
 stepwise_cfa_improvement <- function(initial_model,
-                                     data,
-                                     rmsea_threshold = 0.08,
-                                     mi_threshold = 3.84,
-                                     max_steps = 10,
-                                     verbose = TRUE,
-                                     debug = FALSE,
-                                     filter_expr = NULL,
-                                     ...) {
+                                      data,
+                                      rmsea_threshold = 0.08,
+                                      mi_threshold = 3.84,
+                                      max_steps = 10,
+                                      verbose = TRUE,
+                                      debug = FALSE,
+                                      filter_expr = NULL,
+                                      exclude_items = character(0),
+                                      ...) {
 
   get_item_factor_mapping <- function(model_str) {
     # Convierte el modelo en un vector de líneas utilizando ; o \n como separadores
@@ -28,14 +29,13 @@ stepwise_cfa_improvement <- function(initial_model,
         }
       }
     }
-
     return(mapping)
   }
-  # Función interna para extraer la correspondencia ítem-factor
+
+  # (Se incluye la misma función nuevamente por compatibilidad con la versión original)
   get_item_factor_mapping <- function(model_str) {
     lines <- unlist(strsplit(model_str, "[;\n]"))
     mapping <- list()
-
     for (line in lines) {
       line <- trimws(line)
       if (grepl("=~", line)) {
@@ -74,7 +74,7 @@ stepwise_cfa_improvement <- function(initial_model,
           }
         }
       } else if (grepl("~~", line)) {
-        # Línea de correlación de error: se elimina si contiene alguno de los ítems offending
+        # Línea de correlación de error: se elimina si contiene alguno de los ítems a remover
         parts <- unlist(strsplit(line, "~~"))
         parts <- trimws(parts)
         if (any(parts %in% items_to_remove)) {
@@ -101,6 +101,14 @@ stepwise_cfa_improvement <- function(initial_model,
   clean_model <- gsub("\\r", "", initial_model)
   clean_model <- trimws(clean_model)
 
+  # 2a. Excluir ítems especificados en el argumento exclude_items desde el modelo inicial
+  if (length(exclude_items) > 0) {
+    if (verbose) {
+      cat("Excluyendo los siguientes ítems del modelo inicial:", paste(exclude_items, collapse = ", "), "\n")
+    }
+    clean_model <- remove_items_from_model(clean_model, exclude_items)
+  }
+
   # 3. Ajuste inicial para obtener los loadings
   fit_initial <- lavaan::cfa(clean_model, data = data, ...)
   loadings_initial <- standardizedsolution(fit_initial) %>%
@@ -108,11 +116,11 @@ stepwise_cfa_improvement <- function(initial_model,
     dplyr::select(rhs, est.std)
 
   # 4. Verificar que cada ítem tenga un loading absoluto >= 0.30
-  removed_items <- c()  # ítems removidos por loadings bajos
+  removed_items <- exclude_items  # ítems removidos, iniciando con los excluidos manualmente
   for (i in 1:nrow(loadings_initial)) {
     item <- loadings_initial$rhs[i]
     loading <- abs(loadings_initial$est.std[i])
-    if (loading < 0.30) {
+    if (!(item %in% removed_items) && loading < 0.30) {
       removed_items <- c(removed_items, item)
     }
   }
@@ -120,7 +128,7 @@ stepwise_cfa_improvement <- function(initial_model,
   # Eliminar ítems con loadings bajos de la especificación
   if (length(removed_items) > 0) {
     if (verbose) {
-      cat("Se han removido los siguientes ítems por tener loading < 0.30:",
+      cat("Se han removido los siguientes ítems por loading < 0.30 o por exclusión manual:",
           paste(removed_items, collapse = ", "), "\n")
     }
     model_lines <- unlist(strsplit(clean_model, "\n"))
@@ -284,7 +292,7 @@ stepwise_cfa_improvement <- function(initial_model,
       for (i in 1:nrow(temp_loadings)) {
         item <- temp_loadings$rhs[i]
         loading <- abs(temp_loadings$est.std[i])
-        if (loading < 0.30) {
+        if (!(item %in% removed_items) && loading < 0.30) {
           temp_removed <- c(temp_removed, item)
         }
       }
