@@ -1,34 +1,30 @@
 optimal_cfa_with_ai <- function(initial_model,
                                  data,
-                                 rmsea_threshold     = 0.08,
-                                 mi_threshold        = 3.84,
-                                 max_steps           = 10,
-                                 verbose             = TRUE,
-                                 debug               = FALSE,
-                                 filter_expr         = NULL,
-                                 exclude_items       = character(0),
-                                 analyze_removed     = FALSE,
-                                 api_key             = NULL,
-                                 item_definitions    = NULL,
-                                 domain_name         = "Dominio por Defecto",
-                                 scale_title         = "Título de la Escala por Defecto",
-                                 construct_definition= "",
-                                 model_name          = "Modelo CFA",
-                                 gpt_model           = "gpt-3.5-turbo",
-                                 factor_definitions  = NULL,
+                                 rmsea_threshold      = 0.08,
+                                 mi_threshold         = 3.84,
+                                 max_steps            = 10,
+                                 verbose              = TRUE,
+                                 debug                = FALSE,
+                                 filter_expr          = NULL,
+                                 exclude_items        = character(0),
+                                 analyze_removed      = FALSE,
+                                 api_key              = NULL,
+                                 item_definitions     = NULL,
+                                 domain_name          = "Dominio por Defecto",
+                                 scale_title          = "Título de la Escala por Defecto",
+                                 construct_definition = "",
+                                 model_name           = "Modelo CFA",
+                                 gpt_model            = "gpt-3.5-turbo",
+                                 factor_definitions   = NULL,
                                  ...) {
-  # Cargar librerías
   library(lavaan)
   library(semTools)
   library(httr)
   library(jsonlite)
 
-  # ---------------------------------------------------------------------
-  # Helpers para modelo multidimensional
-  # ---------------------------------------------------------------------
+  # — Helpers para modelo multidimensional —
   split_model <- function(model_str) {
-    lines <- unlist(strsplit(model_str, "[\r\n]"))
-    lines <- trimws(lines)
+    lines <- trimws(unlist(strsplit(model_str, "[\r\n]")))
     lines[nzchar(lines)]
   }
   get_factor_names <- function(lines) {
@@ -41,91 +37,66 @@ optimal_cfa_with_ai <- function(initial_model,
     })
   }
   remove_item_from_model <- function(lines, item) {
-    lapply(lines, function(l) {
+    vapply(lines, function(l) {
       parts     <- strsplit(l, "=~")[[1]]
       lhs       <- trimws(parts[1])
-      rhs_items <- trimws(unlist(strsplit(parts[2], "\\+")))
-      rhs_items <- setdiff(rhs_items, item)
+      rhs_items <- setdiff(trimws(unlist(strsplit(parts[2], "\\+"))), item)
       paste0(lhs, " =~ ", paste(rhs_items, collapse = " + "))
-    })
+    }, character(1))
   }
 
-  # ---------------------------------------------------------------------
-  # Helpers para API OpenAI (ahora incluye factor_definition)
-  # ---------------------------------------------------------------------
+  # — Helpers para API OpenAI —
   call_openai_api <- function(prompt) {
     attempt <- 1; resp <- NULL
     while(attempt <= 3) {
       resp <- tryCatch({
         httr::POST(
-          url = "https://api.openai.com/v1/chat/completions",
-          httr::add_headers(
-            Authorization = paste("Bearer", api_key),
-            `Content-Type` = "application/json"
-          ),
-          httr::timeout(160),
-          body = jsonlite::toJSON(list(
+          "https://api.openai.com/v1/chat/completions",
+          add_headers(Authorization = paste("Bearer", api_key),
+                      `Content-Type` = "application/json"),
+          timeout(160),
+          body = toJSON(list(
             model       = gpt_model,
             messages    = list(
-              list(role = "system", content = "Eres un experto en psicometría y análisis factorial."),
-              list(role = "user",   content = prompt)
+              list(role="system", content="Eres un experto en psicometría y análisis factorial."),
+              list(role="user",   content=prompt)
             ),
             temperature = 0.5
           ), auto_unbox = TRUE)
         )
       }, error = function(e) NULL)
-      if (!is.null(resp) && httr::status_code(resp) == 200) break
-      if (verbose) cat("Intento", attempt, "fallido. Reintentando...\n")
-      attempt <- attempt + 1
-      Sys.sleep(1)
+      if (!is.null(resp) && status_code(resp)==200) break
+      if (verbose) cat("Intento", attempt, "fallido; reintentando...\n")
+      attempt <- attempt + 1; Sys.sleep(1)
     }
     resp
   }
   analyze_item_with_gpt <- function(item, item_def, factor_def, action) {
-    if (is.null(item_def) || item_def == "")
-      return("No se proporcionó definición del ítem.")
-    desc <- if (action == "exclusion")
-      "Justifica concisamente la exclusión"
-    else
-      "Explica brevemente por qué se conserva"
+    if (is.null(item_def) || item_def=="") return("No se proporcionó definición del ítem.")
+    desc <- if (action=="exclusion") "Justifica concisamente la exclusión" else "Explica brevemente por qué se conserva"
     prompt <- paste0(
-      "Eres un experto en psicometría y análisis factorial. ",
-      desc, " del ítem '", item,
-      "' cuyo contenido es: \"", item_def, "\". ",
-      "Constructo: '", construct_definition, "'. ",
-      "Escala: '", scale_title, "'. ",
+      "Eres un experto en psicometría y análisis factorial. ", desc,
+      " del ítem '", item, "' cuyo contenido es: \"", item_def, "\". ",
+      "Constructo: '", construct_definition, "'. Escala: '", scale_title, "'. ",
       "Modelo CFA: '", model_name, "'. ",
-      if (!is.null(factor_def))
-        paste0("Definición del factor: \"", factor_def, "\".")
-      else ""
+      if (!is.null(factor_def)) paste0("Definición del factor: \"", factor_def, "\".") else ""
     )
     resp <- call_openai_api(prompt)
-    if (is.null(resp)) {
-      warning("Error en la llamada a la API para ítem ", item)
-      return("Error en análisis GPT.")
-    }
-    content <- httr::content(resp)
-    tryCatch(
-      content$choices[[1]]$message$content,
-      error = function(e) "Error al extraer respuesta de GPT."
-    )
+    if (is.null(resp)) return("Error en análisis GPT.")
+    content <- content(resp)
+    tryCatch(content$choices[[1]]$message$content,
+             error = function(e) "Error al extraer respuesta de GPT.")
   }
 
-  # ---------------------------------------------------------------------
-  # Preparación de información multidimensional inicial
-  # ---------------------------------------------------------------------
+  # — Preparación inicial —
   init_lines   <- split_model(initial_model)
   init_factors <- get_factor_names(init_lines)
   init_items   <- get_factor_items(init_lines)
 
-  # ---------------------------------------------------------------------
-  # Inicialización
-  # ---------------------------------------------------------------------
   if (!is.null(filter_expr)) data <- subset(data, eval(filter_expr, data))
-  model_lines       <- init_lines
-  current_lines     <- model_lines
+  current_lines     <- init_lines
   current_model_str <- paste(current_lines, collapse = "\n")
-  removed_items     <- character(0)
+  removed_items     <- character()
   log_steps <- data.frame(
     step         = integer(),
     modification = character(),
@@ -135,125 +106,115 @@ optimal_cfa_with_ai <- function(initial_model,
   )
   alternative_fit <- NULL
 
-  # ---------------------------------------------------------------------
-  # Bucle iterativo de mejora
-  # ---------------------------------------------------------------------
+  # — Bucle de mejora iterativa —
   for (step in seq_len(max_steps)) {
     if (verbose) cat("Paso", step, "\n")
     fit <- tryCatch(
       lavaan::cfa(current_model_str, data = data, ...),
       error = function(e) stop("Error en ajuste CFA: ", e$message)
     )
-    curr_rmsea <- lavaan::fitMeasures(fit, "rmsea.scaled")
+    curr_rmsea <- fitMeasures(fit, "rmsea.scaled")
+    # parada por RMSEA
     if (!is.na(curr_rmsea) && curr_rmsea < rmsea_threshold) {
-      log_steps <- rbind(log_steps, data.frame(
-        step         = step,
-        modification = NA_character_,
-        mi_value     = NA_real_,
-        rmsea        = curr_rmsea,
-        stringsAsFactors = FALSE
-      ))
-      if (verbose) cat("RMSEA (", round(curr_rmsea,4),
-                       ") por debajo de ", rmsea_threshold, ".\n")
+      if (verbose) cat("RMSEA(", round(curr_rmsea,4), ") <", rmsea_threshold, ": deteniendo.\n")
+      alternative_fit <- fit
+      log_steps <- rbind(log_steps, data.frame(step=step, modification=NA, mi_value=NA, rmsea=curr_rmsea))
+      break
+    }
+    # obtener índices de modificación
+    mi_raw <- lavaan::modificationIndices(fit)
+    if (!is.data.frame(mi_raw)) {
+      if (verbose) cat("No se obtuvieron índices de modificación válidos; deteniendo refinamiento.\n")
       alternative_fit <- fit
       break
     }
-    mi <- lavaan::modificationIndices(fit)
-    mi_filtered <- subset(mi, mi$mi > mi_threshold)
-    if (nrow(mi_filtered) == 0) {
-      if (verbose) cat("No hay MI > ", mi_threshold, ".\n")
+    mi_filt <- subset(mi_raw, mi > mi_threshold)
+    if (nrow(mi_filt) == 0) {
+      if (verbose) cat("No hay índices MI >", mi_threshold, "; deteniendo.\n")
       alternative_fit <- fit
       break
     }
-    best_mod <- mi_filtered[order(-mi_filtered$mi), ][1, ]
-    modification_str <- paste(best_mod$lhs, best_mod$op, best_mod$rhs)
-    std_sol <- lavaan::standardizedSolution(fit)
-    lh <- as.numeric(std_sol$est.std[std_sol$op=="=~" & std_sol$rhs==best_mod$lhs])
-    rh <- as.numeric(std_sol$est.std[std_sol$op=="=~" & std_sol$rhs==best_mod$rhs])
+    best_mod <- mi_filt[order(-mi_filt$mi),][1,]
+    mod_str  <- paste(best_mod$lhs, best_mod$op, best_mod$rhs)
+    # comparación de cargas estandarizadas
+    stdsol <- standardizedSolution(fit)
+    lh <- stdsol$est.std[stdsol$op=="=~" & stdsol$rhs==best_mod$lhs]
+    rh <- stdsol$est.std[stdsol$op=="=~" & stdsol$rhs==best_mod$rhs]
     lh <- ifelse(length(lh)==0||is.na(lh), 0, lh)
     rh <- ifelse(length(rh)==0||is.na(rh), 0, rh)
     if (lh <= rh) {
       item_to_remove <- best_mod$lhs
-      removal_reason <- paste0("Eliminando ", best_mod$lhs,
-                               " (carga ", round(lh,3),
-                               " < ", round(rh,3), ").")
+      reason <- paste0("Eliminando ", best_mod$lhs, " (carga ", round(lh,3),
+                       " < ", round(rh,3), ").")
     } else {
       item_to_remove <- best_mod$rhs
-      removal_reason <- paste0("Eliminando ", best_mod$rhs,
-                               " (carga ", round(rh,3),
-                               " < ", round(lh,3), ").")
+      reason <- paste0("Eliminando ", best_mod$rhs, " (carga ", round(rh,3),
+                       " < ", round(lh,3), ").")
     }
-    removed_items <- c(removed_items, item_to_remove)
-    log_steps <- rbind(log_steps, data.frame(
+    removed_items   <- c(removed_items, item_to_remove)
+    log_steps       <- rbind(log_steps, data.frame(
       step         = step,
-      modification = modification_str,
+      modification = mod_str,
       mi_value     = best_mod$mi,
       rmsea        = curr_rmsea,
       stringsAsFactors = FALSE
     ))
-    if (verbose) cat(removal_reason, "\n")
+    if (verbose) cat(reason, "\n")
     current_lines     <- remove_item_from_model(current_lines, item_to_remove)
     current_model_str <- paste(current_lines, collapse = "\n")
     alternative_fit   <- fit
   }
 
-  # Ajuste final y medidas
-  final_measures <- lavaan::fitMeasures(alternative_fit,
-                                        c("rmsea.scaled","cfi.scaled"))
+  # medidas finales
+  final_meas <- fitMeasures(alternative_fit, c("rmsea.scaled","cfi.scaled"))
 
-  # ---------------------------------------------------------------------
-  # Análisis conceptual con IA (opcional)
-  # ---------------------------------------------------------------------
+  # — Análisis conceptual con IA —
   conceptual_analysis <- NULL
   if (analyze_removed && !is.null(api_key) && !is.null(item_definitions)) {
-    # Ítems eliminados
+    if (verbose) cat("Iniciando análisis conceptual con IA...\n")
+    # ítems eliminados
     analysis_removed <- setNames(vector("list", length(removed_items)), removed_items)
     for (it in removed_items) {
-      if (verbose) cat("Analizando ítem eliminado:", it, "\n")
-      # identificar factor original
-      idx <- which(sapply(init_items, function(x) it %in% x))
-      fac_name <- if (length(idx)) init_factors[idx] else NA
-      fac_def  <- if (!is.null(factor_definitions) &&
-                      !is.na(fac_name) &&
-                      fac_name %in% names(factor_definitions))
-        factor_definitions[[fac_name]] else NULL
+      if (verbose) cat("  Analizando eliminado:", it, "\n")
+      idx     <- which(sapply(init_items, function(x) it %in% x))
+      fac_nm  <- if (length(idx)) init_factors[idx] else NA
+      fac_def <- if (!is.null(factor_definitions) &&
+                     !is.na(fac_nm) &&
+                     fac_nm %in% names(factor_definitions))
+        factor_definitions[[fac_nm]] else NULL
       analysis_removed[[it]] <- analyze_item_with_gpt(it,
                                                       item_definitions[[it]],
                                                       fac_def,
                                                       "exclusion")
     }
-    # Ítems conservados por factor
-    factor_names      <- get_factor_names(current_lines)
-    factor_items_list <- get_factor_items(current_lines)
-    analysis_kept     <- list()
-    for (i in seq_along(factor_items_list)) {
-      fac_name <- factor_names[i]
-      fac_def  <- if (!is.null(factor_definitions) &&
-                      fac_name %in% names(factor_definitions))
-        factor_definitions[[fac_name]] else NULL
-      for (it in factor_items_list[[i]]) {
-        if (verbose)
-          cat("Analizando ítem conservado de", fac_name, ":", it, "\n")
+    # ítems conservados
+    kept_factors <- get_factor_items(current_lines)
+    factor_names <- get_factor_names(current_lines)
+    analysis_kept <- list()
+    for (i in seq_along(kept_factors)) {
+      fac_nm  <- factor_names[i]
+      fac_def <- if (!is.null(factor_definitions) &&
+                     fac_nm %in% names(factor_definitions))
+        factor_definitions[[fac_nm]] else NULL
+      for (it in kept_factors[[i]]) {
+        if (verbose) cat("  Analizando conservado:", it, "\n")
         analysis_kept[[it]] <- analyze_item_with_gpt(it,
                                                      item_definitions[[it]],
                                                      fac_def,
                                                      "conservación")
       }
     }
-    conceptual_analysis <- list(removed = analysis_removed,
-                                kept    = analysis_kept)
+    conceptual_analysis <- list(removed = analysis_removed, kept = analysis_kept)
   }
 
-  # ---------------------------------------------------------------------
-  # Retornar resultados
-  # ---------------------------------------------------------------------
+  # — Retornar —
   list(
     final_model         = current_model_str,
     final_fit           = alternative_fit,
     log                 = log_steps,
     removed_items       = removed_items,
-    alternative_rmsea   = final_measures["rmsea.scaled"],
-    final_cfi           = final_measures["cfi.scaled"],
+    final_rmsea         = final_meas["rmsea.scaled"],
+    final_cfi           = final_meas["cfi.scaled"],
     conceptual_analysis = conceptual_analysis
   )
 }
