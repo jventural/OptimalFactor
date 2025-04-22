@@ -1,148 +1,150 @@
 \name{optimal_cfa_with_ai}
 \alias{optimal_cfa_with_ai}
-\title{Optimización de Análisis Factorial Confirmatorio con apoyo de IA}
+\title{Confirmatory Factor Analysis Optimization with AI Assistance}
 \description{
-Esta función mejora de forma iterativa una especificación de Análisis Factorial Confirmatorio (CFA) combinando dos estrategias principales: (1) eliminación de ítems con cargas factoriales comparativamente bajas según índices de modificación, y (2) justificación conceptual de las exclusiones o conservaciones de ítems mediante la API de OpenAI. El proceso se repite hasta que el RMSEA escalado del modelo alcanza el umbral deseado o se agota el número máximo de pasos.
+This function iteratively refines a Confirmatory Factor Analysis (CFA) specification by combining two main strategies:
+\enumerate{
+  \item Systematic removal of items based on standardized loadings and lavaan modification indices, eliminating the item with the least contribution to model fit.
+  \item Optional conceptual justification of each removal or retention decision via calls to the OpenAI API when \code{analyze_removed = TRUE}.
+}
+The process repeats until the scaled RMSEA falls below the specified threshold (\code{rmsea_threshold}) or the maximum number of iterations (\code{max_steps}) is reached.
 }
 \usage{
 optimal_cfa_with_ai(
   initial_model,
   data,
-  rmsea_threshold = 0.08,
-  mi_threshold = 3.84,
-  max_steps = 10,
-  verbose = TRUE,
-  debug = FALSE,
-  filter_expr = NULL,
-  exclude_items = character(0),
-  analyze_removed = FALSE,
-  api_key = NULL,
-  item_definitions = NULL,
-  domain_name = "Dominio por Defecto",
-  scale_title = "Título de la Escala por Defecto",
-  construct_definition = "",
-  model_name = "Modelo CFA",
-  gpt_model = "gpt-3.5-turbo",
+  rmsea_threshold     = 0.08,
+  mi_threshold        = 3.84,
+  max_steps           = 10,
+  verbose             = TRUE,
+  debug               = FALSE,
+  filter_expr         = NULL,
+  exclude_items       = character(0),
+  analyze_removed     = FALSE,
+  api_key             = NULL,
+  item_definitions    = NULL,
+  domain_name         = "Default Domain",
+  scale_title         = "Default Scale Title",
+  construct_definition= "",
+  model_name          = "CFA Model",
+  gpt_model           = "gpt-3.5-turbo",
   ...
 )
 }
+
 \arguments{
-  \item{initial_model}{Cadena de texto con la especificación inicial del modelo CFA en sintaxis \code{lavaan} (e.g., \code{"F1 =~ x1 + x2 + x3"}).}
-  \item{data}{\code{data.frame} que contiene las variables observadas para estimar el modelo CFA.}
-  \item{rmsea_threshold}{Valor numérico del RMSEA escalado máximo permitido para detener el refinamiento (por defecto \code{0.08}).}
-  \item{mi_threshold}{Valor numérico mínimo de índice de modificación (\emph{MI}) para considerar una correlación de error como candidata (por defecto \code{3.84}).}
-  \item{max_steps}{Número máximo de iteraciones/pasos permitidos en el proceso de mejora (por defecto \code{10}).}
-  \item{verbose}{Lógico; si \code{TRUE}, imprime mensajes detallados de cada paso.}
-  \item{debug}{Lógico; si \code{TRUE}, imprime información adicional de depuración.}
-  \item{filter_expr}{Expresión de R para filtrar \code{data} antes del ajuste; si \code{NULL}, no se aplica filtro.}
-  \item{exclude_items}{Vector de caracteres con nombres de ítems que deben excluirse desde el inicio.}
-  \item{analyze_removed}{Lógico; si \code{TRUE}, realiza además un análisis conceptual de ítems eliminados y conservados mediante IA.}
-  \item{api_key}{Cadena con la clave de API para OpenAI (requerida si \code{analyze_removed = TRUE}).}
-  \item{item_definitions}{Lista nombrada que asocia cada ítem con su redacción para el análisis conceptual.}
-  \item{domain_name}{Nombre descriptivo del dominio o factor (solo para prompts de IA).}
-  \item{scale_title}{Título de la escala o cuestionario (solo para prompts de IA).}
-  \item{construct_definition}{Definición breve del constructo medido (solo para prompts de IA).}
-  \item{model_name}{Etiqueta del modelo CFA (solo para prompts de IA).}
-  \item{gpt_model}{Modelo de ChatGPT a usar (por defecto \code{"gpt-3.5-turbo"}, pueden usarse variantes como \code{"gpt-4"}).}
-  \item{...}{Argumentos adicionales para pasar a \code{\link[lavaan]{cfa}} (e.g., \code{estimator}, \code{ordered}, \code{mimic}, etc.).}
+  \item{initial_model}{A character string specifying the initial CFA model in lavaan syntax (e.g., \code{"F1 =~ x1 + x2 + x3"}).}
+  \item{data}{A \code{data.frame} containing the observed variables for CFA.}
+  \item{rmsea_threshold}{Numeric. The maximum allowable scaled RMSEA to stop the refinement (default \code{0.08}).}
+  \item{mi_threshold}{Numeric. The minimum modification index (MI) value to consider an error covariance or cross-loading candidate (default \code{3.84}).}
+  \item{max_steps}{Integer. Maximum number of iterative refinement steps (default \code{10}).}
+  \item{verbose}{Logical. If \code{TRUE}, prints detailed progress messages.}
+  \item{debug}{Logical. If \code{TRUE}, prints additional debugging information.}
+  \item{filter_expr}{An R expression used to subset \code{data} before fitting; if \code{NULL}, no filtering is applied.}
+  \item{exclude_items}{Character vector of item names to exclude from the start.}
+  \item{analyze_removed}{Logical. If \code{TRUE}, performs conceptual analysis for each removed and retained item via OpenAI.}
+  \item{api_key}{String. OpenAI API key (required if \code{analyze_removed = TRUE}).}
+  \item{item_definitions}{Named list mapping each item to its textual definition for conceptual prompts.}
+  \item{domain_name}{Character vector of domain or factor names, used in AI prompts.}
+  \item{scale_title}{String. Title of the scale or questionnaire, for AI prompts.}
+  \item{construct_definition}{String. Brief definition of the construct, for AI prompts.}
+  \item{model_name}{String. Label for the CFA model, for AI prompts.}
+  \item{gpt_model}{String. Name of the ChatGPT model to use (e.g., \code{"gpt-3.5-turbo"} or \code{"gpt-4"}).}
+  \item{...}{Additional arguments passed to \code{\link[lavaan]{cfa}} (e.g., \code{estimator}, \code{ordered}, \code{mimic}, etc.).}
 }
 \details{
-La función realiza los siguientes pasos:
+The function executes the following steps:
 \enumerate{
-  \item Aplica opcionalmente un filtro a los datos.
-  \item Ajusta el modelo CFA inicial con \code{lavaan::cfa}.
-  \item Calcula el RMSEA escalado; si está por debajo de \code{rmsea_threshold}, detiene el proceso.
-  \item Extrae los índices de modificación (\code{lavaan::modificationIndices}) y selecciona el más alto.
-  \item Compara las cargas estándar de los dos ítems afectados para determinar cuál eliminar.
-  \item Remueve el ítem correspondiente de la especificación del modelo.
-  \item Registra la modificación, el valor de MI y el RMSEA en cada iteración.
-  \item Repite hasta alcanzar el umbral de RMSEA o agotar \code{max_steps}.
-  \item Si \code{analyze_removed = TRUE}, invoca la API de OpenAI para justificar cada exclusión o conservación de ítem, imprimiendo mensajes en modo \code{verbose}.
+  \item Optionally filters the data using \code{filter_expr}.
+  \item Fits the initial CFA model with \code{lavaan::cfa}.
+  \item Computes the scaled RMSEA; if below \code{rmsea_threshold}, stops.
+  \item Extracts modification indices via \code{lavaan::modificationIndices} and selects the highest MI.
+  \item Compares the standardized loadings of the two parameters involved and removes the item with the lower loading.
+  \item Logs the step, including the modification string, MI value, and current RMSEA.
+  \item Repeats the process until the RMSEA threshold is met or \code{max_steps} is reached.
+  \item If \code{analyze_removed = TRUE}, calls the OpenAI API to generate conceptual justifications for each removed and each retained item.
 }
 }
 \value{
-Una lista con los siguientes componentes:
-\item{final_model}{Cadena de texto con la especificación CFA final luego de todas las modificaciones.}
-\item{final_fit}{Objeto de ajuste \code{lavaan} correspondiente al modelo final.}
-\item{log}{\code{data.frame} que registra, por cada paso, la modificación aplicada, el valor de MI y el RMSEA resultante.}
-\item{removed_items}{Vector de caracteres con los nombres de los ítems eliminados.}
-\item{alternative_fit}{Objeto de ajuste \code{lavaan} del último modelo estimado antes de detenerse.}
-\item{alternative_rmsea}{Valor final de RMSEA escalado del modelo alternativo.}
-\item{final_cfi}{Valor final de CFI escalado del modelo alternativo.}
-\item{conceptual_analysis}{Lista con sublistas \code{removed} y \code{kept} que contienen los textos generados por IA para cada ítem, o \code{NULL} si \code{analyze_removed = FALSE}.}
+A list with elements:
+\item{final_model}{A character string of the CFA specification after all modifications.}
+\item{final_fit}{The \code{lavaan} fit object for the final model.}
+\item{log}{A \code{data.frame} recording each step’s modification, MI value, and RMSEA.}
+\item{removed_items}{Character vector of the names of removed items.}
+\item{alternative_fit}{The last \code{lavaan} fit object before stopping.}
+\item{alternative_rmsea}{Final scaled RMSEA of the alternative fit.}
+\item{final_cfi}{Final scaled CFI of the alternative fit.}
+\item{conceptual_analysis}{A list with two sublists, \code{removed} and \code{kept}, containing AI-generated texts; \code{NULL} if not requested.}
 }
 \examples{
 \dontrun{
-# Especificación inicial
+# Initial model specification
 mod0 <- 'F1 =~ x1 + x2 + x3 + x4 + x5'
 
-# Definiciones para IA
+# Definitions for AI
 defs <- list(
-  x1 = "Descripción del ítem 1",
-  x2 = "Descripción del ítem 2",
-  x3 = "Descripción del ítem 3",
-  x4 = "Descripción del ítem 4",
-  x5 = "Descripción del ítem 5"
+  x1 = "Item 1 description",
+  x2 = "Item 2 description",
+  x3 = "Item 3 description",
+  x4 = "Item 4 description",
+  x5 = "Item 5 description"
 )
 
-# Ejecución
-res_cfa <- optimal_cfa_with_ai(
-  initial_model    = mod0,
-  data             = mi_df,
-  rmsea_threshold  = 0.07,
-  mi_threshold     = 4.0,
-  max_steps        = 8,
-  verbose          = TRUE,
-  analyze_removed  = TRUE,
-  api_key          = Sys.getenv("OPENAI_API_KEY"),
-  item_definitions = defs,
-  domain_name      = "Satisfacción Laboral",
-  scale_title      = "Cuestionario de Satisfacción",
-  construct_definition = "Grado de satisfacción con el entorno laboral.",
-  model_name       = "CFA_SAT",
-  gpt_model        = "gpt-4"
+# Run the optimization
+result <- optimal_cfa_with_ai(
+  initial_model        = mod0,
+  data                 = my_data_frame,
+  rmsea_threshold      = 0.07,
+  mi_threshold         = 4.0,
+  max_steps            = 8,
+  verbose              = TRUE,
+  analyze_removed      = TRUE,
+  api_key              = "OPENAI_API_KEY",
+  item_definitions     = defs,
+  domain_name          = c("Factor1", "Factor2"),
+  scale_title          = "My Questionnaire",
+  construct_definition = "Degree of job satisfaction",
+  model_name           = "CFA_JobSat",
+  gpt_model            = "gpt-4"
 )
 
 # 1. Lista de nombres de componentes disponibles
 cat("Componentes en resultado_cfa:\n")
-print(names(res_cfa))
+print(names(resultado_cfa))
 
 # 2. Registro de pasos (log)
 cat("\n1) Log de modificaciones por paso:\n")
-print(res_cfa$log)
+print(resultado_cfa$log)
 
 # 3) Modelo final
 cat("\n2) Modelo final:\n")
-cat(res_cfa$final_model, "\n")
-# cat("Modelo final:\n", res_cfa$final_model)
-
-# 4) Modelo alternativo (último antes de parar)
-cat("\n3) Modelo alternativo:\n")
-cat(res_cfa$alternative_model, "\n")
+cat(resultado_cfa$final_model, "\n")
+# cat("Modelo final:\n", resultado_cfa$final_model)
 
 # 5) Resumen del ajuste del modelo final
 cat("\n4) Resumen del ajuste (final_fit):\n")
-print(summary(res_cfa$final_fit, fit.measures = TRUE))
+print(summary(resultado_cfa$final_fit, standardized = T, fit.measures = T, rsquare = T))
 
 # 6) Ítems eliminados
 cat("\n5) Ítems eliminados:\n")
-cat(paste(res_cfa$removed_items, collapse = ", "), "\n")
+cat(paste(resultado_cfa$removed_items, collapse = ", "), "\n")
 
 # 7) Medidas finales
 cat("\n6) Medidas finales:\n")
-cat("  • RMSEA final:", res_cfa$alternative_rmsea, "\n")
-cat("  • CFI final:  ", res_cfa$final_cfi, "\n")
+cat("  • RMSEA final:", resultado_cfa$alternative_rmsea, "\n")
+cat("  • CFI final:  ", resultado_cfa$final_cfi, "\n")
 
 # 8) Análisis conceptual (si existe)
-if (!is.null(res_cfa$conceptual_analysis)) {
+if (!is.null(resultado_cfa$conceptual_analysis)) {
   cat("\n7) Análisis conceptual de ítems eliminados:\n")
-  print(res_cfa$conceptual_analysis$removed)
+  print(resultado_cfa$conceptual_analysis$removed)
 
   cat("\n8) Análisis conceptual de ítems conservados:\n")
-  print(res_cfa$conceptual_analysis$kept)
+  print(resultado_cfa$conceptual_analysis$kept)
 }
 }
 }
+
 \author{
 Dr. José Ventura-León
 }

@@ -1,105 +1,120 @@
 \name{optimal_efa_with_ai}
 \alias{optimal_efa_with_ai}
-\title{Optimización de Análisis Factorial Exploratorio con apoyo de IA}
+\title{Exploratory Factor Analysis Optimization with AI Assistance}
 \description{
-Esta función refina de forma automática una solución de Análisis Factorial Exploratorio (EFA) combinando criterios de bondad de ajuste (RMSEA) y calidad de las cargas factoriales. En cada iteración se elimina el ítem cuya remoción mejora más el RMSEA o que presenta problemas de estructura (cross‑loading o sin carga significativa). Además, opcionalmente, los ítems eliminados y conservados pueden analizarse conceptualmente mediante la API de OpenAI, justificando exclusiones o conservaciones.
+This function automatically refines an Exploratory Factor Analysis (EFA) solution by combining model‐fit criteria (scaled RMSEA) and item‐loading quality. At each iteration, it removes the item whose exclusion yields the greatest RMSEA improvement or that exhibits structural issues (cross‐loading or no significant loading). Optionally, removed and retained items can be conceptually analyzed via the OpenAI API, providing justifications for exclusion or retention.
 }
 \usage{
 optimal_efa_with_ai(
   data,
-  items = NULL,
-  n_factors = 5,
-  n_items = NULL,
-  name_items = "PPTQ",
-  estimator = "WLSMV",
-  rotation = "oblimin",
-  threshold_rmsea = 0.08,
-  threshold_loading = 0.30,
-  min_items_per_factor = 2,
-  apply_threshold = TRUE,
-  max_steps = NULL,
-  verbose = TRUE,
-  exclude_items = character(0),
-  analyze_removed = FALSE,
-  api_key = NULL,
-  item_definitions = NULL,
-  domain_name = "Dominio por Defecto",
-  scale_title = "Título de la Escala por Defecto",
-  construct_definition = "",
-  model_name = "Modelo EFA",
-  gpt_model = "gpt-3.5-turbo",
+  items               = NULL,
+  n_factors           = 5,
+  n_items             = NULL,
+  name_items          = "PPTQ",
+  estimator           = "WLSMV",
+  rotation            = "oblimin",
+  threshold_rmsea     = 0.08,
+  threshold_loading   = 0.30,
+  min_items_per_factor= 2,
+  apply_threshold     = TRUE,
+  max_steps           = NULL,
+  verbose             = TRUE,
+  exclude_items       = character(0),
+  analyze_removed     = FALSE,
+  api_key             = NULL,
+  item_definitions    = NULL,
+  domain_name         = "Default Domain",
+  scale_title         = "Default Scale Title",
+  construct_definition= "",
+  model_name          = "EFA Model",
+  gpt_model           = "gpt-3.5-turbo",
+  item_factor_map     = NULL,
   ...
 )
 }
 \arguments{
-  \item{data}{Un \code{data.frame} con las variables a incluir en el EFA.}
-  \item{items}{Vector de nombres de ítems a usar; si es \code{NULL}, se generan a partir de \code{name_items} y \code{n_items}.}
-  \item{n_factors}{Número de factores a extraer (por defecto 5).}
-  \item{n_items}{Número de ítems por factor cuando \code{items} es \code{NULL}.}
-  \item{name_items}{Prefijo de los nombres de ítem (por defecto \"PPTQ\").}
-  \item{estimator}{Estimador de lavaan a usar (p. ej. \"WLSMV\").}
-  \item{rotation}{Método de rotación (p. ej. \"oblimin\").}
-  \item{threshold_rmsea}{Valor máximo permitido de RMSEA escalado para detener el proceso (por defecto 0.08).}
-  \item{threshold_loading}{Umbral mínimo de carga absoluta para considerar un ítem “bien cargado” (por defecto 0.30).}
-  \item{min_items_per_factor}{Mínimo de ítems requeridos por factor para validar la estructura (por defecto 2).}
-  \item{apply_threshold}{Lógico; si \code{TRUE}, aplica umbrales de carga al modelo interno.}
-  \item{max_steps}{Número máximo de iteraciones/ítems a remover; si es \code{NULL}, se calcula como \code{length(items)-1}.}
-  \item{verbose}{Lógico; si \code{TRUE}, muestra mensajes de progreso y decisión en cada paso.}
-  \item{exclude_items}{Vector de ítems a excluir de antemano.}
-  \item{analyze_removed}{Lógico; si \code{TRUE}, realiza análisis conceptual de ítems eliminados/conservados mediante IA.}
-  \item{api_key}{Clave de autenticación para la API de OpenAI (necesaria si \code{analyze_removed = TRUE}).}
-  \item{item_definitions}{Lista nombrada con el texto de cada ítem para análisis conceptual.}
-  \item{domain_name}{Nombre descriptivo del dominio o subescala (solo para prompts de IA).}
-  \item{scale_title}{Título de la escala (solo para prompts de IA).}
-  \item{construct_definition}{Definición breve del constructo medido (solo para prompts de IA).}
-  \item{model_name}{Etiqueta del modelo EFA (solo para prompts de IA).}
-  \item{gpt_model}{Modelo de ChatGPT a usar (p. ej. \"gpt-3.5-turbo\" o \"gpt-4\").}
-  \item{...}{Argumentos adicionales que se pasarán a \code{PsyMetricTools::EFA_modern()}.}
+  \item{data}{A \code{data.frame} containing the observed variables for the EFA.}
+  \item{items}{Character vector of item names to include; if \code{NULL}, names are generated using \code{name_items} and \code{n_items}.}
+  \item{n_factors}{Integer. Number of factors to extract (default \code{5}).}
+  \item{n_items}{Integer. Number of items per factor when \code{items} is \code{NULL}.}
+  \item{name_items}{Character. Prefix for item names (default \code{"PPTQ"}).}
+  \item{estimator}{Character. Estimator to use (e.g., \code{"WLSMV"}).}
+  \item{rotation}{Character. Rotation method (e.g., \code{"oblimin"}).}
+  \item{threshold_rmsea}{Numeric. Maximum allowable scaled RMSEA to stop refinement (default \code{0.08}).}
+  \item{threshold_loading}{Numeric. Minimum absolute loading to consider an item well‐loaded (default \code{0.30}).}
+  \item{min_items_per_factor}{Integer. Minimum items required per factor (default \code{2}).}
+  \item{apply_threshold}{Logical. If \code{TRUE}, zeroes out loadings below \code{threshold_loading} in the final solution.}
+  \item{max_steps}{Integer or \code{NULL}. Maximum number of iterations; if \code{NULL}, set to \code{length(items) - 1}.}
+  \item{verbose}{Logical. If \code{TRUE}, prints progress and removal decisions.}
+  \item{exclude_items}{Character vector of items to exclude from the start.}
+  \item{analyze_removed}{Logical. If \code{TRUE}, performs conceptual analysis for each removed and retained item via the OpenAI API.}
+  \item{api_key}{String. OpenAI API key (required if \code{analyze_removed = TRUE}).}
+  \item{item_definitions}{Named list mapping each item to its text definition for AI prompts.}
+  \item{domain_name}{Character vector of domain or factor names, used in AI prompts.}
+  \item{scale_title}{Character. Title of the scale for AI prompts.}
+  \item{construct_definition}{Character. Brief definition of the construct, for AI prompts.}
+  \item{model_name}{Character. Label for the EFA model, for AI prompts.}
+  \item{gpt_model}{Character. Name of the ChatGPT model to use (e.g., \code{"gpt-3.5-turbo"}).}
+  \item{item_factor_map}{Named integer vector mapping items to initial factor assignments (optional).}
+  \item{...}{Additional arguments passed to \code{\link[PsyMetricTools]{EFA_modern}}.}
 }
 \details{
-La función comienza instalando y cargando \code{PsyMetricTools} si fuera necesario.
-Luego selecciona los ítems iniciales y monta un bucle iterativo donde en cada paso:
+The function proceeds as follows:
 \enumerate{
-  \item Se estima el modelo EFA con los ítems restantes.
-  \item Se computa el RMSEA escalado.
-  \item Se evalúa la estructura factorial revisando cargas absolutas y cross‑loadings.
-  \item Si el RMSEA está por debajo del umbral y la estructura es válida, se detiene.
-  \item Si no, decide entre remover el ítem cuya exclusión mejora más el RMSEA o el ítem problemático con peor score.
+  \item Installs and loads \code{PsyMetricTools} if not already available.
+  \item Determines the initial set of items from \code{items} or from \code{name_items} and \code{n_items}.
+  \item Enters an iterative loop:
+    \enumerate{
+      \item Estimates the EFA model with the remaining items.
+      \item Computes the scaled RMSEA.
+      \item Evaluates the factor‐loading structure for cross‐loadings or lack of loadings.
+      \item If RMSEA ≤ \code{threshold_rmsea} and each factor has ≥ \code{min_items_per_factor}, stops.
+      \item Otherwise, decides to remove the item whose exclusion most improves RMSEA or that has the worst loading structure.
+    }
+  \item Optionally, for each removed and retained item, calls the OpenAI API to generate a conceptual justification.
 }
-Opcionalmente, tras el refinamiento, cada ítem eliminado y conservado puede analizarse conceptualmente mediante la API de OpenAI, imprimiendo en \code{verbose} mensajes de inicio de análisis para cada ítem.
 }
 \value{
-Una lista con los siguientes elementos:
-\item{final_structure}{\code{data.frame} con las cargas y asignaciones finales de ítems a factores.}
-\item{removed_items}{Vector de nombres de los ítems eliminados durante el proceso.}
-\item{steps_log}{\code{data.frame} que registra cada paso: ítem removido, motivo y RMSEA resultante.}
-\item{iterations}{Número total de iteraciones ejecutadas.}
-\item{final_rmsea}{Valor final de RMSEA escalado tras la última iteración.}
-\item{conceptual_analysis}{Lista con sublistas \code{removed} y \code{kept} que contienen los textos generados por IA para cada ítem, o \code{NULL} si no se solicitó.}
+A list with components:
+\item{final_structure}{A \code{data.frame} of final item loadings and factor assignments.}
+\item{removed_items}{Character vector of items removed during refinement.}
+\item{steps_log}{A \code{data.frame} recording each step: \code{step}, \code{removed_item}, \code{reason}, and \code{rmsea}.}
+\item{iterations}{Integer. Total number of iterations performed.}
+\item{final_rmsea}{Numeric. Final scaled RMSEA after the last iteration.}
+\item{conceptual_analysis}{List with sublists \code{removed} and \code{kept} containing AI‐generated texts, or \code{NULL} if \code{analyze_removed = FALSE}.}
 }
 \examples{
 \dontrun{
-# Definir las definiciones de ítems
+# Example definitions for conceptual analysis
 defs <- list(
-  Q1 = "Me siento cómodo usando métodos estadísticos avanzados.",
-  Q2 = "Entiendo la diferencia entre EFA y CFA.",
-  Q3 = "Puedo interpretar índices de ajuste como RMSEA y CFI."
+  Q1 = "I feel confident using advanced statistical methods.",
+  Q2 = "I understand the difference between EFA and CFA.",
+  Q3 = "I can interpret fit indices like RMSEA and CFI."
 )
-# Ejecutar EFA optimizada con análisis conceptual
-res <- optimal_efa_with_ai(
-  data                 = mi_dataframe,
+
+# Run optimized EFA with AI‐assisted analysis
+res_efa <- optimal_efa_with_ai(
+  data                 = my_data_frame,
   n_factors            = 1,
   name_items           = "Q",
   n_items              = 3,
   analyze_removed      = TRUE,
-  api_key              = "OPENAI_API_KEY",
+  api_key              = Sys.getenv("OPENAI_API_KEY"),
   item_definitions     = defs,
-  domain_name          = "Competencia Estadística",
-  scale_title          = "Autoevaluación Estadística",
-  construct_definition = "Habilidad percibida en métodos estadísticos.",
+  domain_name          = "Statistical Competence",
+  scale_title          = "Statistical Self‐Assessment",
+  construct_definition = "Perceived ability in statistical methods.",
   model_name           = "EFA_Q",
   gpt_model            = "gpt-4"
 )
+
+# Inspect final structure
+print(res_efa$final_structure)
+
+# View removal log
+print(res_efa$steps_log)
+
+# Summary of results
 # 1. Mostrar la estructura factorial final
 cat("===== Estructura factorial final =====\n")
 print(resultado_efa$final_structure)
@@ -144,5 +159,5 @@ if (!is.null(resultado_efa$conceptual_analysis)) {
 }
 }
 \author{
-Dr. José Ventura-León
+Dr. José Ventura‐León
 }
