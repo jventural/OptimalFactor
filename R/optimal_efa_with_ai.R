@@ -21,7 +21,15 @@ optimal_efa_with_ai <- function(data,
                                  model_name = "Modelo EFA",
                                  gpt_model = "gpt-3.5-turbo",
                                  item_factor_map = NULL,
+                                 factor_definitions = NULL,
                                  ...) {
+  # Si es unidimensional, limpiar mapeos y definiciones de factores
+  if (n_factors == 1) {
+    factor_definitions <- NULL
+    domain_name        <- NULL
+    item_factor_map    <- NULL
+  }
+
   # 0. Instalar/cargar PsyMetricTools si no existe
   if (!requireNamespace("PsyMetricTools", quietly = TRUE)) {
     if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
@@ -50,20 +58,21 @@ optimal_efa_with_ai <- function(data,
           ), auto_unbox = TRUE)
         )
       }, error = function(e) NULL)
-      if (!is.null(resp) && httr::status_code(resp)==200) break
+      if (!is.null(resp) && httr::status_code(resp) == 200) break
       if (verbose) cat("Intento", attempt, "fallido. Reintentando...\n")
       attempt <- attempt + 1; Sys.sleep(1)
     }
     resp
   }
-  analyze_item_with_gpt <- function(item, definition, domain, action) {
-    if (is.null(definition) || definition=="") return("No se proporcionó definición del ítem.")
-    desc <- if (action=="exclusion") "Justifica concisamente la exclusión" else "Explica brevemente por qué se conserva"
+  analyze_item_with_gpt <- function(item, definition, context, action) {
+    if (is.null(definition) || definition == "") return("No se proporcionó definición del ítem.")
+    desc <- if (action == "exclusion") "Justifica concisamente la exclusión" else "Explica brevemente por qué se conserva"
     prompt <- paste0(
       "Eres un experto en psicometría y análisis factorial. ", desc,
       " del ítem '", item, "' cuyo contenido es: \"", definition, "\". ",
       "Constructo: '", construct_definition, "'. Escala: '", scale_title, "'. ",
-      "Dominio: '", domain, "'. Modelo EFA: '", model_name, "'."
+      context,
+      " Modelo EFA: '", model_name, "'."
     )
     resp <- call_openai_api(prompt)
     if (is.null(resp)) return("Error en análisis GPT.")
@@ -135,8 +144,7 @@ optimal_efa_with_ai <- function(data,
       break
     }
 
-    # — Capturar no convergencia —
-    last_mod <- mod
+    # Ajuste EFA
     converged <- TRUE
     tmp <- tryCatch({
       PsyMetricTools::EFA_modern(
@@ -155,32 +163,23 @@ optimal_efa_with_ai <- function(data,
       converged <<- FALSE
       NULL
     })
-    if (converged) {
-      mod <- tmp
-    } else {
-      if (verbose) cat("Deteniendo refinamiento por no convergencia.\n")
-      break
-    }
+    if (!converged) break
+    mod <- tmp
 
-    # — Extraer RMSEA —
+    # RMSEA y estructura
     curr_rmsea <- mod$Bondades_Original$rmsea.scaled[n_factors]
     if (verbose) cat("Iteración", step_counter, "- RMSEA:", round(curr_rmsea, 4), "\n")
-
-    # — Evaluar estructura y conteo de ítems/factor —
     ev <- evaluate_structure(mod$result_df)
     if (verbose) cat("Ítems/factor:", paste(ev$counts, collapse = " | "), "\n")
 
-    # — Criterio de parada —
-    if (!is.na(curr_rmsea) &&
-        curr_rmsea <= threshold_rmsea &&
-        ev$structure_ok) {
+    if (!is.na(curr_rmsea) && curr_rmsea <= threshold_rmsea && ev$structure_ok) {
       if (verbose) cat("RMSEA y estructura cumplen criterios. Deteniendo.\n")
       break
     }
 
     decision <- if (!is.na(curr_rmsea) && curr_rmsea > threshold_rmsea) "rmsea" else "structure"
 
-    # 4.a Eliminación basada en RMSEA
+    # Eliminación por RMSEA
     if (decision == "rmsea") {
       cand_rmsea <- sapply(candidates, function(it) {
         tryCatch({
@@ -198,10 +197,7 @@ optimal_efa_with_ai <- function(data,
           m2$Bondades_Original$rmsea.scaled[n_factors]
         }, error = function(e) NA_real_)
       }, USE.NAMES = TRUE)
-
-      if (all(is.na(cand_rmsea))) {
-        decision <- "structure"
-      } else {
+      if (!all(is.na(cand_rmsea))) {
         best <- names(which.min(cand_rmsea))
         best_val <- min(cand_rmsea, na.rm = TRUE)
         if (best_val < curr_rmsea) {
@@ -216,29 +212,29 @@ optimal_efa_with_ai <- function(data,
           ))
           if (verbose) cat("Se remueve", best, "→ RMSEA:", round(best_val, 4), "\n")
           next
-        } else decision <- "structure"
+        }
       }
+      decision <- "structure"
     }
 
-    # 4.b Eliminación basada en estructura
+    # Eliminación por estructura
     if (decision == "structure") {
       prob_idx <- which(!ev$ok)
-      worst <- prob_idx[which.min(ev$scores[prob_idx])]
-      it_rm <- ev$items[worst]
-      removed_items <- c(removed_items, it_rm)
+      worst <- ev$items[prob_idx[which.min(ev$scores[prob_idx])]]
+      removed_items <- c(removed_items, worst)
       step_counter <- step_counter + 1
       steps_log <- rbind(steps_log, data.frame(
         step         = step_counter,
-        removed_item = it_rm,
-        reason       = ev$reasons[worst],
+        removed_item = worst,
+        reason       = ev$reasons[which(ev$items == worst)],
         rmsea        = curr_rmsea,
         stringsAsFactors = FALSE
       ))
-      if (verbose) cat("Se remueve", it_rm, "por", ev$reasons[worst], "\n")
+      if (verbose) cat("Se remueve", worst, "por", ev$reasons[which(ev$items == worst)], "\n")
     }
   }
 
-  # 5. Post‑procesar cargas según threshold_loading
+  # 5. Post‑procesar cargas
   df_final <- mod$result_df
   load_cols <- grep("^f", names(df_final))
   if (apply_threshold) {
@@ -260,18 +256,40 @@ optimal_efa_with_ai <- function(data,
   if (analyze_removed && !is.null(api_key) && !is.null(item_definitions)) {
     analysis_removed <- setNames(vector("list", length(removed_items)), removed_items)
     for (it in removed_items) {
-      fac_i <- item_factor_map[[it]]
-      dom   <- if (length(domain_name) >= fac_i) domain_name[fac_i] else domain_name
-      if (verbose) cat("Analizando eliminado (", dom, "):", it, "\n")
-      analysis_removed[[it]] <- analyze_item_with_gpt(it, item_definitions[[it]], dom, "exclusion")
+      if (verbose) cat("Analizando conceptualmente con IA ítem", it, "(eliminado)...\n")
+      context <- if (n_factors == 1) construct_definition else {
+        fac_i <- item_factor_map[[it]]
+        if (!is.null(factor_definitions[[as.character(fac_i)]])) {
+          paste0("Factor (definición): '", factor_definitions[[as.character(fac_i)]], "'.")
+        } else {
+          paste0("Factor ", fac_i, ".")
+        }
+      }
+      analysis_removed[[it]] <- analyze_item_with_gpt(
+        item       = it,
+        definition = item_definitions[[it]],
+        context    = context,
+        action     = "exclusion"
+      )
     }
     kept <- setdiff(items, removed_items)
     analysis_kept <- list()
     for (it in kept) {
-      fac_i <- item_factor_map[[it]]
-      dom   <- if (length(domain_name) >= fac_i) domain_name[fac_i] else domain_name
-      if (verbose) cat("Analizando conservado (", dom, "):", it, "\n")
-      analysis_kept[[it]] <- analyze_item_with_gpt(it, item_definitions[[it]], dom, "conservación")
+      if (verbose) cat("Analizando conceptualmente con IA ítem", it, "(conservado)...\n")
+      context <- if (n_factors == 1) construct_definition else {
+        fac_i <- item_factor_map[[it]]
+        if (!is.null(factor_definitions[[as.character(fac_i)]])) {
+          paste0("Factor (definición): '", factor_definitions[[as.character(fac_i)]], "'.")
+        } else {
+          paste0("Factor ", fac_i, ".")
+        }
+      }
+      analysis_kept[[it]] <- analyze_item_with_gpt(
+        item       = it,
+        definition = item_definitions[[it]],
+        context    = context,
+        action     = "conservación"
+      )
     }
     conceptual_analysis <- list(removed = analysis_removed, kept = analysis_kept)
   }
@@ -283,6 +301,8 @@ optimal_efa_with_ai <- function(data,
     steps_log           = steps_log,
     iterations          = step_counter,
     final_rmsea         = curr_rmsea,
+    item_factor_map     = item_factor_map,
+    factor_definitions  = factor_definitions,
     conceptual_analysis = conceptual_analysis
   )
 }
