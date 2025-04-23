@@ -12,38 +12,12 @@ devtools::install_github("jventuraleon/OptimalFactor")
 ```
 # Examples
 
-## EFA Model Refinement with OptimalFactor
-Refine an Exploratory Factor Analysis model by iteratively removing problematic items based on RMSEA improvement and loading thresholds. For example:
+## OptimalFactor: Examples of EFA and CFA
+Below is an example of how to use the OptimalFactor library to improve your EFA and CFA models:
+[Basic tutorial of the R OptimalFactor library](https://rpubs.com/jventural/OptimalFactor)
 
-```r
-result <- stepwise_efa_removal_structure(
-  data = your_data,
-  n_factors = 3,
-  name_items = "PPTQ",
-  threshold_rmsea = 0.08,
-  threshold_loading = 0.30,
-  min_items_per_factor = 2,
-  verbose = TRUE
-)
-print(result$steps_log)
-cat("Final RMSEA:", result$final_rmsea, "\n")
-cat("Removed Items:", paste(result$removed_items, collapse = ", "), "\n")
-```
+-----
 
-## CFA Model Improvement with OptimalFactor
-Improve a Confirmatory Factor Analysis model by sequentially incorporating modification indices and removing items with low loadings. For instance:
-```r
-result_cfa <- stepwise_cfa_improvement(
-  initial_model = model1,
-  data = your_data,
-  rmsea_threshold = 0.08,
-  mi_threshold = 3.84,
-  max_steps = 10,
-  verbose = TRUE,
-  debug = FALSE
-)
-print(result_cfa$log)
-```
 # License
 GPL-3
 
