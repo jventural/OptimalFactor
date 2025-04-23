@@ -1,4 +1,13 @@
 print_cfa_results <- function(res) {
+  # Helper para imprimir ítems eliminados
+  print_removed_items <- function(removed_items) {
+    msg <- if (length(removed_items) > 0) {
+      paste(removed_items, collapse = ", ")
+    } else {
+      "Ninguno"
+    }
+    cat("Ítems eliminados:", msg, "\n")
+  }
   cat("===== Componentes disponibles =====\n")
   print(names(res))
 
