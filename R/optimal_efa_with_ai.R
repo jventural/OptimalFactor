@@ -284,6 +284,8 @@ optimal_efa_with_ai <- function(data,
     steps_log           = steps_log,
     iterations          = step_counter,
     final_rmsea         = curr_rmsea,
+    bondades_original   = mod$Bondades_Original,
+    specifications      = mod$Specifications,
     item_factor_map     = item_factor_map,
     factor_definitions  = factor_definitions,
     conceptual_analysis = conceptual_analysis
