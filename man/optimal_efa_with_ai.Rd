@@ -2,14 +2,17 @@
 \alias{optimal_efa_with_ai}
 \title{Exploratory Factor Analysis Optimization with AI Assistance}
 \description{
-This function automatically refines an Exploratory Factor Analysis (EFA) solution by combining model‐fit criteria (scaled RMSEA) and item‐loading quality. At each iteration it:
+This function automatically refines an Exploratory Factor Analysis (EFA) solution by combining
+model‐fit criteria (scaled RMSEA) and item‐loading quality. At each iteration it:
 
 1. Estimates the specified EFA model on the current set of items.
 2. Computes the scaled RMSEA and checks whether it is ≤ \code{threshold_rmsea} and every factor retains at least \code{min_items_per_factor} items.
 3. If fit or structure criteria are not met, identifies and removes the item whose exclusion yields the greatest RMSEA improvement or that exhibits structural issues (cross‐loading or no loading).
-4. Repeats steps 1–3 until both fit and structure criteria are satisfied or \code{max_steps} iterations are reached.
+4. Repeats steps 1–3 until both fit and structure criteria are satisfied or \code{max_steps} iterations are reached.
 
-Optionally, when \code{analyze_removed = TRUE}, it calls the OpenAI API to generate concise justifications for exclusion or retention of each item, using the provided \code{item_definitions}, \code{factor_definitions}, and other contextual parameters.
+Optionally, when \code{analyze_removed = TRUE}, it calls the OpenAI API to:
+- Generate concise justifications for exclusion and for retention of each item, using the provided \code{item_definitions} and the final loading structure as context.
+- Propose brief (1–2 word) tentative names for each factor (\code{factor_names}), based on the items and their definitions in the \code{final_structure}.
 }
 \usage{
 optimal_efa_with_ai(
@@ -35,8 +38,6 @@ optimal_efa_with_ai(
   construct_definition= "",
   model_name          = "Modelo EFA",
   gpt_model           = "gpt-3.5-turbo",
-  item_factor_map     = NULL,
-  factor_definitions  = NULL,
   ...
 )
 }
@@ -58,17 +59,16 @@ optimal_efa_with_ai(
   \item{analyze_removed}{Logical. If \code{TRUE}, performs conceptual analysis for each removed and retained item via the OpenAI API.}
   \item{api_key}{String. OpenAI API key (required if \code{analyze_removed = TRUE}).}
   \item{item_definitions}{Named list mapping each item to its text definition for AI prompts.}
-  \item{domain_name}{Character. Domain or factor names used in AI prompts (ignored if \code{n_factors = 1}).}
+  \item{domain_name}{Character. Domain or factor names used in AI prompts (currently not used in the algorithm).}
   \item{scale_title}{Character. Title of the scale for AI prompts.}
   \item{construct_definition}{Character. Brief definition of the construct for AI prompts.}
   \item{model_name}{Character. Label for the EFA model in AI prompts.}
   \item{gpt_model}{Character. Name of the ChatGPT model to use (e.g., \code{"gpt-3.5-turbo"}).}
-  \item{item_factor_map}{Named integer vector mapping items to initial factor assignments (optional; ignored if \code{n_factors = 1}).}
-  \item{factor_definitions}{Named list of factor definitions, indexed by factor number (optional; ignored if \code{n_factors = 1}).}
   \item{...}{Additional arguments passed to \code{\link[PsyMetricTools]{EFA_modern}}.}
 }
 \details{
-When \code{n_factors = 1}, the arguments \code{factor_definitions}, \code{domain_name} and \code{item_factor_map} are cleared (not used).
+When \code{n_factors = 1}, the AI‐related arguments (\code{analyze_removed}, \code{api_key},
+and \code{item_definitions}) may be ignored.
 
 The function proceeds as follows:
 \enumerate{
@@ -82,7 +82,8 @@ The function proceeds as follows:
       \item If RMSEA ≤ \code{threshold_rmsea} and each factor has ≥ \code{min_items_per_factor}, stops.
       \item Otherwise, removes the item whose exclusion most improves RMSEA or that has the worst structural issue.
     }
-  \item Optionally, for each removed and retained item, calls the OpenAI API to generate concise justifications using the provided definitions and context.
+  \item If \code{analyze_removed = TRUE}, for each removed and retained item generates via OpenAI concise justifications based on the final structure.
+  \item If an \code{api_key} is provided, proposes tentative 1–2 word names for each factor (\code{factor_names}) based on the final EFA structure.
 }
 }
 \value{
@@ -92,70 +93,48 @@ A list with components:
 \item{steps_log}{A \code{data.frame} recording each step: \code{step}, \code{removed_item}, \code{reason}, and \code{rmsea}.}
 \item{iterations}{Integer. Total number of iterations performed.}
 \item{final_rmsea}{Numeric. Final scaled RMSEA after the last iteration.}
-\item{item_factor_map}{Named integer vector mapping each item to its final factor assignment.}
-\item{factor_definitions}{List of factor definitions (if provided).}
-\item{conceptual_analysis}{List with sublists \code{removed} and \code{kept} containing AI‐generated texts, or \code{NULL} if \code{analyze_removed = FALSE}.}
+\item{bondades_original}{Original fit indices and other model information from \code{\link[PsyMetricTools]{EFA_modern}}.}
+\item{specifications}{Model specifications returned by \code{\link[PsyMetricTools]{EFA_modern}}.}
+\item{conceptual_analysis}{A list with sub‐lists \code{removed} and \code{kept} containing AI‐generated texts, or \code{NULL} if \code{analyze_removed = FALSE} or no items were removed.}
+\item{factor_names}{Named character vector or list of AI‐proposed factor names, or \code{NULL} if no \code{api_key} was provided.}
 }
 \examples{
 \dontrun{
-# Example definitions for conceptual analysis
-defs <- list(
-  Q1 = "I feel confident using advanced statistical methods.",
-  Q2 = "I understand the difference between EFA and CFA.",
-  Q3 = "I can interpret fit indices like RMSEA and CFI."
-)
+  # Construct definition
+  construct_def <- "Las consecuencias positivas de terminar una carrera de grado, tales como prestigio, compensación monetaria y mejora en la autoevaluación."
 
-# Run optimized EFA with AI‐assisted analysis
-res_efa <- optimal_efa_with_ai(
-  data                 = my_data_frame,
-  n_factors            = 1,
-  name_items           = "Q",
-  n_items              = 3,
-  analyze_removed      = TRUE,
-  api_key              = Sys.getenv("OPENAI_API_KEY"),
-  item_definitions     = defs,
-  domain_name          = "Competencia Estadística",
-  scale_title          = "Autoevaluación Estadística",
-  construct_definition = "Perceived ability in statistical methods.",
-  model_name           = "EFA_Q",
-  gpt_model            = "gpt-4",
-  factor_definitions   = list("1" = "Capacidad estadística percibida")
-)
+  # Definiciones de ítems
+  item_defs_efa_ud <- list(
+    EAF1  = "Graduarme de la universidad me ayudará a recibir una buena oferta de trabajo.",
+    EAF2  = "Graduarme de la universidad me ayudará a ganar un buen sueldo.",
+    EAF3  = "Graduarme de la universidad me ayudará a obtener el respeto de los demás.",
+    EAF4  = "Graduarme de la universidad me ayudará a hacer un trabajo en el que encuentre satisfacción personal.",
+    EAF5  = "Graduarme de la universidad me ayudará a aumentar mi autoestima.",
+    EAF6  = "Graduarme de la universidad me ayudará a tener una carrera que sea valorada por mi familia.",
+    EAF7  = "Graduarme de la universidad me ayudará a hacer un trabajo que pueda \"marcar la diferencia\" en la vida de las personas.",
+    EAF8  = "Graduarme de la universidad me ayudará a trabajar en un campo con grandes oportunidades laborales.",
+    EAF9  = "Graduarme de la universidad me ayudará a hacer un trabajo apasionante.",
+    EAF10 = "Graduarme de la universidad me ayudará a tener el tipo y la cantidad de contacto social necesario con otras personas."
+  )
 
-# Inspect final structure
-print(res_efa$final_structure)
+  # Ejecutar EFA optimizada con asistencia de IA
+  res_efa <- optimal_efa_with_ai(
+    data                 = df_EFA %>% dplyr::select(EAF1:EAF10),
+    items                = names(df_EFA %>% dplyr::select(EAF1:EAF10)),
+    name_items           = "EAF",
+    n_factors            = 2,
+    analyze_removed      = TRUE,
+    api_key              = Sys.getenv("OPENAI_API_KEY"),
+    item_definitions     = item_defs_efa_ud,
+    construct_definition = construct_def,
+    scale_title          = "EAF scale",
+    model_name           = "EFA Unidimensional"
+  )
 
-# View removal log
-print(res_efa$steps_log)
-
-# Summary of results
-# 1. Mostrar la estructura factorial final
-cat("===== Estructura factorial final =====\n")
-print(resultado_efa$final_structure)
-
-# 2. Mostrar el log de pasos
-cat("\n===== Log de pasos =====\n")
-print(resultado_efa$steps_log)
-
-# 3. Resumen de ítems eliminados, RMSEA final e iteraciones
-cat("\n===== Resumen =====\n")
-cat("Ítems eliminados: ",
-    if (length(resultado_efa$removed_items) > 0) {
-      paste(resultado_efa$removed_items, collapse = ", ")
-    } else {
-      "Ninguno"
-    },
-    "\n", sep = "")
-
-
-cat("RMSEA final: ", resultado_efa$final_rmsea, "\n", sep = "")
-cat("Iteraciones realizadas: ", resultado_efa$iterations, "\n", sep = "")
-
-# 4. Análisis conceptual con IA (si está disponible)
-# Función para imprimir de forma ordenada el análisis conceptual
-print_conceptual_analysis(resultado_efa)
+  # Ver resultados
+  print(res_efa$final_structure)
+  print(res_efa$steps_log)
+  print(res_efa$conceptual_analysis)
+  print(res_efa$factor_names)
 }
-}
-\author{
-Dr. José Ventura‐León
 }
