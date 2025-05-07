@@ -1,27 +1,27 @@
 optimal_efa_with_ai <- function(data,
-                                 items = NULL,
-                                 n_factors = 5,
-                                 n_items = NULL,
-                                 name_items = "PPTQ",
-                                 estimator = "WLSMV",
-                                 rotation = "oblimin",
-                                 threshold_rmsea = 0.08,
-                                 threshold_loading = 0.30,
-                                 min_items_per_factor = 2,
-                                 apply_threshold = TRUE,
-                                 max_steps = NULL,
-                                 verbose = TRUE,
-                                 exclude_items = character(0),
-                                 analyze_removed = FALSE,
-                                 api_key = NULL,
-                                 item_definitions = NULL,
-                                 domain_name = "Dominio por Defecto",
-                                 scale_title = "Título de la Escala por Defecto",
-                                 construct_definition = "",
-                                 model_name = "Modelo EFA",
-                                 gpt_model = "gpt-3.5-turbo",
-                                 generate_factor_names = FALSE,
-                                 ...) {
+                                items = NULL,
+                                n_factors = 5,
+                                n_items = NULL,
+                                name_items = "PPTQ",
+                                estimator = "WLSMV",
+                                rotation = "oblimin",
+                                threshold_rmsea = 0.08,
+                                threshold_loading = 0.30,
+                                min_items_per_factor = 2,
+                                apply_threshold = TRUE,
+                                max_steps = NULL,
+                                verbose = TRUE,
+                                exclude_items = character(0),
+                                analyze_removed = FALSE,
+                                api_key = NULL,
+                                item_definitions = NULL,
+                                domain_name = "Dominio por Defecto",
+                                scale_title = "Título de la Escala por Defecto",
+                                construct_definition = "",
+                                model_name = "Modelo EFA",
+                                gpt_model = "gpt-3.5-turbo",
+                                generate_factor_names = FALSE,
+                                ...) {
   # 1. Instalar/cargar PsyMetricTools si falta
   if (!requireNamespace("PsyMetricTools", quietly = TRUE)) {
     if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
@@ -235,7 +235,7 @@ optimal_efa_with_ai <- function(data,
     paste0("Factor ", names(fac_lists), " contiene {", fac_lists, "}", collapse = "; ")
   )
 
-  # 8. Análisis conceptual con IA (exclusión y conservación)
+  # 8. Análisis conceptual con IA (eliminados y conservados)
   conceptual_analysis <- NULL
   if (analyze_removed && length(items) > 0 && !is.null(api_key) && !is.null(item_definitions)) {
     if (verbose) cat("Generando justificaciones con IA...\n")
@@ -252,7 +252,7 @@ optimal_efa_with_ai <- function(data,
       analysis_kept[[it]] <-
         analyze_item_with_gpt(it, item_definitions[[it]], structure_desc, action = "keep")
     }
-    conceptual_analysis <- list(excluded = analysis_removed, conserved = analysis_kept)
+    conceptual_analysis <- list(removed = analysis_removed, kept = analysis_kept)
   }
 
   # 9. Generar nombres tentativos de factores con IA (opcional)
