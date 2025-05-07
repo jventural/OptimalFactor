@@ -1,4 +1,4 @@
-optimal_efa_with_ai2 <- function(data,
+optimal_efa_with_ai <- function(data,
                                  items = NULL,
                                  n_factors = 5,
                                  n_items = NULL,
