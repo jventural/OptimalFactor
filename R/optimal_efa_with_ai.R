@@ -1,4 +1,4 @@
-optimal_efa_with_ai <- function(data,
+optimal_efa_with_ai2 <- function(data,
                                  items = NULL,
                                  n_factors = 5,
                                  n_items = NULL,
@@ -20,6 +20,7 @@ optimal_efa_with_ai <- function(data,
                                  construct_definition = "",
                                  model_name = "Modelo EFA",
                                  gpt_model = "gpt-3.5-turbo",
+                                 generate_factor_names = FALSE,
                                  ...) {
   # 1. Instalar/cargar PsyMetricTools si falta
   if (!requireNamespace("PsyMetricTools", quietly = TRUE)) {
@@ -56,13 +57,19 @@ optimal_efa_with_ai <- function(data,
     resp
   }
 
-  analyze_item_with_gpt <- function(item, definition, context) {
-    if (is.null(definition) || definition == "") return("No se proporcionó definición.")
+  analyze_item_with_gpt <- function(item, definition, context, action = c("exclude","keep")) {
+    act <- match.arg(action)
+    if (is.null(definition) || definition == "") {
+      return(if (act == "exclude") "No se proporcionó definición para exclusión."
+             else "No se proporcionó definición para conservación.")
+    }
+    verb <- if (act == "exclude") "exclusión" else "conservación"
     prompt <- paste0(
-      "Eres un experto en psicometría. Justifica concisamente la exclusión del ítem '",
-      item, "' (\"", definition, "\"). ",
-      "Constructo: '", construct_definition, "'. Escala: '", scale_title, "'. ",
-      context, " Modelo EFA: '", model_name, "'."
+      "Eres un experto en psicometría. Justifica concisamente la ",
+      verb, " del ítem '", item, "' (\"", definition, "\") ",
+      "en el contexto del constructo '", construct_definition,
+      "' y la escala '", scale_title, "'. ", context,
+      " (Modelo EFA: '", model_name, "')."
     )
     resp <- call_openai_api(prompt)
     if (is.null(resp)) return("Error en GPT.")
@@ -228,30 +235,29 @@ optimal_efa_with_ai <- function(data,
     paste0("Factor ", names(fac_lists), " contiene {", fac_lists, "}", collapse = "; ")
   )
 
-  # 8. Análisis conceptual con IA (removidos y conservados)
+  # 8. Análisis conceptual con IA (exclusión y conservación)
   conceptual_analysis <- NULL
-  if (analyze_removed && length(removed_items) > 0 && !is.null(api_key) && !is.null(item_definitions)) {
-    if (verbose) cat("Generando explicaciones de eliminación y conservación con IA...\n")
+  if (analyze_removed && length(items) > 0 && !is.null(api_key) && !is.null(item_definitions)) {
+    if (verbose) cat("Generando justificaciones con IA...\n")
     analysis_removed <- setNames(vector("list", length(removed_items)), removed_items)
     kept <- setdiff(items, removed_items)
     analysis_kept <- setNames(vector("list", length(kept)), kept)
     for (it in removed_items) {
-      if (verbose) cat(" Analizando eliminado:", it, "...\n")
-      analysis_removed[[it]] <- analyze_item_with_gpt(it, item_definitions[[it]], structure_desc)
+      if (verbose) cat("Analizando eliminado:", it, "...\n")
+      analysis_removed[[it]] <-
+        analyze_item_with_gpt(it, item_definitions[[it]], structure_desc, action = "exclude")
     }
     for (it in kept) {
-      if (verbose) cat(" Analizando conservado:", it, "...\n")
-      analysis_kept[[it]] <- analyze_item_with_gpt(
-        item = it, definition = item_definitions[[it]],
-        context = paste0(structure_desc, " Conservación del ítem.'")
-      )
+      if (verbose) cat("Analizando conservado:", it, "...\n")
+      analysis_kept[[it]] <-
+        analyze_item_with_gpt(it, item_definitions[[it]], structure_desc, action = "keep")
     }
-    conceptual_analysis <- list(removed = analysis_removed, kept = analysis_kept)
+    conceptual_analysis <- list(excluded = analysis_removed, conserved = analysis_kept)
   }
 
-  # 9. Generar nombres tentativos de factores con IA
+  # 9. Generar nombres tentativos de factores con IA (opcional)
   factor_names <- NULL
-  if (!is.null(api_key)) {
+  if (generate_factor_names && !is.null(api_key)) {
     ctx_names <- paste(
       sapply(names(fac_lists), function(f) {
         items_in <- unlist(strsplit(fac_lists[[f]], ",\\s*"))

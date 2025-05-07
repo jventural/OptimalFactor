@@ -7,22 +7,22 @@ print_conceptual_analysis <- function(resultado) {
   }
 
   # Ítems eliminados
-  if (!is.null(ca$removed) && length(ca$removed) > 0) {
+  if (!is.null(ca$excluded) && length(ca$excluded) > 0) {
     cat("\n===== Análisis conceptual de ítems eliminados =====\n")
-    for (it in names(ca$removed)) {
+    for (it in names(ca$excluded)) {
       cat(paste0("\n", it, ":\n"))
-      cat(ca$removed[[it]], "\n")
+      cat(ca$excluded[[it]], "\n")
     }
   } else {
     cat("\nNo hay análisis conceptual de ítems eliminados.\n")
   }
 
   # Ítems conservados
-  if (!is.null(ca$kept) && length(ca$kept) > 0) {
+  if (!is.null(ca$conserved) && length(ca$conserved) > 0) {
     cat("\n===== Análisis conceptual de ítems conservados =====\n")
-    for (it in names(ca$kept)) {
+    for (it in names(ca$conserved)) {
       cat(paste0("\n", it, ":\n"))
-      cat(ca$kept[[it]], "\n")
+      cat(ca$conserved[[it]], "\n")
     }
   } else {
     cat("\nNo hay análisis conceptual de ítems conservados.\n")
