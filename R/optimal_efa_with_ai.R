@@ -155,10 +155,15 @@ optimal_efa_with_ai <- function(data,
     ev <- evaluate_structure(mod$result_df)
     if (verbose) cat("Ítems/factor:", paste(ev$counts, collapse = " | "), "\n")
 
-    if (!is.na(curr_rmsea) && curr_rmsea <= threshold_rmsea && ev$structure_ok) {
-      if (verbose) cat("Criterios cumplidos; deteniendo refinamiento.\n")
+    # reevaluamos con detalle de cross‐loadings
+    ev <- evaluate_structure(mod$result_df)
+    if (!is.na(curr_rmsea) &&
+        curr_rmsea <= threshold_rmsea &&
+        all(ev$ok)) {
+      if (verbose) cat("RMSEA bajo umbral y sin ítems cross‐loading; refinamiento finalizado.\n")
       break
     }
+
 
     decision <- if (!is.na(curr_rmsea) && curr_rmsea > threshold_rmsea) "rmsea" else "structure"
 
@@ -269,7 +274,8 @@ optimal_efa_with_ai <- function(data,
       "Eres un experto en psicometría. Basándote en esta estructura EFA, ",
       "propón nombres breves (1-2 palabras) para cada factor en formato R, ",
       "por ejemplo list(f1='Nombre1',f2='Nombre2',...). ",
-      "Los ítems y sus definiciones por factor son: ", ctx_names, "."
+      "Los ítems y sus definiciones por factor son: ", ctx_names, ".",
+      "Además, considera el dominio '", domain_name, "'."
     )
     resp_n <- call_openai_api(prompt_names)
     cont_n <- httr::content(resp_n)$choices[[1]]$message$content
