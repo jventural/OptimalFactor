@@ -22,7 +22,7 @@ Below is an example of how to use the OptimalFactor library to improve your EFA 
 GPL-3
 
 # Citation
-Ventura-León, J. (2024). _OptimalFactor_ [Software]. GitHub. https://github.com/jventuraleon/OptimalFactor
+Ventura-León, J. (2025). _OptimalFactor_ [Software]. GitHub. https://github.com/jventuraleon/OptimalFactor
 
 # Author
 José Ventura-León jventuraleon@gmail.com
