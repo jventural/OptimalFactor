@@ -79,7 +79,7 @@ efa_optimizer <- function(data,
   if (use_ai_analysis && !requireNamespace("jsonlite", quietly = TRUE)) install.packages("jsonlite")
 
   # ────────────────────────────────────────────────────────────────────────────
-  # SECCIÓN MEJORADA DE ANÁLISIS CON GPT
+  # SECCIÓN MEJORADA DE ANÁLISIS CON GPT (con razón y RMSEA explícitos)
   # ────────────────────────────────────────────────────────────────────────────
   analyze_item_with_gpt_improved <- function(item, definition, context,
                                              item_stats = NULL,
@@ -104,6 +104,11 @@ efa_optimizer <- function(data,
                          "150-180")
 
     `%||%` <- function(a, b) if (is.null(a)) b else a
+    # Extrae razón y RMSEA del item_stats (llenado más abajo con steps_log)
+    r_reason <- item_stats$reason %||% "No especificada"
+    r_rmsea  <- item_stats$rmsea_at_removal %||% NA_real_
+    r_rmsea_txt <- if (is.na(r_rmsea)) "No disponible" else sprintf("%.3f", r_rmsea)
+
     technical_info <- ""
     if (!is.null(item_stats)) {
       if (tolower(ai_config$language) %in% c("spanish","español")) {
@@ -111,49 +116,62 @@ efa_optimizer <- function(data,
           "Información técnica: Carga factorial principal=%.3f, Comunalidad (h²)=%.3f, Razón de eliminación=%s, RMSEA en el momento=%.3f.",
           item_stats$loading %||% 0,
           item_stats$h2 %||% 0,
-          item_stats$reason %||% "No especificada",
-          item_stats$rmsea_at_removal %||% 0
+          r_reason,
+          ifelse(is.na(r_rmsea), 0, r_rmsea)
         )
       } else {
         technical_info <- sprintf(
           "Technical information: Primary factor loading=%.3f, Communality (h²)=%.3f, Removal reason=%s, RMSEA at removal=%.3f.",
           item_stats$loading %||% 0,
           item_stats$h2 %||% 0,
-          item_stats$reason %||% "Not specified",
-          item_stats$rmsea_at_removal %||% 0
+          r_reason,
+          ifelse(is.na(r_rmsea), 0, r_rmsea)
         )
       }
     }
 
+    # Construye el prompt incluyendo explícitamente razón y RMSEA dentro de PROBLEMAS PSICOMÉTRICOS
     if (tolower(ai_config$language) %in% c("spanish","español")) {
       if (act == "exclude") {
         prompt <- sprintf(
           "Como experto en psicometría, proporciona un análisis detallado de por qué el ítem '%s' (\"%s\") fue correctamente eliminado de una escala que mide '%s'. %s
 
-          Estructura tu análisis en tres aspectos integrados:
-          1) Problemas psicométricos identificados (cargas factoriales, comunalidades, cargas cruzadas)
-          2) Desalineación conceptual con el constructo central
-          3) Impacto positivo de su eliminación en la validez y coherencia de la escala
+Contexto breve del modelo:
+%s
 
-          Proporciona un análisis técnico pero fluido, conectando los tres aspectos de forma narrativa (%s palabras).
+Estructura tu análisis en tres aspectos integrados:
+1) Problemas psicométricos identificados: comienza explícitamente indicando la Razón registrada por el algoritmo: '%s' y el RMSEA al momento de la eliminación: %s; enlaza esto con la evidencia (cargas factoriales, comunalidades, cargas cruzadas, posibles dependencias locales) y explica cómo estos factores justifican la salida del ítem.
+2) Desalineación conceptual con el constructo central (si aplica) o redundancia con otros ítems.
+3) Impacto positivo de su eliminación en la validez y coherencia de la escala (mejoras en ajuste, claridad factorial, parsimonia).
 
-          IMPORTANTE: NO uses formato markdown (sin asteriscos, sin negritas). Escribe en texto plano continuo.",
-          item, definition, ai_config$construct_definition, technical_info, word_limit
+Proporciona un análisis técnico pero fluido, conectando los tres aspectos de forma narrativa (%s palabras).
+
+IMPORTANTE: NO uses formato markdown (sin asteriscos, sin negritas). Escribe en texto plano continuo.",
+          item, definition, ai_config$construct_definition, technical_info,
+          context %||% "",
+          r_reason, r_rmsea_txt,
+          word_limit
         )
         system_msg <- "Eres un experto en psicometría y desarrollo de escalas. Proporciona análisis técnicos detallados en español, usando terminología psicométrica precisa. NO uses formato markdown, solo texto plano."
       } else {
         prompt <- sprintf(
           "Como experto en psicometría, justifica detalladamente por qué el ítem '%s' (\"%s\") debe mantenerse en una escala que mide '%s'. %s
 
-          Estructura tu análisis en tres aspectos integrados:
-          1) Fortalezas psicométricas del ítem (cargas, comunalidades, especificidad factorial)
-          2) Alineación conceptual con el constructo central
-          3) Contribución única a la validez de la escala
+Contexto breve del modelo:
+%s
 
-          Proporciona un análisis técnico pero fluido (%s palabras).
+Estructura tu análisis en tres aspectos integrados:
+1) Fortalezas psicométricas del ítem (cargas, comunalidades, especificidad factorial). Si corresponde, incluye el registro del algoritmo: Razón='%s'; RMSEA en ese momento: %s.
+2) Alineación conceptual con el constructo central.
+3) Contribución única a la validez de la escala (discriminación, cobertura de contenido, no redundancia).
 
-          IMPORTANTE: NO uses formato markdown (sin asteriscos, sin negritas). Escribe en texto plano continuo.",
-          item, definition, ai_config$construct_definition, technical_info, word_limit
+Proporciona un análisis técnico pero fluido (%s palabras).
+
+IMPORTANTE: NO uses formato markdown (sin asteriscos, sin negritas). Escribe en texto plano continuo.",
+          item, definition, ai_config$construct_definition, technical_info,
+          context %||% "",
+          r_reason, r_rmsea_txt,
+          word_limit
         )
         system_msg <- "Eres un experto en psicometría y desarrollo de escalas. Proporciona análisis técnicos detallados en español. NO uses formato markdown, solo texto plano."
       }
@@ -162,30 +180,42 @@ efa_optimizer <- function(data,
         prompt <- sprintf(
           "As a psychometrics expert, provide a detailed analysis of why item '%s' (\"%s\") was correctly removed from a scale measuring '%s'. %s
 
-          Structure your analysis addressing three integrated aspects:
-          1) Psychometric problems identified (factor loadings, communalities, cross-loadings)
-          2) Conceptual misalignment with the core construct
-          3) Positive impact of its removal on scale validity and coherence
+Brief model context:
+%s
 
-          Provide a technical yet flowing analysis, connecting all three aspects narratively (%s words).
+Structure your analysis in three integrated aspects:
+1) Psychometric problems identified: explicitly start by stating the algorithm's recorded Reason: '%s' and the RMSEA at removal: %s; then tie this to evidence (factor loadings, communalities, cross-loadings, potential local dependence) explaining how these justify removal.
+2) Conceptual misalignment with the construct (if applicable) or redundancy with other items.
+3) Positive impact of removal on scale validity and coherence (fit improvement, factorial clarity, parsimony).
 
-          IMPORTANT: DO NOT use markdown formatting (no asterisks, no bold). Write in plain continuous text.",
-          item, definition, ai_config$construct_definition, technical_info, word_limit
+Provide a technical yet flowing analysis, connecting all three aspects narratively (%s words).
+
+IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
+          item, definition, ai_config$construct_definition, technical_info,
+          context %||% "",
+          r_reason, r_rmsea_txt,
+          word_limit
         )
         system_msg <- "You are an expert in psychometrics and scale development. Provide detailed technical analyses using precise psychometric terminology. DO NOT use markdown formatting, only plain text."
       } else {
         prompt <- sprintf(
-          "As a psychometrics expert, provide detailed justification for why item '%s' (\"%s\") should be retained in a scale measuring '%s'. %s
+          "As a psychometrics expert, provide a detailed justification for why item '%s' (\"%s\") should be retained in a scale measuring '%s'. %s
 
-          Structure your analysis addressing three integrated aspects:
-          1) Psychometric strengths of the item (loadings, communalities, factorial specificity)
-          2) Conceptual alignment with the core construct
-          3) Unique contribution to scale validity
+Brief model context:
+%s
 
-          Provide a technical yet flowing analysis (%s words).
+Structure your analysis in three integrated aspects:
+1) Psychometric strengths (loadings, communalities, factorial specificity). If relevant, include the algorithm's record: Reason='%s'; RMSEA at that moment: %s.
+2) Conceptual alignment with the core construct.
+3) Unique contribution to scale validity (discrimination, content coverage, non-redundancy).
 
-          IMPORTANT: DO NOT use markdown formatting (no asterisks, no bold). Write in plain continuous text.",
-          item, definition, ai_config$construct_definition, technical_info, word_limit
+Provide a technical yet flowing analysis (%s words).
+
+IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
+          item, definition, ai_config$construct_definition, technical_info,
+          context %||% "",
+          r_reason, r_rmsea_txt,
+          word_limit
         )
         system_msg <- "You are an expert in psychometrics and scale development. Provide detailed technical analyses. DO NOT use markdown formatting, only plain text."
       }
@@ -230,7 +260,7 @@ efa_optimizer <- function(data,
               msg <- if (tolower(ai_config$language) %in% c("spanish","español")) {
                 sprintf("   Servidor ocupado (HTTP %d). Reintentando en %d segundos...\n", status, wait_time)
               } else {
-                sprintf("   Server busy (HTTP %d). Retrying in %d seconds...\n", status, wait_time)
+                sprintf("   Server busy (HTTP %d). Retrying in %d segundos...\n", status, wait_time)
               }
               cat(msg)
             }
@@ -326,7 +356,7 @@ efa_optimizer <- function(data,
         ok[i] <- FALSE; reasons[i] <- "No loading";    scores[i] <- max(li)
       } else {
         s <- sort(li, TRUE)
-        ok[i] <- FALSE; reasons[i] <- "Cross-loading"; scores[i] <- s[1] - s[2]  # ← menor = peor ambigüedad
+        ok[i] <- FALSE; reasons[i] <- "Cross-loading"; scores[i] <- s[1] - s[2]  # menor = peor ambigüedad
       }
     }
 
@@ -420,12 +450,9 @@ efa_optimizer <- function(data,
       next
     }
 
-    # ────────────────────────────────────────────────────────────────────────
-    # NUEVO: Priority 3 — ELIMINAR PRIMERO CROSS-LOADINGS (más ambiguo primero)
-    # ────────────────────────────────────────────────────────────────────────
+    # Priority 3: CROSS-LOADING primero (más ambiguo primero)
     cross_idx <- which(ev$reasons == "Cross-loading")
     if (length(cross_idx) > 0) {
-      # Ordenar por ambigüedad ascendente (menor diferencia entre 1ª y 2ª carga)
       order_idx <- cross_idx[order(ev$scores[cross_idx], decreasing = FALSE)]
       selected <- NA_character_
       for (i in order_idx) {
@@ -464,8 +491,7 @@ efa_optimizer <- function(data,
       break
     }
 
-    # Decisión: si quedan problemas estructurales (pero no cross-loading), límpialos;
-    # si la estructura ya está ok y RMSEA sigue alto, optimiza por RMSEA.
+    # Decisión
     if (!all(ev$ok)) {
       decision <- "structure"
     } else if (!is.na(curr_rmsea) && curr_rmsea > thresholds$rmsea) {
@@ -475,7 +501,7 @@ efa_optimizer <- function(data,
     }
 
     if (decision == "rmsea") {
-      # RMSEA optimization (exige estructura OK en el modelo resultante)
+      # RMSEA optimization exigiendo estructura OK
       cand_stats <- lapply(candidates, function(it) {
         m2 <- tryCatch(PsyMetricTools::EFA_modern(
           data = data, n_factors = n_factors, n_items = n_items, name_items = name_items,
@@ -507,7 +533,6 @@ efa_optimizer <- function(data,
           next
         }
       }
-      # si no hay mejora de RMSEA que respete estructura, pasar a estructura
       decision <- "structure"
     }
 
@@ -521,12 +546,10 @@ efa_optimizer <- function(data,
     # Remover peor problema estructural restante (sin cross-loading)
     prob_idx <- which(!ev$ok & ev$reasons != "Cross-loading")
     if (length(prob_idx) == 0) {
-      # por si quedó alguno etiquetado de otra forma
       prob_idx <- which(!ev$ok)
     }
     worst    <- ev$items[ prob_idx[ which.min(ev$scores[prob_idx]) ] ]
     reason   <- ev$reasons[ which(ev$items == worst) ]
-    # respetar min_items_per_factor al remover
     p_worst  <- ev$primary[ which(ev$items == worst) ]
     counts2  <- ev$counts; if (!is.na(p_worst)) counts2[p_worst] <- counts2[p_worst] - 1
     if (all(counts2 >= thresholds$min_items_per_factor)) {
@@ -566,6 +589,9 @@ efa_optimizer <- function(data,
     paste0("Factor ", names(fac_lists), " contains {", fac_lists, "}", collapse = "; ")
   )
 
+  # ────────────────────────────────────────────────────────────────────────────
+  # Preparar estadísticas y CONTEXTO (timeline) para IA
+  # ────────────────────────────────────────────────────────────────────────────
   # Recopilar estadísticas de ítems eliminados desde steps_log y last_ev
   for (removed in removed_items) {
     idx <- which(steps_log$removed_item == removed)
@@ -588,7 +614,21 @@ efa_optimizer <- function(data,
     }
   }
 
-  # AI conceptual analysis (opcional)
+  # Construir DETALLE DE ELIMINACIÓN DE ÍTEMS (timeline) como texto
+  timeline_str <- NULL
+  if (nrow(steps_log) > 0) {
+    lines <- sprintf("%3d %-12s %-24s %.3f",
+                     steps_log$step,
+                     steps_log$removed_item,
+                     steps_log$reason,
+                     steps_log$rmsea)
+    header <- "DETALLE DE ELIMINACIÓN DE ÍTEMS\n step removed_item  reason                     rmsea"
+    timeline_str <- paste(c(header, lines), collapse = "\n")
+  }
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # SECCIÓN DE ANÁLISIS CONCEPTUAL CON IA (usa razón + RMSEA + timeline)
+  # ────────────────────────────────────────────────────────────────────────────
   conceptual_analysis <- NULL
   if (use_ai_analysis && length(items) > 0 && !is.null(ai_config$api_key) &&
       !is.null(ai_config$item_definitions)) {
@@ -610,6 +650,10 @@ efa_optimizer <- function(data,
     analysis_removed <- NULL
     analysis_kept <- NULL
 
+    # Contexto combinado: estructura final + timeline
+    combined_context <- paste0(structure_desc, if (!is.null(timeline_str)) paste0("\n\n", timeline_str) else "")
+
+    # Analizar ítems removidos
     if (length(removed_items) > 0) {
       analysis_removed <- setNames(vector("list", length(removed_items)), removed_items)
       for (i in seq_along(removed_items)) {
@@ -624,7 +668,7 @@ efa_optimizer <- function(data,
           analysis_removed[[it]] <- analyze_item_with_gpt_improved(
             it,
             ai_config$item_definitions[[it]],
-            structure_desc,
+            combined_context,
             item_stats = item_removal_stats[[it]],
             action = "exclude"
           )
@@ -640,6 +684,7 @@ efa_optimizer <- function(data,
       }
     }
 
+    # Analizar ítems conservados si only_removed = FALSE
     if (!ai_config$only_removed) {
       kept <- setdiff(items, removed_items)
       if (length(kept) > 0) {
@@ -671,7 +716,7 @@ efa_optimizer <- function(data,
             analysis_kept[[it]] <- analyze_item_with_gpt_improved(
               it,
               ai_config$item_definitions[[it]],
-              structure_desc,
+              combined_context,
               item_stats = kept_stats,
               action = "keep"
             )
@@ -691,7 +736,8 @@ efa_optimizer <- function(data,
     conceptual_analysis <- list(
       removed = analysis_removed,
       kept = analysis_kept,
-      item_stats = item_removal_stats
+      item_stats = item_removal_stats,
+      timeline = timeline_str
     )
 
     if (verbose) {
