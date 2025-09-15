@@ -63,7 +63,7 @@ efa_optimizer <- function(data,
         "| RMSEA target: ≤", thresholds$rmsea, "\n")
   }
 
-  # AI configuration (only if used) - ACTUALIZADO con language y analysis_detail
+  # AI configuration
   default_ai <- list(
     api_key = NULL, generate_names = FALSE, only_removed = TRUE,
     item_definitions = NULL, domain_name = "Default Domain",
@@ -71,7 +71,7 @@ efa_optimizer <- function(data,
     construct_definition = "", model_name = "EFA Model",
     gpt_model = "gpt-3.5-turbo",
     language = "english",
-    analysis_detail = "detailed"  # NUEVO
+    analysis_detail = "detailed"
   )
   ai_config <- modifyList(default_ai, ai_config)
 
@@ -79,12 +79,10 @@ efa_optimizer <- function(data,
   if (use_ai_analysis && !requireNamespace("jsonlite", quietly = TRUE)) install.packages("jsonlite")
 
   # ────────────────────────────────────────────────────────────────────────────
-  # SECCIÓN MEJORADA DE ANÁLISIS CON GPT - VERSIÓN ENRIQUECIDA
+  # SECCIÓN MEJORADA DE ANÁLISIS CON GPT
   # ────────────────────────────────────────────────────────────────────────────
-
-  # Función mejorada para análisis con GPT con información técnica y reintentos
   analyze_item_with_gpt_improved <- function(item, definition, context,
-                                             item_stats = NULL,  # NUEVO: estadísticas del ítem
+                                             item_stats = NULL,
                                              action = c("exclude","keep")) {
     if (is.null(ai_config$api_key)) return("AI not configured")
     act <- match.arg(action)
@@ -94,23 +92,21 @@ efa_optimizer <- function(data,
              else "No definition provided for retention.")
     }
 
-    # Determinar límites según nivel de detalle - AUMENTADOS para evitar truncamiento
     max_tokens_config <- switch(ai_config$analysis_detail,
-                                "brief" = 200,      # Aumentado de 150
-                                "standard" = 400,   # Aumentado de 250
-                                "detailed" = 600,   # Aumentado de 350
-                                400)  # default aumentado
-
+                                "brief" = 200,
+                                "standard" = 400,
+                                "detailed" = 600,
+                                400)
     word_limit <- switch(ai_config$analysis_detail,
                          "brief" = "80-100",
-                         "standard" = "150-180",    # Ajustado
-                         "detailed" = "250-300",    # Aumentado
-                         "150-180")  # default
+                         "standard" = "150-180",
+                         "detailed" = "250-300",
+                         "150-180")
 
-    # Construir información técnica si está disponible
+    `%||%` <- function(a, b) if (is.null(a)) b else a
     technical_info <- ""
     if (!is.null(item_stats)) {
-      if (tolower(ai_config$language) == "spanish" || tolower(ai_config$language) == "español") {
+      if (tolower(ai_config$language) %in% c("spanish","español")) {
         technical_info <- sprintf(
           "Información técnica: Carga factorial principal=%.3f, Comunalidad (h²)=%.3f, Razón de eliminación=%s, RMSEA en el momento=%.3f.",
           item_stats$loading %||% 0,
@@ -129,8 +125,7 @@ efa_optimizer <- function(data,
       }
     }
 
-    # Configurar prompt según idioma con estructura mejorada
-    if (tolower(ai_config$language) == "spanish" || tolower(ai_config$language) == "español") {
+    if (tolower(ai_config$language) %in% c("spanish","español")) {
       if (act == "exclude") {
         prompt <- sprintf(
           "Como experto en psicometría, proporciona un análisis detallado de por qué el ítem '%s' (\"%s\") fue correctamente eliminado de una escala que mide '%s'. %s
@@ -196,7 +191,6 @@ efa_optimizer <- function(data,
       }
     }
 
-    # MEJORADO: Intentar hasta 3 veces con manejo específico de errores 503
     max_attempts <- 3
     for (attempt in 1:max_attempts) {
       resp <- tryCatch({
@@ -206,7 +200,7 @@ efa_optimizer <- function(data,
             Authorization = paste("Bearer", ai_config$api_key),
             `Content-Type` = "application/json"
           ),
-          httr::timeout(60),  # Timeout aumentado
+          httr::timeout(60),
           body = jsonlite::toJSON(list(
             model = ai_config$gpt_model,
             messages = list(
@@ -221,23 +215,19 @@ efa_optimizer <- function(data,
         return(NULL)
       })
 
-      # Procesar respuesta
       if (!is.null(resp)) {
         status <- httr::status_code(resp)
-
         if (status == 200) {
-          # Éxito
           content <- httr::content(resp)
           return(tryCatch(
             content$choices[[1]]$message$content,
             error = function(e) "Error extracting GPT response."
           ))
-        } else if (status == 503 || status == 502 || status == 504) {
-          # Errores de servidor - reintentar
+        } else if (status %in% c(502,503,504)) {
           if (attempt < max_attempts) {
-            wait_time <- 2^attempt  # Espera exponencial: 2, 4, 8 segundos
+            wait_time <- 2^attempt
             if (verbose) {
-              msg <- if (tolower(ai_config$language) == "spanish" || tolower(ai_config$language) == "español") {
+              msg <- if (tolower(ai_config$language) %in% c("spanish","español")) {
                 sprintf("   Servidor ocupado (HTTP %d). Reintentando en %d segundos...\n", status, wait_time)
               } else {
                 sprintf("   Server busy (HTTP %d). Retrying in %d seconds...\n", status, wait_time)
@@ -246,15 +236,13 @@ efa_optimizer <- function(data,
             }
             Sys.sleep(wait_time)
           } else {
-            # Último intento fallido
             return(sprintf("Server error after %d attempts (HTTP %d)", max_attempts, status))
           }
         } else if (status == 429) {
-          # Rate limit - esperar más tiempo
           if (attempt < max_attempts) {
-            wait_time <- 10 * attempt  # 10, 20, 30 segundos
+            wait_time <- 10 * attempt
             if (verbose) {
-              msg <- if (tolower(ai_config$language) == "spanish" || tolower(ai_config$language) == "español") {
+              msg <- if (tolower(ai_config$language) %in% c("spanish","español")) {
                 sprintf("   Límite de velocidad alcanzado. Esperando %d segundos...\n", wait_time)
               } else {
                 sprintf("   Rate limit reached. Waiting %d seconds...\n", wait_time)
@@ -266,15 +254,13 @@ efa_optimizer <- function(data,
             return("Rate limit exceeded after multiple attempts")
           }
         } else {
-          # Otros errores - no reintentar
           return(paste("GPT error - HTTP", status))
         }
       } else {
-        # Error de conexión - reintentar
         if (attempt < max_attempts) {
           wait_time <- 2^attempt
           if (verbose) {
-            msg <- if (tolower(ai_config$language) == "spanish" || tolower(ai_config$language) == "español") {
+            msg <- if (tolower(ai_config$language) %in% c("spanish","español")) {
               sprintf("   Error de conexión. Reintentando en %d segundos...\n", wait_time)
             } else {
               sprintf("   Connection error. Retrying in %d seconds...\n", wait_time)
@@ -287,7 +273,6 @@ efa_optimizer <- function(data,
         }
       }
     }
-
     return("Analysis failed after all attempts")
   }
 
@@ -335,12 +320,16 @@ efa_optimizer <- function(data,
       }
       li  <- abs(L[i, ])
       cnt <- sum(li > thresholds$loading, na.rm = TRUE)
-      if (cnt == 1) { ok[i] <- TRUE;  reasons[i] <- "OK";            scores[i] <- max(li) }
-      else if (cnt == 0){ ok[i] <- FALSE; reasons[i] <- "No loading"; scores[i] <- max(li) }
-      else { s <- sort(li, TRUE); ok[i] <- FALSE; reasons[i] <- "Cross-loading"; scores[i] <- s[1] - s[2] }
+      if (cnt == 1) {
+        ok[i] <- TRUE;  reasons[i] <- "OK";            scores[i] <- max(li)
+      } else if (cnt == 0){
+        ok[i] <- FALSE; reasons[i] <- "No loading";    scores[i] <- max(li)
+      } else {
+        s <- sort(li, TRUE)
+        ok[i] <- FALSE; reasons[i] <- "Cross-loading"; scores[i] <- s[1] - s[2]  # ← menor = peor ambigüedad
+      }
     }
 
-    # Count items per factor by primary membership (no double counting)
     li_mat  <- abs(L)
     max_abs <- apply(li_mat, 1, max)
     primary <- apply(li_mat, 1, which.max)
@@ -351,7 +340,8 @@ efa_optimizer <- function(data,
 
     list(mat=L, items=its, ok=ok, scores=scores, reasons=reasons,
          counts=counts, structure_ok=structure_ok, h2=h2, psi=psi,
-         heywood=heywood_flag, near_heywood=near_heywood_flag)
+         heywood=heywood_flag, near_heywood=near_heywood_flag,
+         primary=primary)
   }
 
   # ────────────────────────────────────────────────────────────────────────────
@@ -403,7 +393,7 @@ efa_optimizer <- function(data,
       cat("-----------------------------------\n")
     }
 
-    # Priority 1: Remove Heywood cases (most negative ψ)
+    # Priority 1: Heywood
     if (any(ev$heywood)) {
       worst <- ev$items[ which.min(ev$psi) ]
       removed_items <- c(removed_items, worst)
@@ -416,7 +406,7 @@ efa_optimizer <- function(data,
       next
     }
 
-    # Priority 2: Remove Near-Heywood cases (ψ≈0)
+    # Priority 2: Near-Heywood
     if (any(ev$near_heywood)) {
       idx <- which(ev$near_heywood)
       worst <- ev$items[idx[ which.min(ev$psi[idx]) ]]
@@ -430,9 +420,41 @@ efa_optimizer <- function(data,
       next
     }
 
-    min_items_met <- all(ev$counts >= thresholds$min_items_per_factor)
+    # ────────────────────────────────────────────────────────────────────────
+    # NUEVO: Priority 3 — ELIMINAR PRIMERO CROSS-LOADINGS (más ambiguo primero)
+    # ────────────────────────────────────────────────────────────────────────
+    cross_idx <- which(ev$reasons == "Cross-loading")
+    if (length(cross_idx) > 0) {
+      # Ordenar por ambigüedad ascendente (menor diferencia entre 1ª y 2ª carga)
+      order_idx <- cross_idx[order(ev$scores[cross_idx], decreasing = FALSE)]
+      selected <- NA_character_
+      for (i in order_idx) {
+        item <- ev$items[i]
+        p    <- ev$primary[i]
+        counts2 <- ev$counts
+        if (!is.na(p)) counts2[p] <- counts2[p] - 1
+        if (all(counts2 >= thresholds$min_items_per_factor)) {
+          selected <- item
+          break
+        }
+      }
+      if (!is.na(selected)) {
+        removed_items <- c(removed_items, selected)
+        step_counter  <- step_counter + 1
+        steps_log <- rbind(steps_log, data.frame(
+          step = step_counter, removed_item = selected,
+          reason = "Cross-loading (priority)", rmsea = curr_rmsea,
+          stringsAsFactors = FALSE
+        ))
+        if (verbose) cat("Removed", selected, "due to: Cross-loading (priority)\n")
+        next
+      } else {
+        if (verbose) cat("Cross-loading items detected but protected by min_items_per_factor; skipping cross-loading removal this step.\n")
+      }
+    }
 
-    # Check if all criteria are met
+    # Chequeos de finalización
+    min_items_met <- all(ev$counts >= thresholds$min_items_per_factor)
     if (!is.na(curr_rmsea) && curr_rmsea <= thresholds$rmsea && all(ev$ok) && min_items_met) {
       if (verbose) cat("All criteria met (RMSEA, structure and minimum items). Optimization complete.\n")
       break
@@ -442,11 +464,18 @@ efa_optimizer <- function(data,
       break
     }
 
-    # Decide optimization strategy
-    decision <- if (!is.na(curr_rmsea) && curr_rmsea > thresholds$rmsea) "rmsea" else "structure"
+    # Decisión: si quedan problemas estructurales (pero no cross-loading), límpialos;
+    # si la estructura ya está ok y RMSEA sigue alto, optimiza por RMSEA.
+    if (!all(ev$ok)) {
+      decision <- "structure"
+    } else if (!is.na(curr_rmsea) && curr_rmsea > thresholds$rmsea) {
+      decision <- "rmsea"
+    } else {
+      break
+    }
 
-    # RMSEA optimization strategy: test removing each candidate while preserving minimum per factor
     if (decision == "rmsea") {
+      # RMSEA optimization (exige estructura OK en el modelo resultante)
       cand_stats <- lapply(candidates, function(it) {
         m2 <- tryCatch(PsyMetricTools::EFA_modern(
           data = data, n_factors = n_factors, n_items = n_items, name_items = name_items,
@@ -457,9 +486,11 @@ efa_optimizer <- function(data,
         phi2 <- if (!is.null(m2$InterFactor)) as.matrix(m2$InterFactor) else diag(n_factors)
         ev2  <- evaluate_structure(m2$result_df, phi2, thresholds)
         list(rmsea = as.numeric(m2$Bondades_Original$rmsea.scaled[n_factors]),
-             ok_min = all(ev2$counts >= thresholds$min_items_per_factor))
+             ok_min = all(ev2$counts >= thresholds$min_items_per_factor),
+             ok_struct = all(ev2$ok))
       })
-      cand_rmsea <- sapply(cand_stats, function(cs) if (is.null(cs) || !cs$ok_min) NA_real_ else cs$rmsea)
+      cand_rmsea <- sapply(cand_stats, function(cs)
+        if (is.null(cs) || !cs$ok_min || !cs$ok_struct) NA_real_ else cs$rmsea)
       names(cand_rmsea) <- candidates
 
       if (!all(is.na(cand_rmsea))) {
@@ -476,27 +507,41 @@ efa_optimizer <- function(data,
           next
         }
       }
+      # si no hay mejora de RMSEA que respete estructura, pasar a estructura
       decision <- "structure"
     }
 
-    if (verbose && decision == "structure") cat("STRATEGY: Structural optimization\n")
+    if (verbose && decision == "structure") cat("STRATEGY: Structural optimization (non-cross-loading)\n")
 
     if (all(ev$ok)) {
-      if (verbose) cat("Structure acceptable but doesn't meet all criteria; stopping optimization.\n");
+      if (verbose) cat("Structure acceptable but doesn't meet all criteria; stopping optimization.\n")
       break
     }
 
-    # Remove worst structural item (lowest score)
-    prob_idx <- which(!ev$ok)
+    # Remover peor problema estructural restante (sin cross-loading)
+    prob_idx <- which(!ev$ok & ev$reasons != "Cross-loading")
+    if (length(prob_idx) == 0) {
+      # por si quedó alguno etiquetado de otra forma
+      prob_idx <- which(!ev$ok)
+    }
     worst    <- ev$items[ prob_idx[ which.min(ev$scores[prob_idx]) ] ]
     reason   <- ev$reasons[ which(ev$items == worst) ]
-    removed_items <- c(removed_items, worst)
-    step_counter  <- step_counter + 1
-    steps_log <- rbind(steps_log, data.frame(
-      step = step_counter, removed_item = worst, reason = reason, rmsea = curr_rmsea,
-      stringsAsFactors = FALSE
-    ))
-    if (verbose) cat("Removed", worst, "due to:", reason, "\n")
+    # respetar min_items_per_factor al remover
+    p_worst  <- ev$primary[ which(ev$items == worst) ]
+    counts2  <- ev$counts; if (!is.na(p_worst)) counts2[p_worst] <- counts2[p_worst] - 1
+    if (all(counts2 >= thresholds$min_items_per_factor)) {
+      removed_items <- c(removed_items, worst)
+      step_counter  <- step_counter + 1
+      steps_log <- rbind(steps_log, data.frame(
+        step = step_counter, removed_item = worst, reason = reason, rmsea = curr_rmsea,
+        stringsAsFactors = FALSE
+      ))
+      if (verbose) cat("Removed", worst, "due to:", reason, "\n")
+      next
+    } else {
+      if (verbose) cat("Structural issue found (", worst, ") but protected by min_items_per_factor; stopping.\n", sep = "")
+      break
+    }
   }
 
   if (is.null(mod) || is.null(mod$result_df)) stop("Could not generate a valid EFA model.")
@@ -521,15 +566,10 @@ efa_optimizer <- function(data,
     paste0("Factor ", names(fac_lists), " contains {", fac_lists, "}", collapse = "; ")
   )
 
-  # ────────────────────────────────────────────────────────────────────────────
-  # PREPARAR ESTADÍSTICAS DE ÍTEMS PARA ANÁLISIS CONCEPTUAL
-  # ────────────────────────────────────────────────────────────────────────────
-
   # Recopilar estadísticas de ítems eliminados desde steps_log y last_ev
   for (removed in removed_items) {
     idx <- which(steps_log$removed_item == removed)
     if (length(idx) > 0) {
-      # Obtener carga y h2 si el ítem está en last_ev
       loading <- NA_real_
       h2 <- NA_real_
       if (!is.null(last_ev) && removed %in% last_ev$items) {
@@ -539,7 +579,6 @@ efa_optimizer <- function(data,
           h2 <- last_ev$h2[item_idx[1]]
         }
       }
-
       item_removal_stats[[removed]] <- list(
         reason = steps_log$reason[idx[1]],
         rmsea_at_removal = steps_log$rmsea[idx[1]],
@@ -549,15 +588,12 @@ efa_optimizer <- function(data,
     }
   }
 
-  # ────────────────────────────────────────────────────────────────────────────
-  # SECCIÓN DE ANÁLISIS CONCEPTUAL CON IA - VERSIÓN ENRIQUECIDA
-  # ────────────────────────────────────────────────────────────────────────────
+  # AI conceptual analysis (opcional)
   conceptual_analysis <- NULL
-
   if (use_ai_analysis && length(items) > 0 && !is.null(ai_config$api_key) &&
       !is.null(ai_config$item_definitions)) {
 
-    is_spanish <- tolower(ai_config$language) == "spanish" || tolower(ai_config$language) == "español"
+    is_spanish <- tolower(ai_config$language) %in% c("spanish","español")
 
     if (verbose) {
       if (is_spanish) {
@@ -574,37 +610,29 @@ efa_optimizer <- function(data,
     analysis_removed <- NULL
     analysis_kept <- NULL
 
-    # Analizar ítems removidos con barra de progreso y estadísticas
     if (length(removed_items) > 0) {
       analysis_removed <- setNames(vector("list", length(removed_items)), removed_items)
-
       for (i in seq_along(removed_items)) {
         it <- removed_items[i]
-
-        # Actualizar barra de progreso
         if (verbose) {
           progress <- create_progress_bar(i - 1, length(removed_items), width = 20)
           label <- if (is_spanish) "Analizando ítems eliminados:" else "Analyzing removed items:"
           cat("\r", label, progress, sep = " ")
           flush.console()
         }
-
         if (it %in% names(ai_config$item_definitions)) {
-          # Pasar estadísticas del ítem al análisis
           analysis_removed[[it]] <- analyze_item_with_gpt_improved(
             it,
             ai_config$item_definitions[[it]],
             structure_desc,
-            item_stats = item_removal_stats[[it]],  # NUEVO: pasar estadísticas
+            item_stats = item_removal_stats[[it]],
             action = "exclude"
           )
-          Sys.sleep(0.5)  # Pequeña pausa para evitar rate limiting
+          Sys.sleep(0.5)
         } else {
           analysis_removed[[it]] <- "Item definition not provided"
         }
       }
-
-      # Mostrar barra completa
       if (verbose) {
         progress <- create_progress_bar(length(removed_items), length(removed_items), width = 20)
         label <- if (is_spanish) "Analizando ítems eliminados:" else "Analyzing removed items:"
@@ -612,55 +640,46 @@ efa_optimizer <- function(data,
       }
     }
 
-    # Analizar ítems conservados si only_removed = FALSE
     if (!ai_config$only_removed) {
       kept <- setdiff(items, removed_items)
       if (length(kept) > 0) {
         analysis_kept <- setNames(vector("list", length(kept)), kept)
-
         for (i in seq_along(kept)) {
           it <- kept[i]
-
-          # Actualizar barra de progreso
           if (verbose) {
             progress <- create_progress_bar(i - 1, length(kept), width = 20)
             label <- if (is_spanish) "Analizando ítems conservados:" else "Analyzing retained items:"
             cat("\r", label, progress, sep = " ")
             flush.console()
           }
-
-          if (it %in% names(ai_config$item_definitions)) {
-            # Para ítems conservados, obtener estadísticas del modelo final
-            kept_stats <- NULL
-            if (!is.null(df_final) && it %in% df_final$Items) {
-              item_idx <- which(df_final$Items == it)
-              if (length(item_idx) > 0) {
-                load_values <- as.numeric(df_final[item_idx, load_cols])
-                kept_stats <- list(
-                  loading = max(abs(load_values)),
-                  h2 = if (!is.null(last_ev) && it %in% last_ev$items) {
-                    last_ev$h2[which(last_ev$items == it)[1]]
-                  } else NA_real_,
-                  reason = "Retained",
-                  rmsea_at_removal = curr_rmsea
-                )
-              }
+          kept_stats <- NULL
+          if (!is.null(df_final) && it %in% df_final$Items) {
+            item_idx <- which(df_final$Items == it)
+            if (length(item_idx) > 0) {
+              load_values <- as.numeric(df_final[item_idx, load_cols])
+              kept_stats <- list(
+                loading = max(abs(load_values)),
+                h2 = if (!is.null(last_ev) && it %in% last_ev$items) {
+                  last_ev$h2[which(last_ev$items == it)[1]]
+                } else NA_real_,
+                reason = "Retained",
+                rmsea_at_removal = curr_rmsea
+              )
             }
-
+          }
+          if (it %in% names(ai_config$item_definitions)) {
             analysis_kept[[it]] <- analyze_item_with_gpt_improved(
               it,
               ai_config$item_definitions[[it]],
               structure_desc,
-              item_stats = kept_stats,  # NUEVO: pasar estadísticas
+              item_stats = kept_stats,
               action = "keep"
             )
-            Sys.sleep(0.5)  # Pequeña pausa
+            Sys.sleep(0.5)
           } else {
             analysis_kept[[it]] <- "Item definition not provided"
           }
         }
-
-        # Mostrar barra completa
         if (verbose) {
           progress <- create_progress_bar(length(kept), length(kept), width = 20)
           label <- if (is_spanish) "Analizando ítems conservados:" else "Analyzing retained items:"
@@ -672,15 +691,11 @@ efa_optimizer <- function(data,
     conceptual_analysis <- list(
       removed = analysis_removed,
       kept = analysis_kept,
-      item_stats = item_removal_stats  # NUEVO: incluir estadísticas
+      item_stats = item_removal_stats
     )
 
     if (verbose) {
-      complete_msg <- if (is_spanish) {
-        "✅ Análisis conceptual completado\n"
-      } else {
-        "✅ Conceptual analysis completed\n"
-      }
+      complete_msg <- if (is_spanish) "✅ Análisis conceptual completado\n" else "✅ Conceptual analysis completed\n"
       cat(complete_msg)
     }
   }
@@ -691,7 +706,6 @@ efa_optimizer <- function(data,
     cat("Analysis finished.\n")
   }
 
-  # Return comprehensive results
   list(
     final_structure     = df_final,
     removed_items       = removed_items,
@@ -703,13 +717,10 @@ efa_optimizer <- function(data,
     inter_factor_correlation = {
       if (n_factors > 1 && !is.null(mod$InterFactor)) as.matrix(mod$InterFactor) else diag(n_factors)
     },
-    # Final diagnostics
     last_h2             = if (!is.null(last_ev)) last_ev$h2  else NULL,
     last_psi            = if (!is.null(last_ev)) last_ev$psi else NULL,
     last_flags          = if (!is.null(last_ev)) list(heywood=last_ev$heywood, near=last_ev$near_heywood) else NULL,
-    # Análisis conceptual con estadísticas
     conceptual_analysis = conceptual_analysis,
-    # Configuración usada (actualizada con language y analysis_detail)
     config_used         = list(thresholds = thresholds, model_config = model_config,
                                use_ai_analysis = use_ai_analysis, ai_config = ai_config)
   )
