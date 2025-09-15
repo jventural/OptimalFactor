@@ -45,6 +45,22 @@ efa_optimizer <- function(data,
     sprintf("%s %d/%d (%.1f%%)", bar, current, total, percent * 100)
   }
 
+  `%||%` <- function(a, b) if (is.null(a)) b else a
+
+  fmt_num <- function(x, digits = 3) {
+    # Maneja NULL o vector vacío
+    if (is.null(x) || length(x) == 0) return("No disponible")
+    # Vector lógico: válido si no es NA y es finito
+    ok <- !is.na(x) & is.finite(x)
+    # Construye el patrón %.3f, %.2f, etc.
+    pat <- paste0("%.", digits, "f")
+    out <- character(length(x))
+    out[ok]  <- sprintf(pat, x[ok])
+    out[!ok] <- "No disponible"
+    out
+  }
+
+
   # Items identification
   if (is.null(item_range)) {
     items <- grep(paste0("^", name_items, "\\d+$"), names(data), value = TRUE)
@@ -79,7 +95,7 @@ efa_optimizer <- function(data,
   if (use_ai_analysis && !requireNamespace("jsonlite", quietly = TRUE)) install.packages("jsonlite")
 
   # ────────────────────────────────────────────────────────────────────────────
-  # SECCIÓN MEJORADA DE ANÁLISIS CON GPT (con razón y RMSEA explícitos)
+  # SECCIÓN MEJORADA DE ANÁLISIS CON GPT (incluye razón y RMSEA, y timeline)
   # ────────────────────────────────────────────────────────────────────────────
   analyze_item_with_gpt_improved <- function(item, definition, context,
                                              item_stats = NULL,
@@ -103,34 +119,45 @@ efa_optimizer <- function(data,
                          "detailed" = "250-300",
                          "150-180")
 
-    `%||%` <- function(a, b) if (is.null(a)) b else a
-    # Extrae razón y RMSEA del item_stats (llenado más abajo con steps_log)
     r_reason <- item_stats$reason %||% "No especificada"
     r_rmsea  <- item_stats$rmsea_at_removal %||% NA_real_
-    r_rmsea_txt <- if (is.na(r_rmsea)) "No disponible" else sprintf("%.3f", r_rmsea)
+    r_rmsea_txt <- fmt_num(r_rmsea)
 
     technical_info <- ""
     if (!is.null(item_stats)) {
       if (tolower(ai_config$language) %in% c("spanish","español")) {
-        technical_info <- sprintf(
-          "Información técnica: Carga factorial principal=%.3f, Comunalidad (h²)=%.3f, Razón de eliminación=%s, RMSEA en el momento=%.3f.",
-          item_stats$loading %||% 0,
-          item_stats$h2 %||% 0,
+        base_txt <- sprintf(
+          "Información técnica: Carga primaria=%s; h²=%s; Razón=%s; RMSEA en ese paso=%s.",
+          fmt_num(item_stats$loading),
+          fmt_num(item_stats$h2),
           r_reason,
-          ifelse(is.na(r_rmsea), 0, r_rmsea)
+          r_rmsea_txt
         )
+        ambi_txt <- ""
+        if (!is.null(item_stats$second_loading) || !is.null(item_stats$delta_loading)) {
+          ambi_txt <- sprintf(" Ambigüedad: segunda carga=%s; Δ=|λ1|-|λ2|=%s.",
+                              fmt_num(item_stats$second_loading),
+                              fmt_num(item_stats$delta_loading))
+        }
+        technical_info <- paste0(base_txt, ambi_txt)
       } else {
-        technical_info <- sprintf(
-          "Technical information: Primary factor loading=%.3f, Communality (h²)=%.3f, Removal reason=%s, RMSEA at removal=%.3f.",
-          item_stats$loading %||% 0,
-          item_stats$h2 %||% 0,
+        base_txt <- sprintf(
+          "Technical information: Primary loading=%s; h²=%s; Reason=%s; RMSEA at that step=%s.",
+          fmt_num(item_stats$loading),
+          fmt_num(item_stats$h2),
           r_reason,
-          ifelse(is.na(r_rmsea), 0, r_rmsea)
+          r_rmsea_txt
         )
+        ambi_txt <- ""
+        if (!is.null(item_stats$second_loading) || !is.null(item_stats$delta_loading)) {
+          ambi_txt <- sprintf(" Ambiguity: second loading=%s; Δ=|λ1|-|λ2|=%s.",
+                              fmt_num(item_stats$second_loading),
+                              fmt_num(item_stats$delta_loading))
+        }
+        technical_info <- paste0(base_txt, ambi_txt)
       }
     }
 
-    # Construye el prompt incluyendo explícitamente razón y RMSEA dentro de PROBLEMAS PSICOMÉTRICOS
     if (tolower(ai_config$language) %in% c("spanish","español")) {
       if (act == "exclude") {
         prompt <- sprintf(
@@ -260,7 +287,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
               msg <- if (tolower(ai_config$language) %in% c("spanish","español")) {
                 sprintf("   Servidor ocupado (HTTP %d). Reintentando en %d segundos...\n", status, wait_time)
               } else {
-                sprintf("   Server busy (HTTP %d). Retrying in %d segundos...\n", status, wait_time)
+                sprintf("   Server busy (HTTP %d). Retrying in %d seconds...\n", status, wait_time)
               }
               cat(msg)
             }
@@ -306,9 +333,6 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     return("Analysis failed after all attempts")
   }
 
-  # Operador para manejar NULLs
-  `%||%` <- function(a, b) if (is.null(a)) b else a
-
   # Initialize tracking variables
   if (is.null(exclude_items)) exclude_items <- character(0)
   removed_items <- character()
@@ -319,17 +343,19 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
   last_ev <- NULL
   curr_rmsea <- NA_real_
 
-  # NUEVO: Almacenar estadísticas de ítems para el análisis
+  # Almacenar estadísticas de ítems capturadas en el instante de eliminación
   item_removal_stats <- list()
 
-  # Structure evaluator with factor correlation matrix (oblique)
+  # ────────────────────────────────────────────────────────────────────────────
+  # Evaluación de estructura con matriz Φ (oblicua)
+  # ────────────────────────────────────────────────────────────────────────────
   evaluate_structure <- function(df, phi, thresholds) {
     load_cols <- which(startsWith(names(df), "f"))
     L <- as.matrix(df[, load_cols, drop = FALSE])
     its <- df$Items
 
-    # Calculate communalities and uniquenesses with Φ
-    h2  <- rowSums((L %*% phi) * L)            # diag(L Φ L')
+    # Comunalidades y unicidades con Φ
+    h2  <- rowSums((L %*% phi) * L)  # diag(L Φ L')
     psi <- 1 - h2
 
     heywood_flag      <- (psi < -thresholds$heywood_tol) |
@@ -374,6 +400,40 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
          primary=primary)
   }
 
+  # Captura de métricas en el instante de eliminación
+  capture_item_stats <- function(it, ev, df, rmsea, reason) {
+    load_cols <- which(startsWith(names(df), "f"))
+    idx <- which(ev$items == it)
+    if (length(idx) == 1) {
+      li <- abs(as.numeric(df[idx, load_cols, drop = TRUE]))
+      s  <- sort(li, decreasing = TRUE)
+      primary_loading <- if (length(li)) max(li, na.rm = TRUE) else NA_real_
+      second_loading  <- if (length(s) >= 2) s[2] else NA_real_
+      delta_loading   <- if (is.finite(primary_loading) && is.finite(second_loading)) primary_loading - second_loading else NA_real_
+      list(
+        reason            = reason,
+        rmsea_at_removal  = rmsea,
+        loading           = primary_loading,
+        second_loading    = second_loading,
+        delta_loading     = delta_loading,
+        h2                = ev$h2[idx],
+        psi               = ev$psi[idx],
+        primary_factor    = ev$primary[idx]
+      )
+    } else {
+      list(
+        reason            = reason,
+        rmsea_at_removal  = rmsea,
+        loading           = NA_real_,
+        second_loading    = NA_real_,
+        delta_loading     = NA_real_,
+        h2                = NA_real_,
+        psi               = NA_real_,
+        primary_factor    = NA_integer_
+      )
+    }
+  }
+
   # ────────────────────────────────────────────────────────────────────────────
   # Main optimization loop
   # ────────────────────────────────────────────────────────────────────────────
@@ -400,7 +460,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     mod <- tmp
     curr_rmsea <- as.numeric(mod$Bondades_Original$rmsea.scaled[n_factors])
 
-    # Factor correlation matrix for oblimin (if doesn't exist, use identity)
+    # Φ oblicua
     phi <- if (!is.null(mod$InterFactor)) as.matrix(mod$InterFactor) else diag(n_factors)
 
     ev <- evaluate_structure(mod$result_df, phi, thresholds)
@@ -426,6 +486,8 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     # Priority 1: Heywood
     if (any(ev$heywood)) {
       worst <- ev$items[ which.min(ev$psi) ]
+      # Capturar stats ANTES de eliminar
+      item_removal_stats[[worst]] <- capture_item_stats(worst, ev, mod$result_df, curr_rmsea, "Heywood")
       removed_items <- c(removed_items, worst)
       step_counter  <- step_counter + 1
       steps_log <- rbind(steps_log, data.frame(
@@ -440,6 +502,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     if (any(ev$near_heywood)) {
       idx <- which(ev$near_heywood)
       worst <- ev$items[idx[ which.min(ev$psi[idx]) ]]
+      item_removal_stats[[worst]] <- capture_item_stats(worst, ev, mod$result_df, curr_rmsea, "Near-Heywood")
       removed_items <- c(removed_items, worst)
       step_counter  <- step_counter + 1
       steps_log <- rbind(steps_log, data.frame(
@@ -466,6 +529,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         }
       }
       if (!is.na(selected)) {
+        item_removal_stats[[selected]] <- capture_item_stats(selected, ev, mod$result_df, curr_rmsea, "Cross-loading (priority)")
         removed_items <- c(removed_items, selected)
         step_counter  <- step_counter + 1
         steps_log <- rbind(steps_log, data.frame(
@@ -491,7 +555,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
       break
     }
 
-    # Decisión
+    # Decisión: estructura si hay problemas; si estructura ok y RMSEA alto, entonces RMSEA
     if (!all(ev$ok)) {
       decision <- "structure"
     } else if (!is.na(curr_rmsea) && curr_rmsea > thresholds$rmsea) {
@@ -501,7 +565,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     }
 
     if (decision == "rmsea") {
-      # RMSEA optimization exigiendo estructura OK
+      # RMSEA optimization exigiendo estructura OK en el modelo resultante
       cand_stats <- lapply(candidates, function(it) {
         m2 <- tryCatch(PsyMetricTools::EFA_modern(
           data = data, n_factors = n_factors, n_items = n_items, name_items = name_items,
@@ -523,6 +587,8 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         best_val <- min(cand_rmsea, na.rm = TRUE)
         if (is.finite(best_val) && best_val < curr_rmsea) {
           best <- names(which.min(cand_rmsea))
+          # Capturar stats ANTES de eliminar (usar best_val como RMSEA resultante)
+          item_removal_stats[[best]] <- capture_item_stats(best, ev, mod$result_df, best_val, "RMSEA improvement")
           removed_items <- c(removed_items, best)
           step_counter  <- step_counter + 1
           steps_log <- rbind(steps_log, data.frame(
@@ -553,6 +619,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     p_worst  <- ev$primary[ which(ev$items == worst) ]
     counts2  <- ev$counts; if (!is.na(p_worst)) counts2[p_worst] <- counts2[p_worst] - 1
     if (all(counts2 >= thresholds$min_items_per_factor)) {
+      item_removal_stats[[worst]] <- capture_item_stats(worst, ev, mod$result_df, curr_rmsea, reason)
       removed_items <- c(removed_items, worst)
       step_counter  <- step_counter + 1
       steps_log <- rbind(steps_log, data.frame(
@@ -569,14 +636,14 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
 
   if (is.null(mod) || is.null(mod$result_df)) stop("Could not generate a valid EFA model.")
 
-  # Final structure with reporting threshold applied
+  # Estructura final con umbral para reporte
   df_final  <- mod$result_df
   load_cols <- which(startsWith(names(df_final), "f"))
   df_final[load_cols] <- lapply(df_final[load_cols], function(x)
     ifelse(abs(x) < thresholds$loading, 0, x)
   )
 
-  # Create final factor mapping avoiding assignment to "all zero" rows
+  # Descripción de estructura final
   A  <- as.matrix(df_final[, load_cols, drop = FALSE])
   mA <- apply(abs(A), 1, max)
   w  <- apply(abs(A), 1, which.max)
@@ -590,44 +657,21 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
   )
 
   # ────────────────────────────────────────────────────────────────────────────
-  # Preparar estadísticas y CONTEXTO (timeline) para IA
+  # Timeline (DETALLE DE ELIMINACIÓN DE ÍTEMS) para el contexto de IA
   # ────────────────────────────────────────────────────────────────────────────
-  # Recopilar estadísticas de ítems eliminados desde steps_log y last_ev
-  for (removed in removed_items) {
-    idx <- which(steps_log$removed_item == removed)
-    if (length(idx) > 0) {
-      loading <- NA_real_
-      h2 <- NA_real_
-      if (!is.null(last_ev) && removed %in% last_ev$items) {
-        item_idx <- which(last_ev$items == removed)
-        if (length(item_idx) > 0) {
-          loading <- last_ev$scores[item_idx[1]]
-          h2 <- last_ev$h2[item_idx[1]]
-        }
-      }
-      item_removal_stats[[removed]] <- list(
-        reason = steps_log$reason[idx[1]],
-        rmsea_at_removal = steps_log$rmsea[idx[1]],
-        loading = loading,
-        h2 = h2
-      )
-    }
-  }
-
-  # Construir DETALLE DE ELIMINACIÓN DE ÍTEMS (timeline) como texto
   timeline_str <- NULL
   if (nrow(steps_log) > 0) {
-    lines <- sprintf("%3d %-12s %-24s %.3f",
+    header <- "DETALLE DE ELIMINACIÓN DE ÍTEMS\n step removed_item  reason                     rmsea"
+    lines <- sprintf("%3d %-12s %-24s %s",
                      steps_log$step,
                      steps_log$removed_item,
                      steps_log$reason,
-                     steps_log$rmsea)
-    header <- "DETALLE DE ELIMINACIÓN DE ÍTEMS\n step removed_item  reason                     rmsea"
+                     fmt_num(steps_log$rmsea))
     timeline_str <- paste(c(header, lines), collapse = "\n")
   }
 
   # ────────────────────────────────────────────────────────────────────────────
-  # SECCIÓN DE ANÁLISIS CONCEPTUAL CON IA (usa razón + RMSEA + timeline)
+  # Análisis conceptual con IA (usa razón + RMSEA + timeline)
   # ────────────────────────────────────────────────────────────────────────────
   conceptual_analysis <- NULL
   if (use_ai_analysis && length(items) > 0 && !is.null(ai_config$api_key) &&
@@ -650,10 +694,9 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     analysis_removed <- NULL
     analysis_kept <- NULL
 
-    # Contexto combinado: estructura final + timeline
     combined_context <- paste0(structure_desc, if (!is.null(timeline_str)) paste0("\n\n", timeline_str) else "")
 
-    # Analizar ítems removidos
+    # Ítems eliminados
     if (length(removed_items) > 0) {
       analysis_removed <- setNames(vector("list", length(removed_items)), removed_items)
       for (i in seq_along(removed_items)) {
@@ -684,7 +727,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
       }
     }
 
-    # Analizar ítems conservados si only_removed = FALSE
+    # Ítems conservados (si se pide)
     if (!ai_config$only_removed) {
       kept <- setdiff(items, removed_items)
       if (length(kept) > 0) {
@@ -703,12 +746,20 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
             if (length(item_idx) > 0) {
               load_values <- as.numeric(df_final[item_idx, load_cols])
               kept_stats <- list(
+                reason = "Retained",
+                rmsea_at_removal = curr_rmsea,
                 loading = max(abs(load_values)),
+                second_loading = NA_real_,
+                delta_loading = NA_real_,
                 h2 = if (!is.null(last_ev) && it %in% last_ev$items) {
                   last_ev$h2[which(last_ev$items == it)[1]]
                 } else NA_real_,
-                reason = "Retained",
-                rmsea_at_removal = curr_rmsea
+                psi = if (!is.null(last_ev) && it %in% last_ev$items) {
+                  last_ev$psi[which(last_ev$items == it)[1]]
+                } else NA_real_,
+                primary_factor = if (!is.null(last_ev) && it %in% last_ev$items) {
+                  last_ev$primary[which(last_ev$items == it)[1]]
+                } else NA_integer_
               )
             }
           }
