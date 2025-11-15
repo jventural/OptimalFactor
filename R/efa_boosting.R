@@ -1,65 +1,65 @@
 efa_boosting <- function(data,
-                           name_items,
-                           item_range = NULL,
-                           n_factors = 3,
-                           exclude_items = NULL,
-                           # Thresholds (Heywood + mínimos)
-                           thresholds = list(
-                             rmsea = 0.08,
-                             loading = 0.30,
-                             min_items_per_factor = 3,
-                             heywood_tol = 1e-6,
-                             near_heywood = 0.015
-                           ),
-                           # Configuración de modelo
-                           model_config = list(
-                             estimator = "WLSMV",
-                             rotation  = "oblimin"
-                           ),
-                           # Performance
-                           performance = list(
-                             max_candidates_eval = NULL,  # NULL => evalúa TODOS (en modo greedy)
-                             timeout_efa = 30,
-                             timeout_optimization = 120,
-                             use_timeouts = FALSE
-                           ),
-                           # ACTIVADOR EXPLÍCITO: GLOBAL vs GREEDY
-                           use_global = FALSE,  # FALSE = solo greedy; TRUE = activa búsqueda global (con barra)
-                           # Parámetros de búsqueda global
-                           global_opt = list(
-                             max_drop = 2,                    # tamaño máximo del subconjunto a evaluar a la vez
-                             max_global_combinations = 5000,  # límite de combinaciones a evaluar
-                             verbose = TRUE,                  # mensajes de la búsqueda global
-                             progress_bar = TRUE              # barra de progreso durante la búsqueda global
-                           ),
-                           # Config de FIT COMPUESTO
-                           fit_config = list(
-                             targets = list(rmsea = 0.08, srmr = 0.06, cfi = 0.95),
-                             margins = list(rmsea = 0.03, srmr = 0.03, cfi = 0.03),
-                             base_weights = list(rmsea = 0.50, srmr = 0.25, cfi = 0.25),
-                             small_df_cut = 5,          # df < 5 ⇒ bajar peso RMSEA
-                             small_df_weights = list(rmsea = 0.15, srmr = 0.45, cfi = 0.40),
-                             wlsmv_boost = list(rmsea = 0.8, srmr = 1.2, cfi = 1.1),  # multiplicadores si estimator == WLSMV
-                             use_pclose_if_available = TRUE,
-                             pclose_bonus = 0.10
-                           ),
-                           # IA opcional (se mantiene el hook)
-                           use_ai_analysis = FALSE,
-                           ai_config = list(
-                             api_key = NULL,
-                             generate_names = FALSE,
-                             only_removed = TRUE,
-                             gpt_model = "gpt-3.5-turbo",
-                             language = "english",
-                             analysis_detail = "detailed",
-                             domain_name = "Default Domain",
-                             scale_title = "Default Scale Title",
-                             construct_definition = "",
-                             model_name = "EFA Model",
-                             item_definitions = NULL
-                           ),
-                           verbose = TRUE,
-                           ...) {
+                         name_items,
+                         item_range = NULL,
+                         n_factors = 3,
+                         exclude_items = NULL,
+                         # Thresholds (Heywood + mínimos)
+                         thresholds = list(
+                           rmsea = 0.08,
+                           loading = 0.30,
+                           min_items_per_factor = 3,
+                           heywood_tol = 1e-6,
+                           near_heywood = 0.015
+                         ),
+                         # Configuración de modelo
+                         model_config = list(
+                           estimator = "WLSMV",
+                           rotation  = "oblimin"
+                         ),
+                         # Performance
+                         performance = list(
+                           max_candidates_eval = NULL,  # NULL => evalúa TODOS (en modo greedy)
+                           timeout_efa = 30,
+                           timeout_optimization = 120,
+                           use_timeouts = FALSE
+                         ),
+                         # ACTIVADOR EXPLÍCITO: GLOBAL vs GREEDY
+                         use_global = FALSE,  # FALSE = solo greedy; TRUE = activa búsqueda global (con barra)
+                         # Parámetros de búsqueda global
+                         global_opt = list(
+                           max_drop = 2,                    # tamaño máximo del subconjunto a evaluar a la vez
+                           max_global_combinations = 5000,  # límite de combinaciones a evaluar
+                           verbose = TRUE,                  # mensajes de la búsqueda global
+                           progress_bar = TRUE              # barra de progreso durante la búsqueda global
+                         ),
+                         # Config de FIT COMPUESTO
+                         fit_config = list(
+                           targets = list(rmsea = 0.08, srmr = 0.06, cfi = 0.95),
+                           margins = list(rmsea = 0.03, srmr = 0.03, cfi = 0.03),
+                           base_weights = list(rmsea = 0.50, srmr = 0.25, cfi = 0.25),
+                           small_df_cut = 5,          # df < 5 ⇒ bajar peso RMSEA
+                           small_df_weights = list(rmsea = 0.15, srmr = 0.45, cfi = 0.40),
+                           wlsmv_boost = list(rmsea = 0.8, srmr = 1.2, cfi = 1.1),  # multiplicadores si estimator == WLSMV
+                           use_pclose_if_available = TRUE,
+                           pclose_bonus = 0.10
+                         ),
+                         # IA opcional (se mantiene el hook)
+                         use_ai_analysis = FALSE,
+                         ai_config = list(
+                           api_key = NULL,
+                           generate_names = FALSE,
+                           only_removed = TRUE,
+                           gpt_model = "gpt-3.5-turbo",
+                           language = "english",
+                           analysis_detail = "detailed",
+                           domain_name = "Default Domain",
+                           scale_title = "Default Scale Title",
+                           construct_definition = "",
+                           model_name = "EFA Model",
+                           item_definitions = NULL
+                         ),
+                         verbose = TRUE,
+                         ...) {
 
   # ───────────────── Utilidades ─────────────────
   create_progress_bar <- function(current, total, width = 30) {
@@ -132,10 +132,252 @@ efa_boosting <- function(data,
                      language="english", analysis_detail="detailed")
   ai_config <- modifyList(default_ai, ai_config)
 
+  if (use_ai_analysis && !requireNamespace("httr", quietly = TRUE)) install.packages("httr")
+  if (use_ai_analysis && !requireNamespace("jsonlite", quietly = TRUE)) install.packages("jsonlite")
+
   use_timeouts <- performance$use_timeouts
   if (use_timeouts && !requireNamespace("R.utils", quietly = TRUE)) {
     warning("Package 'R.utils' not found. Timeouts disabled. Install with: install.packages('R.utils')")
     use_timeouts <- FALSE
+  }
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # FUNCIÓN DE ANÁLISIS CON GPT (incluye razón, RMSEA y reintentos)
+  # ────────────────────────────────────────────────────────────────────────────
+  analyze_item_with_gpt_improved <- function(item, definition, context,
+                                             item_stats = NULL,
+                                             action = c("exclude","keep")) {
+    if (is.null(ai_config$api_key)) return("AI not configured")
+    act <- match.arg(action)
+
+    if (is.null(definition) || definition == "") {
+      return(if (act == "exclude") "No definition provided for exclusion."
+             else "No definition provided for retention.")
+    }
+
+    max_tokens_config <- switch(ai_config$analysis_detail,
+                                "brief" = 200,
+                                "standard" = 400,
+                                "detailed" = 600,
+                                400)
+    word_limit <- switch(ai_config$analysis_detail,
+                         "brief" = "80-100",
+                         "standard" = "150-180",
+                         "detailed" = "250-300",
+                         "150-180")
+
+    r_reason <- item_stats$reason %||% "No especificada"
+    r_rmsea  <- item_stats$rmsea_at_removal %||% NA_real_
+    r_rmsea_txt <- fmt_num(r_rmsea)
+
+    technical_info <- ""
+    if (!is.null(item_stats)) {
+      if (tolower(ai_config$language) %in% c("spanish","español")) {
+        base_txt <- sprintf(
+          "Información técnica: Carga primaria=%s; h²=%s; Razón=%s; RMSEA en ese paso=%s.",
+          fmt_num(item_stats$loading),
+          fmt_num(item_stats$h2),
+          r_reason,
+          r_rmsea_txt
+        )
+        ambi_txt <- ""
+        if (!is.null(item_stats$second_loading) || !is.null(item_stats$delta_loading)) {
+          ambi_txt <- sprintf(" Ambigüedad: segunda carga=%s; Δ=|λ1|-|λ2|=%s.",
+                              fmt_num(item_stats$second_loading),
+                              fmt_num(item_stats$delta_loading))
+        }
+        technical_info <- paste0(base_txt, ambi_txt)
+      } else {
+        base_txt <- sprintf(
+          "Technical information: Primary loading=%s; h²=%s; Reason=%s; RMSEA at that step=%s.",
+          fmt_num(item_stats$loading),
+          fmt_num(item_stats$h2),
+          r_reason,
+          r_rmsea_txt
+        )
+        ambi_txt <- ""
+        if (!is.null(item_stats$second_loading) || !is.null(item_stats$delta_loading)) {
+          ambi_txt <- sprintf(" Ambiguity: second loading=%s; Δ=|λ1|-|λ2|=%s.",
+                              fmt_num(item_stats$second_loading),
+                              fmt_num(item_stats$delta_loading))
+        }
+        technical_info <- paste0(base_txt, ambi_txt)
+      }
+    }
+
+    if (tolower(ai_config$language) %in% c("spanish","español")) {
+      if (act == "exclude") {
+        prompt <- sprintf(
+          "Como experto en psicometría, proporciona un análisis detallado de por qué el ítem '%s' (\"%s\") fue correctamente eliminado de una escala que mide '%s'. %s
+
+Contexto breve del modelo:
+%s
+
+Estructura tu análisis en tres aspectos integrados:
+1) Problemas psicométricos identificados: comienza explícitamente indicando la Razón registrada por el algoritmo: '%s' y el RMSEA al momento de la eliminación: %s; enlaza esto con la evidencia (cargas factoriales, comunalidades, cargas cruzadas, posibles dependencias locales) y explica cómo estos factores justifican la salida del ítem.
+2) Desalineación conceptual con el constructo central (si aplica) o redundancia con otros ítems.
+3) Impacto positivo de su eliminación en la validez y coherencia de la escala (mejoras en ajuste, claridad factorial, parsimonia).
+
+Proporciona un análisis técnico pero fluido, conectando los tres aspectos de forma narrativa (%s palabras).
+
+IMPORTANTE: NO uses formato markdown (sin asteriscos, sin negritas). Escribe en texto plano continuo.",
+          item, definition, ai_config$construct_definition, technical_info,
+          context %||% "",
+          r_reason, r_rmsea_txt,
+          word_limit
+        )
+        system_msg <- "Eres un experto en psicometría y desarrollo de escalas. Proporciona análisis técnicos detallados en español, usando terminología psicométrica precisa. NO uses formato markdown, solo texto plano."
+      } else {
+        prompt <- sprintf(
+          "Como experto en psicometría, justifica detalladamente por qué el ítem '%s' (\"%s\") debe mantenerse en una escala que mide '%s'. %s
+
+Contexto breve del modelo:
+%s
+
+Estructura tu análisis en tres aspectos integrados:
+1) Fortalezas psicométricas del ítem (cargas, comunalidades, especificidad factorial). Si corresponde, incluye el registro del algoritmo: Razón='%s'; RMSEA en ese momento: %s.
+2) Alineación conceptual con el constructo central.
+3) Contribución única a la validez de la escala (discriminación, cobertura de contenido, no redundancia).
+
+Proporciona un análisis técnico pero fluido (%s palabras).
+
+IMPORTANTE: NO uses formato markdown (sin asteriscos, sin negritas). Escribe en texto plano continuo.",
+          item, definition, ai_config$construct_definition, technical_info,
+          context %||% "",
+          r_reason, r_rmsea_txt,
+          word_limit
+        )
+        system_msg <- "Eres un experto en psicometría y desarrollo de escalas. Proporciona análisis técnicos detallados en español. NO uses formato markdown, solo texto plano."
+      }
+    } else {
+      if (act == "exclude") {
+        prompt <- sprintf(
+          "As a psychometrics expert, provide a detailed analysis of why item '%s' (\"%s\") was correctly removed from a scale measuring '%s'. %s
+
+Brief model context:
+%s
+
+Structure your analysis in three integrated aspects:
+1) Psychometric problems identified: explicitly start by stating the algorithm's recorded Reason: '%s' and the RMSEA at removal: %s; then tie this to evidence (factor loadings, communalities, cross-loadings, potential local dependence) explaining how these justify removal.
+2) Conceptual misalignment with the construct (if applicable) or redundancy with other items.
+3) Positive impact of removal on scale validity and coherence (fit improvement, factorial clarity, parsimony).
+
+Provide a technical yet flowing analysis, connecting all three aspects narratively (%s words).
+
+IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
+          item, definition, ai_config$construct_definition, technical_info,
+          context %||% "",
+          r_reason, r_rmsea_txt,
+          word_limit
+        )
+        system_msg <- "You are an expert in psychometrics and scale development. Provide detailed technical analyses using precise psychometric terminology. DO NOT use markdown formatting, only plain text."
+      } else {
+        prompt <- sprintf(
+          "As a psychometrics expert, provide a detailed justification for why item '%s' (\"%s\") should be retained in a scale measuring '%s'. %s
+
+Brief model context:
+%s
+
+Structure your analysis in three integrated aspects:
+1) Psychometric strengths (loadings, communalities, factorial specificity). If relevant, include the algorithm's record: Reason='%s'; RMSEA at that moment: %s.
+2) Conceptual alignment with the core construct.
+3) Unique contribution to scale validity (discrimination, content coverage, non-redundancy).
+
+Provide a technical yet flowing analysis (%s words).
+
+IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
+          item, definition, ai_config$construct_definition, technical_info,
+          context %||% "",
+          r_reason, r_rmsea_txt,
+          word_limit
+        )
+        system_msg <- "You are an expert in psychometrics and scale development. Provide detailed technical analyses. DO NOT use markdown formatting, only plain text."
+      }
+    }
+
+    max_attempts <- 3
+    for (attempt in 1:max_attempts) {
+      resp <- tryCatch({
+        httr::POST(
+          "https://api.openai.com/v1/chat/completions",
+          httr::add_headers(
+            Authorization = paste("Bearer", ai_config$api_key),
+            `Content-Type` = "application/json"
+          ),
+          httr::timeout(60),
+          body = jsonlite::toJSON(list(
+            model = ai_config$gpt_model,
+            messages = list(
+              list(role = "system", content = system_msg),
+              list(role = "user", content = prompt)
+            ),
+            temperature = 0.3,
+            max_tokens = max_tokens_config
+          ), auto_unbox = TRUE)
+        )
+      }, error = function(e) {
+        return(NULL)
+      })
+
+      if (!is.null(resp)) {
+        status <- httr::status_code(resp)
+        if (status == 200) {
+          content <- httr::content(resp)
+          return(tryCatch(
+            content$choices[[1]]$message$content,
+            error = function(e) "Error extracting GPT response."
+          ))
+        } else if (status %in% c(502,503,504)) {
+          if (attempt < max_attempts) {
+            wait_time <- 2^attempt
+            if (verbose) {
+              msg <- if (tolower(ai_config$language) %in% c("spanish","español")) {
+                sprintf("   Servidor ocupado (HTTP %d). Reintentando en %d segundos...\n", status, wait_time)
+              } else {
+                sprintf("   Server busy (HTTP %d). Retrying in %d seconds...\n", status, wait_time)
+              }
+              cat(msg)
+            }
+            Sys.sleep(wait_time)
+          } else {
+            return(sprintf("Server error after %d attempts (HTTP %d)", max_attempts, status))
+          }
+        } else if (status == 429) {
+          if (attempt < max_attempts) {
+            wait_time <- 10 * attempt
+            if (verbose) {
+              msg <- if (tolower(ai_config$language) %in% c("spanish","español")) {
+                sprintf("   Límite de velocidad alcanzado. Esperando %d segundos...\n", wait_time)
+              } else {
+                sprintf("   Rate limit reached. Waiting %d seconds...\n", wait_time)
+              }
+              cat(msg)
+            }
+            Sys.sleep(wait_time)
+          } else {
+            return("Rate limit exceeded after multiple attempts")
+          }
+        } else {
+          return(paste("GPT error - HTTP", status))
+        }
+      } else {
+        if (attempt < max_attempts) {
+          wait_time <- 2^attempt
+          if (verbose) {
+            msg <- if (tolower(ai_config$language) %in% c("spanish","español")) {
+              sprintf("   Error de conexión. Reintentando en %d segundos...\n", wait_time)
+            } else {
+              sprintf("   Connection error. Retrying in %d seconds...\n", wait_time)
+            }
+            cat(msg)
+          }
+          Sys.sleep(wait_time)
+        } else {
+          return("Connection error after multiple attempts")
+        }
+      }
+    }
+    return("Analysis failed after all attempts")
   }
 
   # ───────── Funciones auxiliares de ajuste ─────────
@@ -444,7 +686,35 @@ efa_boosting <- function(data,
         steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=selected, reason="Cross-loading (priority)", rmsea=curr_rmsea, stringsAsFactors=FALSE))
         if (verbose) cat("❌ Removed", selected, "due to: Cross-loading (priority)\n")
         next
-      } else if (verbose) cat("⚠ Cross-loadings detected but protected by min_items_per_factor; skipping for now.\n")
+      } else {
+        # Cross-loadings protegidos, pero verificar si RMSEA > target
+        rmsea_target_reached <- !is.na(curr_rmsea) && curr_rmsea <= fit_config$targets$rmsea
+        if (!rmsea_target_reached) {
+          if (verbose) cat("⚠ Cross-loadings protected but RMSEA (", fmt_num(curr_rmsea), ") > target (", fit_config$targets$rmsea, "); removing weakest item...\n", sep="")
+
+          # Eliminar ítem con menor carga para mejorar RMSEA
+          load_cols <- which(startsWith(names(mod$result_df), "f"))
+          max_loadings <- apply(abs(as.matrix(mod$result_df[, load_cols])), 1, max)
+          weakest_idx <- which.min(max_loadings)
+          worst <- mod$result_df$Items[weakest_idx]
+
+          # Verificar que no viole min_items_per_factor
+          p_worst <- ev$primary[which(ev$items == worst)]
+          counts2 <- ev$counts
+          if (!is.na(p_worst)) counts2[p_worst] <- counts2[p_worst] - 1
+
+          if (all(counts2 >= thresholds$min_items_per_factor)) {
+            item_removal_stats[[worst]] <- capture_item_stats(worst, ev, mod$result_df, curr_rmsea, "Weakest loading (RMSEA > target)")
+            removed_items <- c(removed_items, worst)
+            step_counter <- step_counter + 1
+            steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason="Weakest loading (RMSEA > target)", rmsea=curr_rmsea, stringsAsFactors=FALSE))
+            if (verbose) cat("❌ Removed", worst, "| Loading:", fmt_num(max_loadings[weakest_idx]), "\n")
+            next
+          }
+        } else {
+          if (verbose) cat("⚠ Cross-loadings detected but protected by min_items_per_factor; RMSEA target reached, stopping.\n")
+        }
+      }
     }
 
     # ¿Criterios satisfechos?
@@ -561,24 +831,94 @@ efa_boosting <- function(data,
     }
 
     if (verbose && decision == "structure") cat("📐 STRATEGY: Structural optimization (non-cross-loading)\n")
-    if (all(ev$ok)) { if (verbose) cat("\n✓ Structure acceptable but cannot improve fit further; stopping.\n"); break }
 
-    # Remover peor problema no-cross
+    # Verificar si alcanzamos el target de RMSEA
+    rmsea_target_reached <- !is.na(curr_rmsea) && curr_rmsea <= fit_config$targets$rmsea
+
+    # Si estructura OK y RMSEA alcanzado, detener
+    if (all(ev$ok) && rmsea_target_reached) {
+      if (verbose) cat("\n✓ Target RMSEA achieved (", fmt_num(curr_rmsea), " ≤ ", fit_config$targets$rmsea, ") and structure acceptable; stopping.\n", sep="")
+      break
+    }
+
+    # Si estructura OK pero RMSEA no alcanzado, eliminar ítem con menor carga
+    if (all(ev$ok) && !rmsea_target_reached) {
+      if (verbose) cat("⚠ Structure acceptable but RMSEA (", fmt_num(curr_rmsea), ") > target (", fit_config$targets$rmsea, "); removing weakest item to improve fit...\n", sep="")
+
+      # Encontrar el ítem con menor carga primaria
+      load_cols <- which(startsWith(names(mod$result_df), "f"))
+      max_loadings <- apply(abs(as.matrix(mod$result_df[, load_cols])), 1, max)
+      weakest_idx <- which.min(max_loadings)
+      worst <- mod$result_df$Items[weakest_idx]
+      reason <- "Weakest loading (RMSEA > target)"
+
+      # Verificar que no viole min_items_per_factor
+      p_worst <- ev$primary[which(ev$items == worst)]
+      counts2 <- ev$counts
+      if (!is.na(p_worst)) counts2[p_worst] <- counts2[p_worst] - 1
+
+      if (all(counts2 >= thresholds$min_items_per_factor)) {
+        item_removal_stats[[worst]] <- capture_item_stats(worst, ev, mod$result_df, curr_rmsea, reason)
+        removed_items <- c(removed_items, worst)
+        step_counter <- step_counter + 1
+        steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason=reason, rmsea=curr_rmsea, stringsAsFactors=FALSE))
+        if (verbose) cat("❌ Removed", worst, "| Loading:", fmt_num(max_loadings[weakest_idx]), "\n")
+        next
+      } else {
+        if (verbose) cat("\n⚠ Cannot remove weakest item (", worst, ") - would violate min_items_per_factor; stopping.\n", sep="")
+        break
+      }
+    }
+
+    # Remover peor problema no-cross (solo si hay problemas estructurales)
     prob_idx <- which(!ev$ok & ev$reasons != "Cross-loading")
     if (length(prob_idx) == 0) prob_idx <- which(!ev$ok)
-    worst <- ev$items[ prob_idx[ which.min(ev$scores[prob_idx]) ] ]
-    reason <- ev$reasons[ which(ev$items == worst) ]
-    p_worst <- ev$primary[ which(ev$items == worst) ]
-    counts2 <- ev$counts; if (!is.na(p_worst)) counts2[p_worst] <- counts2[p_worst] - 1
-    if (all(counts2 >= thresholds$min_items_per_factor)) {
-      item_removal_stats[[worst]] <- capture_item_stats(worst, ev, mod$result_df, curr_rmsea, reason)
-      removed_items <- c(removed_items, worst); step_counter <- step_counter + 1
-      steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason=reason, rmsea=curr_rmsea, stringsAsFactors=FALSE))
-      if (verbose) cat("❌ Removed", worst, "due to:", reason, "\n")
-      next
-    } else {
-      if (verbose) cat("\n⚠ Structural issue found (", worst, ") but protected by min_items_per_factor; stopping.\n", sep = "")
-      break
+
+    if (length(prob_idx) > 0) {
+      worst <- ev$items[ prob_idx[ which.min(ev$scores[prob_idx]) ] ]
+      reason <- ev$reasons[ which(ev$items == worst) ]
+      p_worst <- ev$primary[ which(ev$items == worst) ]
+      counts2 <- ev$counts; if (!is.na(p_worst)) counts2[p_worst] <- counts2[p_worst] - 1
+
+      if (all(counts2 >= thresholds$min_items_per_factor)) {
+        item_removal_stats[[worst]] <- capture_item_stats(worst, ev, mod$result_df, curr_rmsea, reason)
+        removed_items <- c(removed_items, worst); step_counter <- step_counter + 1
+        steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason=reason, rmsea=curr_rmsea, stringsAsFactors=FALSE))
+        if (verbose) cat("❌ Removed", worst, "due to:", reason, "\n")
+        next
+      } else {
+        # Problema estructural protegido, verificar si RMSEA > target
+        rmsea_target_reached <- !is.na(curr_rmsea) && curr_rmsea <= fit_config$targets$rmsea
+        if (!rmsea_target_reached) {
+          if (verbose) cat("\n⚠ Structural issue (", worst, ") protected but RMSEA (", fmt_num(curr_rmsea), ") > target (", fit_config$targets$rmsea, "); removing weakest item...\n", sep="")
+
+          # Eliminar ítem con menor carga para mejorar RMSEA
+          load_cols <- which(startsWith(names(mod$result_df), "f"))
+          max_loadings <- apply(abs(as.matrix(mod$result_df[, load_cols])), 1, max)
+          weakest_idx <- which.min(max_loadings)
+          worst_weak <- mod$result_df$Items[weakest_idx]
+
+          # Verificar que no viole min_items_per_factor
+          p_worst_weak <- ev$primary[which(ev$items == worst_weak)]
+          counts3 <- ev$counts
+          if (!is.na(p_worst_weak)) counts3[p_worst_weak] <- counts3[p_worst_weak] - 1
+
+          if (all(counts3 >= thresholds$min_items_per_factor)) {
+            item_removal_stats[[worst_weak]] <- capture_item_stats(worst_weak, ev, mod$result_df, curr_rmsea, "Weakest loading (RMSEA > target)")
+            removed_items <- c(removed_items, worst_weak)
+            step_counter <- step_counter + 1
+            steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst_weak, reason="Weakest loading (RMSEA > target)", rmsea=curr_rmsea, stringsAsFactors=FALSE))
+            if (verbose) cat("❌ Removed", worst_weak, "| Loading:", fmt_num(max_loadings[weakest_idx]), "\n")
+            next
+          } else {
+            if (verbose) cat("\n⚠ Cannot remove any more items - min_items_per_factor reached. Final RMSEA:", fmt_num(curr_rmsea), "\n", sep="")
+            break
+          }
+        } else {
+          if (verbose) cat("\n⚠ Structural issue found (", worst, ") but protected by min_items_per_factor; RMSEA target reached, stopping.\n", sep = "")
+          break
+        }
+      }
     }
   }
 
@@ -607,9 +947,131 @@ efa_boosting <- function(data,
     timeline_str <- paste(c(header, lines), collapse = "\n")
   }
 
+  # ────────────────────────────────────────────────────────────────────────────
+  # Análisis conceptual con IA (versión completa con progreso)
+  # ────────────────────────────────────────────────────────────────────────────
   conceptual_analysis <- NULL
-  if (use_ai_analysis && length(items) > 0 && !is.null(ai_config$api_key) && !is.null(ai_config$item_definitions)) {
-    # (Deja aquí tu bloque de IA si lo usas)
+  if (use_ai_analysis && length(items) > 0 && !is.null(ai_config$api_key) &&
+      !is.null(ai_config$item_definitions)) {
+
+    is_spanish <- tolower(ai_config$language) %in% c("spanish","español")
+
+    if (verbose) {
+      if (is_spanish) {
+        cat("\n═══ Análisis Conceptual con IA ═══\n")
+        cat("Modelo:", ai_config$gpt_model, "\n")
+        cat("Nivel de detalle:", ai_config$analysis_detail, "\n")
+      } else {
+        cat("\n═══ AI Conceptual Analysis ═══\n")
+        cat("Model:", ai_config$gpt_model, "\n")
+        cat("Detail level:", ai_config$analysis_detail, "\n")
+      }
+    }
+
+    analysis_removed <- NULL
+    analysis_kept <- NULL
+
+    combined_context <- paste0(structure_desc, if (!is.null(timeline_str)) paste0("\n\n", timeline_str) else "")
+
+    # Ítems eliminados
+    if (length(removed_items) > 0) {
+      analysis_removed <- setNames(vector("list", length(removed_items)), removed_items)
+      for (i in seq_along(removed_items)) {
+        it <- removed_items[i]
+        if (verbose) {
+          progress <- create_progress_bar(i - 1, length(removed_items), width = 20)
+          label <- if (is_spanish) "Analizando ítems eliminados:" else "Analyzing removed items:"
+          cat("\r", label, progress, sep = " ")
+          flush.console()
+        }
+        if (it %in% names(ai_config$item_definitions)) {
+          analysis_removed[[it]] <- analyze_item_with_gpt_improved(
+            it,
+            ai_config$item_definitions[[it]],
+            combined_context,
+            item_stats = item_removal_stats[[it]],
+            action = "exclude"
+          )
+          Sys.sleep(0.5)
+        } else {
+          analysis_removed[[it]] <- "Item definition not provided"
+        }
+      }
+      if (verbose) {
+        progress <- create_progress_bar(length(removed_items), length(removed_items), width = 20)
+        label <- if (is_spanish) "Analizando ítems eliminados:" else "Analyzing removed items:"
+        cat("\r", label, progress, "\n", sep = " ")
+      }
+    }
+
+    # Ítems conservados (si se pide)
+    if (!ai_config$only_removed) {
+      kept <- setdiff(items, removed_items)
+      if (length(kept) > 0) {
+        analysis_kept <- setNames(vector("list", length(kept)), kept)
+        for (i in seq_along(kept)) {
+          it <- kept[i]
+          if (verbose) {
+            progress <- create_progress_bar(i - 1, length(kept), width = 20)
+            label <- if (is_spanish) "Analizando ítems conservados:" else "Analyzing retained items:"
+            cat("\r", label, progress, sep = " ")
+            flush.console()
+          }
+          kept_stats <- NULL
+          if (!is.null(df_final) && it %in% df_final$Items) {
+            item_idx <- which(df_final$Items == it)
+            if (length(item_idx) > 0) {
+              load_values <- as.numeric(df_final[item_idx, load_cols])
+              kept_stats <- list(
+                reason = "Retained",
+                rmsea_at_removal = curr_rmsea,
+                loading = max(abs(load_values)),
+                second_loading = NA_real_,
+                delta_loading = NA_real_,
+                h2 = if (!is.null(last_ev) && it %in% last_ev$items) {
+                  last_ev$h2[which(last_ev$items == it)[1]]
+                } else NA_real_,
+                psi = if (!is.null(last_ev) && it %in% last_ev$items) {
+                  last_ev$psi[which(last_ev$items == it)[1]]
+                } else NA_real_,
+                primary_factor = if (!is.null(last_ev) && it %in% last_ev$items) {
+                  last_ev$primary[which(last_ev$items == it)[1]]
+                } else NA_integer_
+              )
+            }
+          }
+          if (it %in% names(ai_config$item_definitions)) {
+            analysis_kept[[it]] <- analyze_item_with_gpt_improved(
+              it,
+              ai_config$item_definitions[[it]],
+              combined_context,
+              item_stats = kept_stats,
+              action = "keep"
+            )
+            Sys.sleep(0.5)
+          } else {
+            analysis_kept[[it]] <- "Item definition not provided"
+          }
+        }
+        if (verbose) {
+          progress <- create_progress_bar(length(kept), length(kept), width = 20)
+          label <- if (is_spanish) "Analizando ítems conservados:" else "Analyzing retained items:"
+          cat("\r", label, progress, "\n", sep = " ")
+        }
+      }
+    }
+
+    conceptual_analysis <- list(
+      removed = analysis_removed,
+      kept = analysis_kept,
+      item_stats = item_removal_stats,
+      timeline = timeline_str
+    )
+
+    if (verbose) {
+      complete_msg <- if (is_spanish) "✅ Análisis conceptual completado\n" else "✅ Conceptual analysis completed\n"
+      cat(complete_msg)
+    }
   }
 
   if (verbose) {

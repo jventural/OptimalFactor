@@ -3,16 +3,9 @@
 \title{EFA-Boosting Optimization Summary Report}
 
 \description{
-Generates and prints a compact Spanish-language console report summarizing the iterative optimization performed by the \strong{EFA-Boosting} algorithm.
-The summary includes:
-(a) a structured overview of the boosting process (greedy and/or global),
-(b) a minimalist ASCII evolution plot of RMSEA or composite loss,
-(c) a detailed step-by-step elimination log (Heywood, Near-Heywood, Cross-loading, Composite Fit, Global Fit, etc.),
-(d) the final thresholded loading matrix, and
-(e) final fit indices with qualitative interpretations.
-
-The report is automatically displayed when \code{verbose = TRUE}.
-The function returns a full results list invisibly.
+Performs an iterative, machine-learning–inspired optimization of Exploratory Factor Analysis (EFA), combining greedy and optionally global subset search to improve model fit (RMSEA, SRMR, CFI) and structural coherence (loadings, Heywood cases, cross-loadings, and minimum items per factor).
+When \code{verbose = TRUE}, the function prints the full \emph{EFA-Boosting Optimization Summary Report}, including: (a) detailed iteration diagnostics, (b) elimination criteria, (c) thresholded final structure, (d) fit evolution, and (e) optional GPT-based conceptual analysis of removed items.
+Returns a complete list of results invisibly.
 }
 
 \usage{
@@ -36,156 +29,180 @@ efa_boosting(
 }
 
 \arguments{
-\item{\code{data}}{Data frame containing all item responses.}
 
-\item{\code{name_items}}{Prefix shared by item names (e.g., "IT", "DP", "A").}
+\item{\code{data}}{Data frame containing item responses.}
+
+\item{\code{name_items}}{
+Item prefix (e.g., "IT" yields IT1, IT2, …). Used for auto-detection.
+}
 
 \item{\code{item_range}}{
-Numeric vector defining item numbering (e.g., \code{c(1,12)}).
-If \code{NULL}, items are detected automatically based on \code{name_items}.
+Integer vector \code{c(start, end)}.
+If \code{NULL}, items are auto-detected using \code{name_items} + digits.
 }
 
 \item{\code{n_factors}}{Number of factors to extract.}
 
-\item{\code{exclude_items}}{
-Optional vector of items to pre-exclude before optimization.
-}
+\item{\code{exclude_items}}{Character vector of items to exclude before optimization.}
 
 \item{\code{thresholds}}{
-List controlling elimination rules:
+Controls all structural decisions:
 \itemize{
-  \item RMSEA target,
-  \item minimum loading,
-  \item minimum items per factor,
-  \item Heywood and Near-Heywood tolerances.
+  \item \code{rmsea}: Target RMSEA threshold for stopping.
+  \item \code{loading}: Minimum acceptable loading; below-threshold values are zeroed for evaluation.
+  \item \code{min_items_per_factor}: Structural protection rule.
+  \item \code{heywood_tol}, \code{near_heywood}: Detection of Heywood and near-Heywood cases.
 }
 }
 
-\item{\code{model_config}}{Estimator and rotation (e.g., WLSMV + oblimin).}
+\item{\code{model_config}}{
+Estimator and rotation, typically:
+\itemize{
+  \item \code{estimator = "WLSMV"}
+  \item \code{rotation = "oblimin"}
+}}
 
 \item{\code{performance}}{
-Timeout control and maximum candidate evaluations.
+Performance and timeout settings:
+\itemize{
+  \item \code{max_candidates_eval}: Limits greedy evaluation (NULL = evaluate all).
+  \item \code{timeout_efa}: Timeout per EFA run (requires R.utils).
+  \item \code{timeout_optimization}: Global timeout for full boosting cycle.
+  \item \code{use_timeouts}: Enable/disable timeout protection.
+}
 }
 
 \item{\code{use_global}}{
-Logical; if \code{TRUE}, enables global subset search (k = 1…max\_drop).
+Enable global subset search (TRUE = hybrid greedy + global search).
 }
 
 \item{\code{global_opt}}{
-List defining global search behavior:
+Global search configuration:
 \itemize{
-  \item subset size (k),
-  \item maximum combinations,
-  \item verbosity,
-  \item progress bar.
+  \item \code{max_drop}: Maximum subset size k removed simultaneously.
+  \item \code{max_global_combinations}: Hard cap on combinations.
+  \item \code{verbose}: Show global search diagnostics.
+  \item \code{progress_bar}: Print progress bar during global evaluation.
 }
 }
 
 \item{\code{fit_config}}{
-Configuration for the composite loss index:
+Configuration for the composite fit index:
 \itemize{
-  \item RMSEA/SRMR/CFI targets,
-  \item margins,
-  \item base weights,
-  \item small-df corrections,
-  \item WLSMV boosting factors,
-  \item p-close bonus.
+  \item \code{targets}: Target RMSEA, SRMR, CFI.
+  \item \code{margins}: Allowable deviations.
+  \item \code{base_weights}: Weighting of RMSEA/SRMR/CFI.
+  \item \code{small_df_cut}: df threshold triggering alternative weights.
+  \item \code{small_df_weights}: Weight shift for low-df models.
+  \item \code{wlsmv_boost}: Re-weightings applied if estimator = WLSMV.
+  \item \code{use_pclose_if_available}: Use p-close >= .05 as bonus.
+  \item \code{pclose_bonus}: Amount subtracted from composite loss.
 }
 }
 
 \item{\code{use_ai_analysis}}{
-Enable GPT-based conceptual analysis of removed items.
+Enable GPT-based conceptual analysis for each removed (and optionally retained) item.
 }
 
 \item{\code{ai_config}}{
-Model, API key, language, and domain-specific information for AI analysis.
+Configuration for AI analysis:
+\itemize{
+  \item \code{api_key}: API key for GPT models.
+  \item \code{gpt_model}: e.g., "gpt-3.5-turbo", "gpt-4".
+  \item \code{language}: Spanish or English.
+  \item \code{analysis_detail}: "brief", "standard", or "detailed".
+  \item \code{only_removed}: If FALSE, analyze retained items also.
+  \item \code{construct_definition}: Short description of the target construct.
+  \item \code{item_definitions}: Named list of item contents.
+}
 }
 
 \item{\code{verbose}}{
-If \code{TRUE}, prints the full \strong{EFA-Boosting Optimization Summary Report}.
+If TRUE, prints the full \emph{EFA-Boosting Optimization Summary Report}, including step-by-step iteration output, loading tables, RMSEA evolution, and AI progress bars.
 }
 
 }
 
 \details{
-\strong{Report overview.}
-When \code{verbose = TRUE}, \code{efa_boosting()} prints the full \emph{EFA-Boosting Optimization Summary Report}, consisting of:
 
+\strong{Optimization strategy.}
+The function iteratively improves EFA structure and fit using a hierarchy of rules:
 \itemize{
-  \item \strong{Process summary}: item counts, RMSEA change, loss reduction, iterations, search mode.
-  \item \strong{Evolution plot}: ASCII bar graph for RMSEA or composite loss.
-  \item \strong{Elimination log}: ordered removal steps with reasons and RMSEA.
-  \item \strong{Final loadings}: thresholded structure with cross-loadings removed.
-  \item \strong{Fit indices}: RMSEA, SRMR, CFI, TLI, \eqn{\chi^2} with qualitative interpretation.
+  \item Remove items causing Heywood or near-Heywood problems.
+  \item Resolve cross-loadings by eliminating items with smallest ambiguity gap.
+  \item Enforce \code{min_items_per_factor}.
+  \item If structure is acceptable but RMSEA > target: remove weakest-loading item.
+  \item When \code{use_global = TRUE}, evaluate multi-item drops (k ≤ max\_drop) that minimize composite loss.
 }
 
-\strong{Evolution plot (ASCII).}
-If plotting is enabled:
+\strong{Composite loss.}
+The loss combines RMSEA, SRMR, and CFI with adaptive weighting (small-df correction, WLSMV boosters, and p-close bonus), enabling more stable decisions during early and late stages of optimization.
+
+\strong{Stopping rules.}
+The algorithm halts when:
 \itemize{
-  \item Each line shows step index, metric value, and a block bar (\verb{█}) of 0–20 units.
-  \item Reference axis marks accompany RMSEA (.05, .08, .10) or loss (.1, .2, .3).
+  \item All items satisfy structural rules AND
+  \item RMSEA ≤ target AND
+  \item Composite loss ≈ 0 (within tolerance), OR
+  \item No removal is possible without violating \code{min_items_per_factor}.
 }
 
-\strong{Elimination criteria.}
-Items may be removed due to:
+\strong{EFA-Boosting Optimization Summary Report.}
+When \code{verbose = TRUE}, the function prints:
 \itemize{
-  \item Heywood or Near-Heywood cases,
-  \item cross-loadings violating structural criteria,
-  \item failure to meet composite-fit improvement,
-  \item global search yielding lower loss.
+  \item Header summarizing estimator, rotation, thresholds, and search mode.
+  \item Full iteration diagnostics: RMSEA, SRMR, CFI, df, composite loss.
+  \item Table of per-factor item counts and structure integrity.
+  \item Loading matrix thresholded at \code{loading}.
+  \item Notifications for all removal events (Heywood, cross-loading, weakest-loading, global-fit).
+  \item Final structure summary with item–factor mapping.
+  \item Fit indices from the final model.
 }
 
-\strong{Final structure.}
-Loadings < threshold are set to zero.
-Per-factor item lists are summarized.
-
-\strong{Fit interpretation.}
-Rule-of-thumb labels:
+\strong{AI conceptual analysis.}
+If enabled, the function:
 \itemize{
-  \item RMSEA: \code{<= .05 Excelente}, \code{<= .08 Adecuado}, \code{<= .10 Limitado}, else Deficiente
-  \item CFI/TLI: \code{>= .95 Excelente}, \code{>= .90 Adecuado}, else Deficiente
-  \item SRMR: \code{<= .08 Adecuado}, else Deficiente
+  \item Generates narrative analyses for removed items (and optionally retained items).
+  \item Includes loading statistics, h², ψ, RMSEA at removal, detection reason.
+  \item Uses multi-attempt retry with exponential backoff for API robustness.
+  \item Includes a timeline of elimination and detailed reasoning.
 }
-
-\strong{Global search notes.}
-Reports subset size k, total combinations evaluated, and whether global optimization improved loss.
 
 }
 
 \value{
-A list containing:
+Returns (invisibly) a list containing:
 \itemize{
-  \item \code{final_structure}
-  \item \code{removed_items}
-  \item \code{steps_log}
-  \item \code{iterations}
-  \item \code{final_rmsea}
-  \item \code{bondades_original}
-  \item \code{inter_factor_correlation}
-  \item \code{last_h2}, \code{last_psi}
-  \item \code{conceptual_analysis}
-  \item \code{config_used}
+  \item \code{final_structure}: Thresholded loadings.
+  \item \code{removed_items}: Items removed in order.
+  \item \code{steps_log}: Table of removal events.
+  \item \code{iterations}: Number of iterations.
+  \item \code{final_rmsea}: Final RMSEA.
+  \item \code{bondades_original}: Fit indices from last model.
+  \item \code{inter_factor_correlation}: Final factor correlation matrix.
+  \item \code{last_h2}, \code{last_psi}: Final communalities and uniquenesses.
+  \item \code{last_flags}: Heywood and near-Heywood flags.
+  \item \code{conceptual_analysis}: GPT-based structured interpretations.
+  \item \code{config_used}: All thresholds and configuration details.
 }
-Returned invisibly.
 }
 
 \examples{
 \dontrun{
 set.seed(123)
-X <- as.data.frame(matrix(rnorm(300*12), ncol = 12))
-names(X) <- paste0("IT", 1:12)
+X <- as.data.frame(matrix(rnorm(300 * 15), ncol = 15))
+names(X) <- paste0("IT",1:15)
 
 res <- efa_boosting(
   data = X,
   name_items = "IT",
-  item_range = c(1, 12),
+  item_range = c(1,15),
   n_factors = 3,
   use_global = TRUE,
   verbose = TRUE
 )
 
-# The console automatically prints the
-# EFA-Boosting Optimization Summary Report.
+# The full EFA-Boosting Optimization Summary Report will print automatically.
 }
 }
 
