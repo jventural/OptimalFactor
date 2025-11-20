@@ -73,5 +73,31 @@ report_efa_results <- function(res, show_plot = TRUE) {
   )
   print(fit_df, row.names = FALSE)
 
+  # Correlaciones inter-factoriales
+  if (!is.null(res$inter_factor_correlation) && nrow(res$inter_factor_correlation) > 1) {
+    cat("\n\nCORRELACIONES INTER-FACTORIALES (PHI)\n\n")
+    print(round(res$inter_factor_correlation, 3))
+
+    # Verificación del criterio de correlación mínima
+    if (!is.null(res$interfactor_check)) {
+      cat("\n")
+      if (res$interfactor_check$criteria_met) {
+        cat("✓ Criterio de correlación mínima cumplido (todas >= ",
+            res$interfactor_check$threshold, ")\n", sep="")
+        cat("  Correlación mínima encontrada: ",
+            sprintf("%.3f", res$interfactor_check$min_value), "\n", sep="")
+      } else {
+        cat("⚠️  ADVERTENCIA: No se cumplió el criterio de correlación mínima (>= ",
+            res$interfactor_check$threshold, ")\n", sep="")
+        cat("  Correlaciones que no cumplen:\n")
+        for (viol in res$interfactor_check$violations) {
+          cat("    - ", viol, "\n", sep="")
+        }
+        cat("  Correlación mínima encontrada: ",
+            sprintf("%.3f", res$interfactor_check$min_value), "\n", sep="")
+      }
+    }
+  }
+
   cat("\n", paste(rep("─", 65), collapse = ""), "\n", sep = "")
 }

@@ -3,13 +3,13 @@ efa_boosting <- function(data,
                          item_range = NULL,
                          n_factors = 3,
                          exclude_items = NULL,
-                         # Thresholds (Heywood + mínimos)
+                         # Thresholds (estructura y correlaciones)
                          thresholds = list(
-                           rmsea = 0.08,
                            loading = 0.30,
                            min_items_per_factor = 3,
                            heywood_tol = 1e-6,
-                           near_heywood = 0.015
+                           near_heywood = 0.015,
+                           min_interfactor_correlation = 0.32
                          ),
                          # Configuración de modelo
                          model_config = list(
@@ -93,7 +93,7 @@ efa_boosting <- function(data,
   max_steps <- n_items - 1
 
   # Mezclar defaults
-  default_thresholds <- list(rmsea=0.08, loading=0.30, min_items_per_factor=3, heywood_tol=1e-6, near_heywood=0.015)
+  default_thresholds <- list(loading=0.30, min_items_per_factor=3, heywood_tol=1e-6, near_heywood=0.015, min_interfactor_correlation=0.32)
   thresholds <- modifyList(default_thresholds, thresholds)
   default_perf <- list(max_candidates_eval=NULL, timeout_efa=30, timeout_optimization=120, use_timeouts=FALSE)
   performance <- modifyList(default_perf, performance)
@@ -381,6 +381,27 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
   }
 
   # ───────── Funciones auxiliares de ajuste ─────────
+
+  # Verificar correlaciones inter-factoriales mínimas
+  check_interfactor_correlations <- function(phi, min_corr) {
+    if (is.null(phi) || nrow(phi) < 2) return(list(ok = TRUE, min_value = NA_real_, violated = character(0)))
+    n <- nrow(phi)
+    violations <- character(0)
+    min_value <- 1
+
+    for (i in 1:(n-1)) {
+      for (j in (i+1):n) {
+        corr_val <- abs(phi[i, j])
+        if (corr_val < min_value) min_value <- corr_val
+        if (corr_val < min_corr) {
+          violations <- c(violations, sprintf("f%d-f%d: %.3f", i, j, corr_val))
+        }
+      }
+    }
+
+    list(ok = length(violations) == 0, min_value = min_value, violated = violations)
+  }
+
   pick_name <- function(nms, patterns) {
     for (pat in patterns) {
       idx <- grep(pat, nms, ignore.case = TRUE)
@@ -719,8 +740,12 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
 
     # ¿Criterios satisfechos?
     min_items_met <- all(ev$counts >= thresholds$min_items_per_factor)
-    if (min_items_met && all(ev$ok) && curr_loss <= 0 + 1e-6) {
-      if (verbose) cat("\n✅ All criteria met (estructura OK y ajuste dentro de objetivos). Fin.\n")
+
+    # Verificar correlaciones inter-factoriales
+    corr_check <- check_interfactor_correlations(phi, thresholds$min_interfactor_correlation)
+
+    if (min_items_met && all(ev$ok) && curr_loss <= 0 + 1e-6 && corr_check$ok) {
+      if (verbose) cat("\n✅ All criteria met (estructura OK, ajuste dentro de objetivos, y correlaciones >= ", thresholds$min_interfactor_correlation, "). Fin.\n", sep="")
       break
     }
 
@@ -1074,6 +1099,10 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     }
   }
 
+  # Verificación final de correlaciones inter-factoriales
+  phi_final <- if (!is.null(mod$InterFactor)) as.matrix(mod$InterFactor) else diag(n_factors)
+  corr_check_final <- check_interfactor_correlations(phi_final, thresholds$min_interfactor_correlation)
+
   if (verbose) {
     cat("\n╔════════════════════════════════════════════════════════════════╗\n")
     cat("║                  OPTIMIZATION COMPLETED                        ║\n")
@@ -1081,6 +1110,19 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     cat("Total iterations:", step_counter, "\n")
     if (length(removed_items)) cat("Items removed:", paste(removed_items, collapse = ", "), "\n")
     cat("Final RMSEA:", fmt_num(extract_fit(mod, n_factors)$rmsea), "\n")
+
+    # Advertencia sobre correlaciones inter-factoriales
+    if (!corr_check_final$ok) {
+      cat("\n⚠️  ADVERTENCIA: No se alcanzó el criterio de correlación mínima entre factores (>= ", thresholds$min_interfactor_correlation, ")\n", sep="")
+      cat("    Correlaciones que no cumplen el criterio:\n")
+      for (viol in corr_check_final$violated) {
+        cat("    - ", viol, "\n", sep="")
+      }
+      cat("    Correlación mínima encontrada: ", fmt_num(corr_check_final$min_value), "\n", sep="")
+    } else {
+      cat("\n✓ Criterio de correlación inter-factorial cumplido (todas >= ", thresholds$min_interfactor_correlation, ")\n", sep="")
+    }
+
     cat("\n✅ Analysis finished successfully.\n\n")
   }
 
@@ -1093,6 +1135,12 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     bondades_original = mod$Bondades_Original,
     specifications    = mod$Specifications,
     inter_factor_correlation = { if (n_factors > 1 && !is.null(mod$InterFactor)) as.matrix(mod$InterFactor) else diag(n_factors) },
+    interfactor_check = list(
+      criteria_met = corr_check_final$ok,
+      min_value = corr_check_final$min_value,
+      violations = corr_check_final$violated,
+      threshold = thresholds$min_interfactor_correlation
+    ),
     last_h2           = if (!is.null(last_ev)) last_ev$h2  else NULL,
     last_psi          = if (!is.null(last_ev)) last_ev$psi else NULL,
     last_flags        = if (!is.null(last_ev)) list(heywood=last_ev$heywood, near=last_ev$near_heywood) else NULL,
