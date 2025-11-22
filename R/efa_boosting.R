@@ -2,6 +2,7 @@ efa_boosting <- function(data,
                          name_items,
                          item_range = NULL,
                          n_factors = 3,
+                         n_sample = NULL,  # Tamaño de muestra (requerido para pesos adaptativos)
                          exclude_items = NULL,
                          # Thresholds (estructura y correlaciones)
                          thresholds = list(
@@ -92,6 +93,12 @@ efa_boosting <- function(data,
   n_items   <- length(items)
   max_steps <- n_items - 1
 
+  # Detectar tamaño de muestra si no se proporciona
+  if (is.null(n_sample)) {
+    n_sample <- nrow(data)
+    if (verbose) cat("Sample size auto-detected: N =", n_sample, "\n")
+  }
+
   # Mezclar defaults
   default_thresholds <- list(loading=0.30, min_items_per_factor=3, heywood_tol=1e-6, near_heywood=0.015, min_interfactor_correlation=0.32)
   thresholds <- modifyList(default_thresholds, thresholds)
@@ -105,8 +112,19 @@ efa_boosting <- function(data,
     targets=list(rmsea=0.08, srmr=0.08, cfi=0.95),
     margins=list(rmsea=0.03, srmr=0.03, cfi=0.03),
     base_weights=list(rmsea=0.50, srmr=0.25, cfi=0.25),
-    small_df_cut=5,
-    small_df_weights=list(rmsea=0.15, srmr=0.45, cfi=0.40),
+    # Pesos adaptativos basados en df × N (Kenny, Shi et al. 2022)
+    # df < 5 & N < 200: RMSEA muy poco confiable
+    critical_weights=list(rmsea=0.02, srmr=0.55, cfi=0.43),
+    # df < 5 & N >= 200: problema se atenúa pero persiste
+    df_low_n_high_weights=list(rmsea=0.10, srmr=0.48, cfi=0.42),
+    # df 5-19 & N < 200: RMSEA con cautela moderada
+    df_mid_n_low_weights=list(rmsea=0.20, srmr=0.45, cfi=0.35),
+    # df 5-19 & N >= 200: situación mejorada
+    df_mid_n_high_weights=list(rmsea=0.30, srmr=0.38, cfi=0.32),
+    # Umbrales para clasificación
+    critical_df_cut=5,    # df < 5 = crítico
+    moderate_df_cut=20,   # df < 20 = moderado
+    small_n_cut=200,      # N < 200 = muestra pequeña
     wlsmv_boost=list(rmsea=0.8, srmr=1.2, cfi=1.1),
     use_pclose_if_available=TRUE,
     pclose_bonus=0.10
@@ -434,9 +452,33 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     s <- sum(unlist(w))
     lapply(w, function(x) as.numeric(x/s))
   }
-  adaptive_weights <- function(df_val, estimator, fitcfg) {
-    w <- fitcfg$base_weights
-    if (!is.na(df_val) && df_val < fitcfg$small_df_cut) w <- fitcfg$small_df_weights
+  adaptive_weights <- function(df_val, n_sample, estimator, fitcfg) {
+    # Sistema de pesos adaptativos basado en df × N (Kenny, Shi et al. 2022)
+    # 5 escenarios según literatura sobre confiabilidad del RMSEA
+
+    # Escenario 1: df < 5 & N < 200 (crítico - RMSEA muy poco confiable)
+    if (!is.na(df_val) && df_val < fitcfg$critical_df_cut) {
+      if (n_sample < fitcfg$small_n_cut) {
+        w <- fitcfg$critical_weights  # RMSEA=0.02, SRMR=0.55, CFI=0.43
+      } else {
+        # Escenario 2: df < 5 & N >= 200 (problema se atenúa)
+        w <- fitcfg$df_low_n_high_weights  # RMSEA=0.10, SRMR=0.48, CFI=0.42
+      }
+    } else if (!is.na(df_val) && df_val < fitcfg$moderate_df_cut) {
+      # Escenarios 3-4: df 5-19 (moderado - interpretar con cautela)
+      if (n_sample < fitcfg$small_n_cut) {
+        # Escenario 3: df 5-19 & N < 200
+        w <- fitcfg$df_mid_n_low_weights  # RMSEA=0.20, SRMR=0.45, CFI=0.35
+      } else {
+        # Escenario 4: df 5-19 & N >= 200
+        w <- fitcfg$df_mid_n_high_weights  # RMSEA=0.30, SRMR=0.38, CFI=0.32
+      }
+    } else {
+      # Escenario 5: df >= 20 (estable - cutoffs clásicos aplican)
+      w <- fitcfg$base_weights  # RMSEA=0.50, SRMR=0.25, CFI=0.25
+    }
+
+    # Boost para WLSMV (ajuste robusto para datos ordinales)
     if (!is.null(estimator) && toupper(estimator) == "WLSMV") {
       w <- list(
         rmsea = w$rmsea * fitcfg$wlsmv_boost$rmsea,
@@ -444,6 +486,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         cfi   = w$cfi   * fitcfg$wlsmv_boost$cfi
       )
     }
+
     normalize_w(w)
   }
   index_loss <- function(value, target, margin, direction = c("le","ge")) {
@@ -458,12 +501,12 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     }
   }
   composite_loss <- function(fit, fitcfg, estimator) {
-    w <- adaptive_weights(fit$df, estimator, fitcfg)
+    w <- adaptive_weights(fit$df, n_sample, estimator, fitcfg)
     L_rmsea <- index_loss(fit$rmsea, fitcfg$targets$rmsea, fitcfg$margins$rmsea, "le")
     L_srmr  <- index_loss(fit$srmr,  fitcfg$targets$srmr,  fitcfg$margins$srmr,  "le")
     L_cfi   <- index_loss(fit$cfi,   fitcfg$targets$cfi,   fitcfg$margins$cfi,   "ge")
     loss <- w$rmsea * L_rmsea + w$srmr * L_srmr + w$cfi * L_cfi
-    if (!is.na(fit$df) && fit$df < fitcfg$small_df_cut &&
+    if (!is.na(fit$df) && fit$df < fitcfg$critical_df_cut &&
         isTRUE(fitcfg$use_pclose_if_available) &&
         !is.na(fit$pclose) && fit$pclose >= 0.05) {
       loss <- max(0, loss - fitcfg$pclose_bonus)
@@ -603,7 +646,8 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
   # ───────── Loop principal ─────────
   exclude_items <- exclude_items %||% character(0)
   removed_items <- character()
-  steps_log <- data.frame(step=integer(), removed_item=character(), reason=character(), rmsea=numeric(), stringsAsFactors=FALSE)
+  steps_log <- data.frame(step=integer(), removed_item=character(), reason=character(),
+                          rmsea=numeric(), srmr=numeric(), cfi=numeric(), stringsAsFactors=FALSE)
   step_counter <- 0
   mod <- NULL
   last_ev <- NULL
@@ -680,7 +724,9 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
       worst <- ev$items[ which.min(ev$psi) ]
       item_removal_stats[[worst]] <- capture_item_stats(worst, ev, mod$result_df, curr_rmsea, "Heywood")
       removed_items <- c(removed_items, worst); step_counter <- step_counter + 1
-      steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason="Heywood", rmsea=curr_rmsea, stringsAsFactors=FALSE))
+      steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason="Heywood",
+                                               rmsea=curr_rmsea, srmr=as.numeric(fit0$srmr), cfi=as.numeric(fit0$cfi),
+                                               stringsAsFactors=FALSE))
       if (verbose) cat("❌ Removed", worst, "due to: Heywood (ψ min)\n")
       next
     }
@@ -689,7 +735,9 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
       worst <- ev$items[idx[ which.min(ev$psi[idx]) ]]
       item_removal_stats[[worst]] <- capture_item_stats(worst, ev, mod$result_df, curr_rmsea, "Near-Heywood")
       removed_items <- c(removed_items, worst); step_counter <- step_counter + 1
-      steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason="Near-Heywood", rmsea=curr_rmsea, stringsAsFactors=FALSE))
+      steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason="Near-Heywood",
+                                               rmsea=curr_rmsea, srmr=as.numeric(fit0$srmr), cfi=as.numeric(fit0$cfi),
+                                               stringsAsFactors=FALSE))
       if (verbose) cat("❌ Removed", worst, "due to: Near-Heywood (ψ≈0)\n")
       next
     }
@@ -704,7 +752,9 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
       if (!is.na(selected)) {
         item_removal_stats[[selected]] <- capture_item_stats(selected, ev, mod$result_df, curr_rmsea, "Cross-loading (priority)")
         removed_items <- c(removed_items, selected); step_counter <- step_counter + 1
-        steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=selected, reason="Cross-loading (priority)", rmsea=curr_rmsea, stringsAsFactors=FALSE))
+        steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=selected, reason="Cross-loading (priority)",
+                                                 rmsea=curr_rmsea, srmr=as.numeric(fit0$srmr), cfi=as.numeric(fit0$cfi),
+                                                 stringsAsFactors=FALSE))
         if (verbose) cat("❌ Removed", selected, "due to: Cross-loading (priority)\n")
         next
       } else {
@@ -728,7 +778,9 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
             item_removal_stats[[worst]] <- capture_item_stats(worst, ev, mod$result_df, curr_rmsea, "Weakest loading (RMSEA > target)")
             removed_items <- c(removed_items, worst)
             step_counter <- step_counter + 1
-            steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason="Weakest loading (RMSEA > target)", rmsea=curr_rmsea, stringsAsFactors=FALSE))
+            steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason="Weakest loading (RMSEA > target)",
+                                                     rmsea=curr_rmsea, srmr=as.numeric(fit0$srmr), cfi=as.numeric(fit0$cfi),
+                                                     stringsAsFactors=FALSE))
             if (verbose) cat("❌ Removed", worst, "| Loading:", fmt_num(max_loadings[weakest_idx]), "\n")
             next
           }
@@ -831,7 +883,8 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
           removed_items <- c(removed_items, best); step_counter <- step_counter + 1
           steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=best,
                                                    reason=if (k_set > 1) sprintf("Global composite fit (k=%d)", k_set) else "Composite fit",
-                                                   rmsea=as.numeric(chosen_fit$rmsea), stringsAsFactors=FALSE))
+                                                   rmsea=as.numeric(chosen_fit$rmsea), srmr=as.numeric(chosen_fit$srmr),
+                                                   cfi=as.numeric(chosen_fit$cfi), stringsAsFactors=FALSE))
         }
         if (verbose) {
           if (length(chosen_subset) == 1) {
@@ -886,7 +939,9 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         item_removal_stats[[worst]] <- capture_item_stats(worst, ev, mod$result_df, curr_rmsea, reason)
         removed_items <- c(removed_items, worst)
         step_counter <- step_counter + 1
-        steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason=reason, rmsea=curr_rmsea, stringsAsFactors=FALSE))
+        steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason=reason,
+                                                 rmsea=curr_rmsea, srmr=as.numeric(fit0$srmr), cfi=as.numeric(fit0$cfi),
+                                                 stringsAsFactors=FALSE))
         if (verbose) cat("❌ Removed", worst, "| Loading:", fmt_num(max_loadings[weakest_idx]), "\n")
         next
       } else {
@@ -908,7 +963,9 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
       if (all(counts2 >= thresholds$min_items_per_factor)) {
         item_removal_stats[[worst]] <- capture_item_stats(worst, ev, mod$result_df, curr_rmsea, reason)
         removed_items <- c(removed_items, worst); step_counter <- step_counter + 1
-        steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason=reason, rmsea=curr_rmsea, stringsAsFactors=FALSE))
+        steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason=reason,
+                                                 rmsea=curr_rmsea, srmr=as.numeric(fit0$srmr), cfi=as.numeric(fit0$cfi),
+                                                 stringsAsFactors=FALSE))
         if (verbose) cat("❌ Removed", worst, "due to:", reason, "\n")
         next
       } else {
@@ -932,7 +989,9 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
             item_removal_stats[[worst_weak]] <- capture_item_stats(worst_weak, ev, mod$result_df, curr_rmsea, "Weakest loading (RMSEA > target)")
             removed_items <- c(removed_items, worst_weak)
             step_counter <- step_counter + 1
-            steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst_weak, reason="Weakest loading (RMSEA > target)", rmsea=curr_rmsea, stringsAsFactors=FALSE))
+            steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst_weak, reason="Weakest loading (RMSEA > target)",
+                                                     rmsea=curr_rmsea, srmr=as.numeric(fit0$srmr), cfi=as.numeric(fit0$cfi),
+                                                     stringsAsFactors=FALSE))
             if (verbose) cat("❌ Removed", worst_weak, "| Loading:", fmt_num(max_loadings[weakest_idx]), "\n")
             next
           } else {
@@ -967,8 +1026,10 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
   # Timeline para IA
   timeline_str <- NULL
   if (nrow(steps_log) > 0) {
-    header <- "ITEM ELIMINATION TIMELINE\n step removed_item  reason                          rmsea"
-    lines <- sprintf("%3d %-12s %-30s %s", steps_log$step, steps_log$removed_item, steps_log$reason, fmt_num(steps_log$rmsea))
+    header <- "ITEM ELIMINATION TIMELINE\n step removed_item  reason                          rmsea   srmr    cfi"
+    lines <- sprintf("%3d %-12s %-30s %s %s %s",
+                     steps_log$step, steps_log$removed_item, steps_log$reason,
+                     fmt_num(steps_log$rmsea), fmt_num(steps_log$srmr), fmt_num(steps_log$cfi))
     timeline_str <- paste(c(header, lines), collapse = "\n")
   }
 

@@ -4,20 +4,25 @@
 
 \description{
 Performs an iterative, machine-learning–inspired optimization of Exploratory Factor Analysis (EFA).
-The algorithm combines greedy elimination with optional global subset search (multi-item removal)
-to improve both model fit (RMSEA, SRMR, CFI) and structural coherence
-(loadings, Heywood and near-Heywood detection, cross-loadings, and minimum items per factor).
 
-A composite loss function with adaptive weighting (small-df correction, WLSMV boosts, p-close bonus)
-guides decisions when structure is acceptable but statistical fit requires improvement.
+The algorithm integrates:
+(1) greedy item-by-item elimination,
+(2) optional global subset search (multi-item removal),
+(3) structural rule enforcement (loadings, Heywood / near-Heywood, cross-loadings, minimum items per factor),
+(4) adaptive minimum interfactor correlation checks, and
+(5) a composite fit index whose weights adapt dynamically to degrees of freedom \emph{and} sample size (df × N), following recommendations by Kenny, Shi, Savalei, and related literature.
 
-When \code{verbose = TRUE}, the function prints the full
-\emph{EFA-Boosting Optimization Summary Report}, including:
-(a) detailed iteration diagnostics,
-(b) elimination events and reasons,
-(c) thresholded final structure,
-(d) evolution of fit indices and composite loss, and
-(e) optional GPT-based conceptual analysis of removed (and optionally retained) items.
+The function handles ordinal data (WLSMV) and includes robust corrections, adaptive weighting rules, and an optional GPT-based conceptual analysis of removed (and optionally retained) items.
+
+When \code{verbose = TRUE}, the function prints a complete
+\emph{EFA-Boosting Optimization Summary Report} including:
+
+(a) iteration diagnostics (RMSEA, SRMR, CFI, df, composite loss),
+(b) identification and elimination of structural problems,
+(c) global-search progress bars and decisions,
+(d) thresholded final structure,
+(e) interfactor-correlation compliance check, and
+(f) AI-based conceptual interpretations.
 
 Returns a complete list of results invisibly.
 }
@@ -28,6 +33,7 @@ efa_boosting(
   name_items,
   item_range = NULL,
   n_factors = 3,
+  n_sample = NULL,
   exclude_items = NULL,
   thresholds = list(...),
   model_config = list(...),
@@ -44,190 +50,204 @@ efa_boosting(
 
 \arguments{
 
-\item{\code{data}}{
-Data frame containing item responses.
-}
+\item{\code{data}}{Data frame of item responses.}
 
 \item{\code{name_items}}{
-Prefix used to identify items (e.g., \code{"IT"} yields IT1, IT2, …).
-Supports automatic item detection.
+Item prefix (e.g., \code{"IT"} produces IT1, IT2, …). Used for auto-detection.
 }
 
 \item{\code{item_range}}{
 Integer vector \code{c(start, end)}.
-If \code{NULL}, items are auto-detected as \code{name_items} + digits.
+If \code{NULL}, items are auto-detected.
 }
 
-\item{\code{n_factors}}{
-Number of factors to extract.
+\item{\code{n_factors}}{Number of factors.}
+
+\item{\code{n_sample}}{
+Sample size.
+If \code{NULL}, auto-detected as \code{nrow(data)}.
+Used for df × N adaptive weighting of the composite fit index.
 }
 
-\item{\code{exclude_items}}{
-Character vector of items to exclude prior to the optimization loop.
-}
+\item{\code{exclude_items}}{Items excluded before starting optimization.}
 
 \item{\code{thresholds}}{
-Structural control settings:
+Rules governing structural decisions:
 \itemize{
-  \item \code{loading}: Minimum acceptable loading; smaller values are thresholded to zero.
+  \item \code{loading}: Minimum acceptable loading.
   \item \code{min_items_per_factor}: Structural protection rule.
-  \item \code{heywood_tol}, \code{near_heywood}: Criteria for Heywood and near-Heywood detection.
+  \item \code{heywood_tol}, \code{near_heywood}: Detection thresholds.
   \item \code{min_interfactor_correlation}: Minimum acceptable factor correlation.
 }
 }
 
 \item{\code{model_config}}{
-EFA model configuration:
+EFA estimation configuration:
 \itemize{
-  \item \code{estimator}: Typically \code{"WLSMV"}.
-  \item \code{rotation}: Typically \code{"oblimin"}.
+  \item \code{estimator = "WLSMV"}
+  \item \code{rotation  = "oblimin"}
 }
 }
 
 \item{\code{performance}}{
-Performance and timeout options:
+Performance and timeout settings:
 \itemize{
-  \item \code{max_candidates_eval}: Limit for greedy evaluation (NULL = evaluate all).
-  \item \code{timeout_efa}: Timeout per EFA estimation (requires \code{R.utils}).
-  \item \code{timeout_optimization}: Global timeout for the boosting cycle.
-  \item \code{use_timeouts}: Enable usage of timeouts.
+  \item \code{max_candidates_eval}: If set, only this many candidates are evaluated in greedy mode.
+  \item \code{timeout_efa}: Timeout per EFA run (requires \code{R.utils}).
+  \item \code{timeout_optimization}: Global timeout.
+  \item \code{use_timeouts}: Enable/disable timeout protection.
 }
 }
 
 \item{\code{use_global}}{
-Enable hybrid optimization with global subset search (multi-item drops).
+Enable global subset search (multi-item removal).
 }
 
 \item{\code{global_opt}}{
-Settings for global search:
+Configuration for global search:
 \itemize{
-  \item \code{max_drop}: Maximum subset size \emph{k} removed simultaneously.
-  \item \code{max_global_combinations}: Hard limit on total combinations.
-  \item \code{verbose}: Show global search diagnostics.
-  \item \code{progress_bar}: Display progress bar during global evaluation.
+  \item \code{max_drop}: Maximum subset size \emph{k}.
+  \item \code{max_global_combinations}: Hard cap to avoid explosion.
+  \item \code{verbose}: Print global-search diagnostics.
+  \item \code{progress_bar}: Show a visual progress bar.
 }
 }
 
 \item{\code{fit_config}}{
-Configuration for the composite fit index:
+Configuration of the adaptive composite fit index:
 \itemize{
-  \item \code{targets}: Target RMSEA, SRMR, CFI.
-  \item \code{margins}: Allowable deviations from each target.
-  \item \code{base_weights}: Weighting of RMSEA / SRMR / CFI.
-  \item \code{small_df_cut}: df threshold for weight switching.
-  \item \code{small_df_weights}: Alternative weights for low-df models.
-  \item \code{wlsmv_boost}: Multiplicative re-weighting when using WLSMV.
-  \item \code{use_pclose_if_available}: Use p-close ≥ .05 to reduce composite loss.
+  \item \code{targets}: Target values for RMSEA, SRMR, CFI.
+  \item \code{margins}: Tolerances for each index.
+  \item \code{base_weights}: Default RMSEA/SRMR/CFI weights.
+  \item \code{critical_weights}: df < 5 and N < 200 (RMSEA nearly useless).
+  \item \code{df_low_n_high_weights}: df < 5 and N >= 200.
+  \item \code{df_mid_n_low_weights}: df 5–19 and N < 200.
+  \item \code{df_mid_n_high_weights}: df 5–19 and N >= 200.
+  \item \code{critical_df_cut}, \code{moderate_df_cut}: df boundaries.
+  \item \code{small_n_cut}: N-boundary for weighting.
+  \item \code{wlsmv_boost}: Multiplicative corrections for WLSMV.
+  \item \code{use_pclose_if_available}: Enables p-close bonus.
   \item \code{pclose_bonus}: Amount subtracted from composite loss.
 }
 }
 
 \item{\code{use_ai_analysis}}{
-Enable GPT-based conceptual analysis for removed items (and optionally retained items).
+Enable GPT-based conceptual analysis of removed (and optionally retained) items.
 }
 
 \item{\code{ai_config}}{
-Settings for GPT-based analysis:
+AI analysis configuration:
 \itemize{
-  \item \code{api_key}: API key for GPT models.
-  \item \code{gpt_model}: Model name (e.g., \code{"gpt-4"}, \code{"gpt-3.5-turbo"}).
-  \item \code{language}: Output language ("Spanish" or "English").
-  \item \code{analysis_detail}: "brief", "standard", or "detailed".
-  \item \code{only_removed}: If FALSE, analyze retained items as well.
-  \item \code{construct_definition}: Definition of the psychological construct.
-  \item \code{item_definitions}: Named list of item contents.
+  \item \code{api_key}: OpenAI API key.
+  \item \code{gpt_model}: Model (e.g., \code{"gpt-4"}, \code{"gpt-3.5-turbo"}).
+  \item \code{language}: "spanish" or "english".
+  \item \code{analysis_detail}: "brief", "standard", "detailed".
+  \item \code{domain_name}, \code{scale_title}, \code{model_name}: Metadata included in prompts.
+  \item \code{construct_definition}: Theoretical definition of the latent construct.
+  \item \code{item_definitions}: Named list with item wording.
+  \item \code{only_removed}: If FALSE, retained items are also analyzed.
 }
 }
 
 \item{\code{verbose}}{
-If TRUE, prints the full \emph{EFA-Boosting Optimization Summary Report},
-including iteration diagnostics, structural changes, model fit evolution,
-and AI progress bars.
+If TRUE, prints the full diagnostic report, global-search bars, item maps,
+interfactor-correlation warnings, and AI progress bars.
 }
 
 }
 
 \details{
 
-\strong{Optimization strategy.}
-The algorithm follows a hierarchical decision system:
+\strong{1. Optimization strategy.}
+
+The algorithm follows a strict hierarchical rule system:
 \itemize{
-  \item Detect and remove Heywood and near-Heywood items.
-  \item Resolve cross-loadings by eliminating the item with smallest ambiguity gap.
-  \item Enforce \code{min_items_per_factor} at all stages.
-  \item If structure is acceptable but RMSEA exceeds the target, remove the weakest-loading item.
-  \item If \code{use_global = TRUE}, evaluate all subsets up to size \code{max_drop} that improve the composite loss.
+  \item Remove Heywood items (ψ < –tol or |loading| > 1).
+  \item Remove near-Heywood items (ψ ≈ 0).
+  \item Resolve cross-loadings by removing items with smallest ambiguity gap.
+  \item Enforce minimum items per factor.
+  \item If structure is acceptable but RMSEA > target: remove the weakest-loading item.
+  \item If \code{use_global = TRUE}: evaluate all subsets up to \code{max_drop} using the composite loss.
 }
 
-\strong{Composite loss.}
-A weighted index combining RMSEA, SRMR, and CFI with:
-\itemize{
-  \item adaptive weights for small df,
-  \item WLSMV-specific boosts,
-  \item p-close bonus when available.
-}
-This stabilizes selection decisions during early and late optimization phases.
+\strong{2. Adaptive composite loss (df × N).}
 
-\strong{Stopping rules.}
-The procedure halts when:
+Weights for RMSEA / SRMR / CFI adapt dynamically according to:
 \itemize{
-  \item all structural criteria are satisfied, AND
-  \item RMSEA ≤ target, AND
-  \item composite loss is approximately zero, OR
-  \item no further removal is possible without violating \code{min_items_per_factor}.
+  \item degrees of freedom (df),
+  \item sample size (N),
+  \item estimator (WLSMV boosters),
+  \item p-close ≥ .05 (bonus).
 }
 
-\strong{EFA-Boosting Optimization Summary Report.}
-When \code{verbose = TRUE}, the function prints:
+This allows stable decisions even when RMSEA is unreliable (df < 5).
+
+\strong{3. Interfactor correlation rule.}
+
+After each iteration and at finalization, factor correlations are checked:
 \itemize{
-  \item Initialization header with estimator, rotation, thresholds, and search mode.
-  \item Per-iteration diagnostics: RMSEA, SRMR, CFI, df, composite loss.
-  \item Structural integrity tables (items per factor).
-  \item Thresholded loading matrix.
-  \item Removal notifications: Heywood, cross-loading, weakest-loading, global-fit.
-  \item Final factor structure and item–factor mapping.
-  \item Final model fit indices.
+  \item If any |φ_{ij}| < \code{min_interfactor_correlation}, a warning is printed.
 }
 
-\strong{AI conceptual analysis.}
-If enabled, the function:
+\strong{4. Global subset search.}
+
+If enabled:
 \itemize{
-  \item Produces narrative explanations for removed (and optionally retained) items.
-  \item Uses item-level statistics: loadings, second loading, ambiguity gap, h², ψ, RMSEA at removal.
-  \item Implements retry logic with exponential backoff.
-  \item Generates a complete timeline of removal events and reasons.
+  \item evaluates all subsets of size 1 … k,
+  \item uses safe-combination caps,
+  \item shows a progress bar,
+  \item accepts subset removals only if composite loss strictly improves.
+}
+
+\strong{5. AI conceptual analysis.}
+
+If \code{use_ai_analysis = TRUE}:
+\itemize{
+  \item removed items receive a narrative justification using
+        loadings, ambiguity gaps, h², ψ, RMSEA-at-removal, and algorithmic reason,
+  \item retained items can also be evaluated,
+  \item exponential-backoff retry logic ensures robustness,
+  \item a detailed elimination timeline is integrated into the prompt.
 }
 
 }
 
 \value{
-Returns (invisibly) a list containing:
+A list containing:
 \itemize{
   \item \code{final_structure}: Thresholded loading matrix.
-  \item \code{removed_items}: Items removed (in order).
-  \item \code{steps_log}: Full elimination log.
-  \item \code{iterations}: Number of boosting iterations.
+  \item \code{removed_items}: Items removed (in chronological order).
+  \item \code{steps_log}: Full elimination log with the following columns:
+    \itemize{
+      \item \code{step}: Iteration number
+      \item \code{removed_item}: Name of the removed item
+      \item \code{reason}: Reason for removal
+      \item \code{rmsea}: RMSEA value at the moment of removal (scaled when WLSMV is used)
+      \item \code{srmr}: SRMR value at the moment of removal
+      \item \code{cfi}: CFI value at the moment of removal (scaled when WLSMV is used)
+    }
+  \item \code{iterations}: Number of optimization iterations.
   \item \code{final_rmsea}: Final RMSEA.
   \item \code{bondades_original}: Fit indices from the final model.
-  \item \code{inter_factor_correlation}: Final factor correlation matrix.
+  \item \code{inter_factor_correlation}: Final φ matrix.
+  \item \code{interfactor_check}: Information about violations.
   \item \code{last_h2}, \code{last_psi}: Final communalities and uniquenesses.
-  \item \code{last_flags}: Heywood and near-Heywood flags.
-  \item \code{conceptual_analysis}: GPT-based interpretations.
-  \item \code{config_used}: All configuration parameters.
+  \item \code{last_flags}: Heywood and near-Heywood indicators.
+  \item \code{conceptual_analysis}: GPT-based narrative analyses.
+  \item \code{config_used}: Full configuration list.
 }
 }
 
 \examples{
 \dontrun{
-set.seed(123)
-X <- as.data.frame(matrix(rnorm(300 * 15), ncol = 15))
-names(X) <- paste0("IT",1:15)
+X <- replicate(12, rnorm(500))
+X <- as.data.frame(X); names(X) <- paste0("IT",1:12)
 
 res <- efa_boosting(
   data = X,
   name_items = "IT",
-  item_range = c(1,15),
   n_factors = 3,
+  n_sample = 500,
   use_global = TRUE,
   verbose = TRUE
 )
