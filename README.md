@@ -8,7 +8,7 @@
 - **Automatic Problem Detection**: Heywood cases, cross-loadings, and low loadings
 - **Global Search**: Multi-item removal optimization
 - **AI Integration**: Optional GPT-powered conceptual analysis of removed items
-- **Interactive Shiny App**: User-friendly interface for EFA optimization
+- **Interactive Shiny App**: EFA-Boosting Studio for user-friendly EFA optimization
 
 ## Installation
 
@@ -36,11 +36,11 @@ result <- efa_boosting(
 )
 ```
 
-### Shiny Application
+### EFA-Boosting Studio (Shiny App)
 
 ```r
-# Launch the interactive EFA Optimizer
-run_efa_optimizer()
+library(OptimalFactor)
+run_efa_boosting()
 ```
 
 ## Main Functions
@@ -48,9 +48,8 @@ run_efa_optimizer()
 | Function | Description |
 |----------|-------------|
 | `efa_boosting()` | EFA optimization with adaptive composite fit |
-| `efa_optimizer()` | Classic EFA optimization with RMSEA target |
+| `run_efa_boosting()` | Launch EFA-Boosting Studio (Shiny app) |
 | `cfa_boosting()` | CFA optimization with modification indices |
-| `run_efa_optimizer()` | Launch interactive Shiny application |
 | `print_conceptual_analysis()` | Display AI-generated item analyses |
 
 ## Examples

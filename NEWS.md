@@ -13,10 +13,14 @@
   - Interfactor correlation verification
   - Optional AI-assisted conceptual analysis via GPT models
 
-* **efa_optimizer()**: Classic EFA optimization with RMSEA target
-  - Step-by-step item elimination
-  - Structural rule enforcement
-  - AI integration for item analysis
+* **run_efa_boosting()**: Launch EFA-Boosting Studio
+  - Interactive Shiny application for EFA optimization
+  - Real-time console output with auto-scroll
+  - Modern Bootstrap 5 interface
+  - CSV/Excel data import
+  - Configurable fit targets and thresholds
+  - Option to exclude specific items
+  - Export results to CSV
 
 * **cfa_boosting()**: Confirmatory Factor Analysis optimization
   - Modification indices-based model improvement
@@ -32,11 +36,6 @@
   - Word document export
   - Plain text export
   - Formatted tables
-
-* **report_efa_results()**: Comprehensive EFA reporting
-  - Factor structure visualization
-  - Fit indices summary
-  - Item statistics
 
 ### Data
 
