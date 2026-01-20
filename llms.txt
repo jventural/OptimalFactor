@@ -7,7 +7,8 @@ and CFA using machine-learning inspired boosting algorithms.
 [**Visit the author’s website**](https://joseventuraleon.com/)  
   
 
-![CRAN version](https://www.r-pkg.org/badges/version/OptimalFactor)
+![CRAN
+version](https://www.r-pkg.org/badges/version/OptimalFactor)[![Documentation](https://img.shields.io/badge/docs-pkgdown-blue.svg)](https://jventural.github.io/OptimalFactor/)
 
 ## Features
 
