@@ -1,0 +1,150 @@
+---
+title: "EFA-Boosting Algorithm"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{EFA-Boosting Algorithm}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+## Algorithm Overview
+
+The EFA-Boosting algorithm is an iterative optimization procedure designed to find the optimal item configuration for exploratory factor analysis models. It combines multiple fit indices into an adaptive composite score that adjusts based on model complexity and sample size.
+
+## How It Works
+
+### Step 1: Initial Model Fit
+
+The algorithm starts by fitting an initial EFA model with all items using the `EFA_modern()` function from PsyMetricTools.
+
+### Step 2: Problem Detection
+
+At each iteration, the algorithm checks for:
+
+1. **Heywood cases**: Factor loadings > 1.0
+2. **Near-Heywood cases**: Factor loadings > 0.95
+3. **Cross-loadings**: Items loading on multiple factors above the threshold
+4. **Low loadings**: Items with loadings below the minimum threshold
+5. **Interfactor correlations**: Correlations > 0.85 between factors
+
+### Step 3: Item Removal Strategy
+
+Two search strategies are available:
+
+#### Greedy Search (Default)
+
+Removes one problematic item at a time based on priority:
+1. Heywood cases
+2. Near-Heywood cases
+3. Cross-loadings
+4. Lowest adaptive fit contribution
+
+#### Global Search
+
+Evaluates all possible combinations of removing 1 to `global_max_remove` items simultaneously, selecting the combination that produces the best adaptive composite fit.
+
+### Step 4: Adaptive Fit Calculation
+
+The composite fit is calculated as:
+
+```
+Composite = (w_RMSEA × RMSEA_norm) + (w_SRMR × SRMR_norm) + (w_CFI × CFI_inv)
+```
+
+Where weights are adapted based on df × N following Kenny & McCoach (2003) and Shi et al. (2019).
+
+### Step 5: Convergence
+
+The algorithm stops when:
+- All fit targets are met (RMSEA, SRMR, CFI)
+- Minimum items per factor constraint is reached
+- Maximum iterations exceeded
+- No improvement possible
+
+## Usage Examples
+
+### Basic Usage
+
+```{r}
+library(OptimalFactor)
+
+result <- efa_boosting(
+  data = Data_Personality,
+  name_items = "item",
+  n_factors = 5,
+  verbose = TRUE
+)
+```
+
+### Advanced Configuration
+
+```{r}
+result <- efa_boosting(
+  data = Data_Personality,
+  name_items = "item",
+  n_factors = 5,
+  rotation = "oblimin",
+  target_RMSEA = 0.05,
+  target_SRMR = 0.05,
+  target_CFI = 0.95,
+  min_loading = 0.40,
+  cross_loading_threshold = 0.32,
+  min_items_per_factor = 3,
+  global_search = TRUE,
+  global_max_remove = 3,
+  verbose = TRUE
+)
+```
+
+### With AI Analysis
+
+```{r}
+result <- efa_boosting(
+  data = Data_Personality,
+  name_items = "item",
+  n_factors = 5,
+  use_gpt = TRUE,
+  gpt_model = "gpt-4o-mini",
+  verbose = TRUE
+)
+
+# Print AI analysis
+print_conceptual_analysis(result$conceptual_analysis)
+```
+
+## Parameters
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `data` | - | Data frame with items |
+| `name_items` | - | Prefix of item columns |
+| `n_factors` | - | Number of factors to extract |
+| `rotation` | "oblimin" | Rotation method |
+| `target_RMSEA` | 0.06 | Target RMSEA value |
+| `target_SRMR` | 0.06 | Target SRMR value |
+| `target_CFI` | 0.95 | Target CFI value |
+| `min_loading` | 0.40 | Minimum acceptable loading |
+| `cross_loading_threshold` | 0.32 | Cross-loading threshold |
+| `min_items_per_factor` | 3 | Minimum items per factor |
+| `global_search` | FALSE | Enable global search |
+| `global_max_remove` | 2 | Max items in global search |
+| `use_gpt` | FALSE | Enable AI analysis |
+| `verbose` | TRUE | Print progress |
+
+## Output
+
+The function returns a list containing:
+
+- `final_structure`: Final factor loadings matrix
+- `fit_indices`: Final fit indices
+- `removed_items`: List of removed items with reasons
+- `iteration_history`: Details of each iteration
+- `conceptual_analysis`: AI analysis (if enabled)

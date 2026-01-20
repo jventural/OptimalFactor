@@ -19,8 +19,9 @@ Description: Provides an advanced iterative optimization algorithm for
     AI-assisted conceptual analysis of removed items using GPT models. Supports
     ordinal data with WLSMV estimation and various rotation methods.
 License: GPL (>= 3)
-URL: https://github.com/jventuralon/OptimalFactor
-BugReports: https://github.com/jventuralon/OptimalFactor/issues
+URL: https://github.com/jventural/OptimalFactor,
+    https://jventural.github.io/OptimalFactor/
+BugReports: https://github.com/jventural/OptimalFactor/issues
 Encoding: UTF-8
 LazyData: true
 Depends:

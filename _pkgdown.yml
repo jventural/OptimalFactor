@@ -1,0 +1,83 @@
+url: https://jventural.github.io/OptimalFactor/
+
+template:
+  bootstrap: 5
+  bootswatch: flatly
+  bslib:
+    primary: "#0d6efd"
+    border-radius: 0.5rem
+    btn-border-radius: 0.25rem
+
+home:
+  title: OptimalFactor - Optimal Factor Analysis with EFA-Boosting Algorithm
+  description: >
+    A comprehensive R package for optimal factor model refinement in both
+    EFA and CFA using machine-learning inspired boosting algorithms.
+
+navbar:
+  structure:
+    left:  [intro, reference, articles, news]
+    right: [search, github]
+  components:
+    intro:
+      text: Get Started
+      href: articles/OptimalFactor.html
+    articles:
+      text: Articles
+      menu:
+      - text: Introduction to OptimalFactor
+        href: articles/OptimalFactor.html
+      - text: EFA-Boosting Algorithm
+        href: articles/efa-boosting.html
+      - text: EFA-Boosting Studio
+        href: articles/efa-boosting-studio.html
+    reference:
+      text: Reference
+      href: reference/index.html
+    news:
+      text: News
+      href: news/index.html
+
+reference:
+- title: EFA Optimization
+  desc: Functions for Exploratory Factor Analysis optimization
+  contents:
+  - efa_boosting
+  - run_efa_boosting
+  - efa_optimizer
+  - optimal_efa_with_ai
+
+- title: CFA Optimization
+  desc: Functions for Confirmatory Factor Analysis optimization
+  contents:
+  - cfa_boosting
+  - optimal_cfa_with_ai
+
+- title: Results Display
+  desc: Functions for displaying and exporting results
+  contents:
+  - print_efa_results
+  - print_cfa_results
+  - report_efa_results
+  - imprimir_items_eliminados
+
+- title: AI Analysis
+  desc: Functions for AI-powered conceptual analysis
+  contents:
+  - print_conceptual_analysis
+  - export_conceptual_analysis
+
+- title: Example Data
+  desc: Datasets included in the package
+  contents:
+  - Data_Expectativas
+  - Data_Personality
+
+footer:
+  structure:
+    left: developed_by
+    right: built_with
+
+authors:
+  Jose Ventura-Leon:
+    href: https://joseventuraleon.com/
