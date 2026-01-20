@@ -1,5 +1,5 @@
 <p align="center"> <img src="https://github.com/jventural/OptimalFactor/blob/master/logo_optimalfactor.png" alt="OptimalFactor" width="200" height="200"/> </p> <h1 align="center">OptimalFactor</h1> <p align="center">
-  A comprehensive package for optimal factor model refinement in both EFA and CFA using machine-learning inspired boosting algorithms. <br /> <a href="https://joseventuraleon.com/"><strong>Visit the author's website</strong></a> <br /><br /> </p> <p align="center"> <img src="https://www.r-pkg.org/badges/version/OptimalFactor" alt="CRAN version"/> </p>
+  A comprehensive package for optimal factor model refinement in both EFA and CFA using machine-learning inspired boosting algorithms. <br /> <a href="https://joseventuraleon.com/"><strong>Visit the author's website</strong></a> <br /><br /> </p> <p align="center"> <img src="https://www.r-pkg.org/badges/version/OptimalFactor" alt="CRAN version"/> <a href="https://jventural.github.io/OptimalFactor/"><img src="https://img.shields.io/badge/docs-pkgdown-blue.svg" alt="Documentation"/></a> </p>
 
 ## Features
 
