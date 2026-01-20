@@ -1,15 +1,54 @@
 Package: OptimalFactor
+Type: Package
+Title: Optimal Factor Analysis with EFA-Boosting Algorithm
 Version: 1.0.0
-Date: 2025-04-10
-Title: Optimal Factor Analysis Tools for Model Refinement in EFA and CFA
-Encoding: UTF-8
-Author: José Ventura-León <jventuraleon@gmail.com>
-Maintainer: José Ventura-León <jventuraleon@gmail.com>
-Depends: R (>= 4.0.0)
-Imports: tidyverse, lavaan, psych, stringr, broom, dplyr, tidyr, ggplot2, reshape2, gridExtra, gtable
-Description: OptimalFactor is a comprehensive package designed to enhance and optimize factor analysis models in social sciences.
+Date: 2026-01-20
+Authors@R:
+    person("Jose", "Ventura-Leon",
+           email = "jventuraleon@gmail.com",
+           role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0003-2996-4244"))
+Description: Provides an advanced iterative optimization algorithm for
+    Exploratory Factor Analysis (EFA) using a machine-learning inspired
+    boosting approach. The package implements adaptive composite fit indices
+    with weights that adjust dynamically based on degrees of freedom and sample
+    size following Kenny, Shi, and Savalei (2022) recommendations. Features
+    include automatic detection and removal of problematic items (Heywood cases,
+    cross-loadings, low loadings), greedy and global search strategies for
+    optimal item selection, interfactor correlation verification, and optional
+    AI-assisted conceptual analysis of removed items using GPT models. Supports
+    ordinal data with WLSMV estimation and various rotation methods.
 License: GPL (>= 3)
 URL: https://github.com/jventuralon/OptimalFactor
-Packaged: 2024-01-27 10:50:11 UTC; José Ventura-León
-Suggests: testthat (>= 3.0.0)
+BugReports: https://github.com/jventuralon/OptimalFactor/issues
+Encoding: UTF-8
 LazyData: true
+Depends:
+    R (>= 4.0.0)
+Imports:
+    lavaan,
+    psych,
+    PsyMetricTools,
+    dplyr,
+    tidyr,
+    ggplot2,
+    stringr,
+    utils
+Remotes:
+    jventural/PsyMetricTools
+Suggests:
+    testthat (>= 3.0.0),
+    httr,
+    jsonlite,
+    R.utils,
+    knitr,
+    rmarkdown,
+    shiny (>= 1.7.0),
+    bslib (>= 0.5.0),
+    DT,
+    readxl,
+    readr,
+    future,
+    promises
+RoxygenNote: 7.3.2
+VignetteBuilder: knitr

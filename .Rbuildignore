@@ -1,2 +1,27 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.RData$
+^\.Rhistory$
+^\.git$
+^\.gitignore$
+^LICENSE\.md$
+^README\.Rmd$
+^cran-comments\.md$
+^\.github$
+^codecov\.yml$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.lintr$
+^revdep$
+^CRAN-SUBMISSION$
+^\.travis\.yml$
+^appveyor\.yml$
+^Data_Expectativas\.xlsx$
+^Data_Personality\.xlsx$
+^logo_optimalfactor\.png$
+^Efa_Optimizer \(anterior\)\.txt$
+^logs$
+^R/logs$
+^R/efa_optimizer shiny\.R$
+^inst/shiny-apps/efa_optimizer$

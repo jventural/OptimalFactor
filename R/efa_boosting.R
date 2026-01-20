@@ -491,7 +491,8 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
   }
   index_loss <- function(value, target, margin, direction = c("le","ge")) {
     direction <- match.arg(direction)
-    if (is.na(value)) return(0.5)
+    # NA = peor caso (1), no valor intermedio (0.5), para evitar "mejoras fantasma"
+    if (is.na(value)) return(1)
     if (direction == "le") {
       if (value <= target) return(0)
       return(clamp01((value - target)/margin))

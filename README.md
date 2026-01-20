@@ -1,30 +1,70 @@
 <p align="center"> <img src="https://github.com/jventural/OptimalFactor/blob/master/logo_optimalfactor.png" alt="OptimalFactor" width="200" height="200"/> </p> <h1 align="center">OptimalFactor</h1> <p align="center">
-  A comprehensive package for optimal factor model refinement in both EFA and CFA. <br /> <a href="https://joseventuraleon.com/"><strong>Visit the author's website »</strong></a> <br /><br /> </p> <p align="center"> <img src="https://www.r-pkg.org/badges/version/OptimalFactor" alt="CRAN version"/> </p>
+  A comprehensive package for optimal factor model refinement in both EFA and CFA using machine-learning inspired boosting algorithms. <br /> <a href="https://joseventuraleon.com/"><strong>Visit the author's website</strong></a> <br /><br /> </p> <p align="center"> <img src="https://www.r-pkg.org/badges/version/OptimalFactor" alt="CRAN version"/> </p>
+
+## Features
+
+- **EFA-Boosting Algorithm**: Advanced iterative optimization for Exploratory Factor Analysis
+- **Adaptive Fit Indices**: Dynamic weights based on df x N following Kenny, Shi & Savalei (2022)
+- **Automatic Problem Detection**: Heywood cases, cross-loadings, and low loadings
+- **Global Search**: Multi-item removal optimization
+- **AI Integration**: Optional GPT-powered conceptual analysis of removed items
+- **Interactive Shiny App**: User-friendly interface for EFA optimization
 
 ## Installation
-You can install the latest version of OptimalFactor from GitHub using the devtools package:
+
+You can install the latest version of OptimalFactor from GitHub:
 
 ```r
 if (!require("devtools")) {
   install.packages("devtools")
 }
-devtools::install_github("jventuraleon/OptimalFactor")
+devtools::install_github("jventural/OptimalFactor")
 ```
-# Examples
 
-## OptimalFactor: Examples of EFA and CFA
-Below is an example of how to use the OptimalFactor library to improve your EFA and CFA models:
+## Quick Start
+
+### EFA-Boosting
+
+```r
+library(OptimalFactor)
+
+result <- efa_boosting(
+  data = your_data,
+  name_items = "item",
+  n_factors = 3,
+  verbose = TRUE
+)
+```
+
+### Shiny Application
+
+```r
+# Launch the interactive EFA Optimizer
+run_efa_optimizer()
+```
+
+## Main Functions
+
+| Function | Description |
+|----------|-------------|
+| `efa_boosting()` | EFA optimization with adaptive composite fit |
+| `efa_optimizer()` | Classic EFA optimization with RMSEA target |
+| `cfa_boosting()` | CFA optimization with modification indices |
+| `run_efa_optimizer()` | Launch interactive Shiny application |
+| `print_conceptual_analysis()` | Display AI-generated item analyses |
+
+## Examples
+
 [Basic tutorial of the R OptimalFactor library](https://rpubs.com/jventural/OptimalFactor)
 
------
+## License
 
-# License
 GPL-3
 
-# Citation
-Ventura-León, J. (2025). _OptimalFactor_ [Software]. GitHub. https://github.com/jventuraleon/OptimalFactor
+## Citation
 
-# Author
-José Ventura-León jventuraleon@gmail.com
+Ventura-Leon, J. (2026). _OptimalFactor: Optimal Factor Analysis with EFA-Boosting Algorithm_ [R package]. GitHub. https://github.com/jventural/OptimalFactor
 
-Packaged: 2025-04-10 10:50:11 UTC; José Ventura-León
+## Author
+
+Jose Ventura-Leon <jventuraleon@gmail.com>
