@@ -8,6 +8,7 @@ export(export_conceptual_analysis)
 export(report_efa_results)
 export(run_efa_boosting)
 export(print_cfa_boosting)
+export(export_cfa_boosting)
 
 importFrom(lavaan,cfa)
 importFrom(lavaan,fitmeasures)

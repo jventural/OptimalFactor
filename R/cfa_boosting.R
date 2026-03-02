@@ -14,11 +14,13 @@ cfa_boosting <- function(data,
                            estimator = "WLSMV",
                            ordered = TRUE
                          ),
-                         # Configuración de índices de modificación
+                         # Configuración de índices de modificación (Saris-Satorra-van der Veld)
                          mod_indices_config = list(
-                           min_mi = 10,
                            max_covs_to_add = 10,
-                           only_within_factor = TRUE
+                           only_within_factor = TRUE,
+                           delta = 0.10,
+                           power_threshold = 0.75,
+                           alpha = 0.05
                          ),
                          # Performance
                          performance = list(
@@ -49,6 +51,42 @@ cfa_boosting <- function(data,
     sprintf("%s %d/%d (%.1f%%)", bar, current, total, percent * 100)
   }
 
+  # Clasificar restricción según Saris, Satorra & van der Veld (2009), Table 6
+  # Combina MI + EPC + Power del test MI para decidir si hay misespecificación
+  classify_restriction <- function(mi_val, epc_val, delta, power_threshold, alpha) {
+    if (is.na(mi_val) || is.na(epc_val) || mi_val <= 0) {
+      return(list(decision = "I", power = NA_real_))
+    }
+
+    c_alpha <- qchisq(1 - alpha, df = 1)
+    mi_sig <- mi_val > c_alpha
+
+    # EPC ~ 0: no se puede calcular poder
+    if (abs(epc_val) < 1e-10) {
+      return(list(decision = if (mi_sig) "EPC:nm" else "I", power = NA_real_))
+    }
+
+    # ncp = (MI / EPC^2) * delta^2  [Saris et al., fórmula 10]
+    ncp <- (mi_val / epc_val^2) * delta^2
+
+    # Power = P(chi2(1, ncp) > c_alpha)  [fórmula 11]
+    power <- 1 - pchisq(c_alpha, df = 1, ncp = ncp)
+
+    # Tabla 6 de decisiones
+    if (mi_sig && power < power_threshold) {
+      decision <- "m"            # Misespecificación (baja potencia pero significativo)
+    } else if (!mi_sig && power >= power_threshold) {
+      decision <- "nm"           # No hay misespecificación
+    } else if (mi_sig && power >= power_threshold) {
+      # MI significativo con alta potencia: inspeccionar relevancia sustantiva del EPC
+      decision <- if (abs(epc_val) > delta) "EPC:m" else "EPC:nm"
+    } else {
+      decision <- "I"            # Inconcluso
+    }
+
+    list(decision = decision, power = power)
+  }
+
   # Cargar lavaan
   if (!requireNamespace("lavaan", quietly = TRUE)) {
     stop("El paquete 'lavaan' es requerido. Instálelo con: install.packages('lavaan')")
@@ -69,7 +107,8 @@ cfa_boosting <- function(data,
   default_model_config <- list(estimator = "WLSMV", ordered = TRUE)
   model_config <- modifyList(default_model_config, model_config)
 
-  default_mod_config <- list(min_mi = 10, max_covs_to_add = 10, only_within_factor = TRUE)
+  default_mod_config <- list(max_covs_to_add = 10, only_within_factor = TRUE,
+                              delta = 0.10, power_threshold = 0.75, alpha = 0.05)
   mod_indices_config <- modifyList(default_mod_config, mod_indices_config)
 
   default_perf <- list(max_iterations = 30, timeout_cfa = 60)
@@ -85,7 +124,10 @@ cfa_boosting <- function(data,
         " | SRMR <=", thresholds$srmr_target, "\n")
     cat("Estimador:", model_config$estimator, "\n")
     cat("Min items/factor:", thresholds$min_items_per_factor, "\n")
-    cat("Loading mínimo:", thresholds$loading, "\n\n")
+    cat("Loading mínimo:", thresholds$loading, "\n")
+    cat("MI framework: Saris-Satorra-van der Veld (delta=", mod_indices_config$delta,
+        ", power>=", mod_indices_config$power_threshold,
+        ", alpha=", mod_indices_config$alpha, ")\n\n")
   }
 
   # ───────────────── Parsear modelo inicial ─────────────────
@@ -128,27 +170,35 @@ cfa_boosting <- function(data,
   }
 
   # ───────────────── Extraer índices de ajuste ─────────────────
+  # Prefiere versiones .scaled (WLSMV, DWLS, MLR) sobre las estándar.
+  # Esto es CRÍTICO: con estimadores robustos, las versiones sin .scaled
+
+  # usan chi-cuadrado no corregido y producen índices incorrectos.
   extract_fit <- function(fit) {
-    fm <- tryCatch({
-      fitMeasures(fit, c("chisq", "df", "pvalue", "cfi", "tli",
-                         "rmsea", "rmsea.ci.lower", "rmsea.ci.upper", "srmr"))
-    }, error = function(e) NULL)
+    fm <- tryCatch(fitMeasures(fit), error = function(e) NULL)
 
     if (is.null(fm)) {
       return(list(chisq = NA, df = NA, pvalue = NA, cfi = NA, tli = NA,
                   rmsea = NA, rmsea.lower = NA, rmsea.upper = NA, srmr = NA))
     }
 
+    # Helper: toma la versión .scaled si existe, si no la estándar
+    pick <- function(scaled, standard) {
+      if (scaled %in% names(fm)) as.numeric(fm[scaled])
+      else if (standard %in% names(fm)) as.numeric(fm[standard])
+      else NA_real_
+    }
+
     list(
-      chisq = as.numeric(fm["chisq"]),
-      df = as.numeric(fm["df"]),
-      pvalue = as.numeric(fm["pvalue"]),
-      cfi = as.numeric(fm["cfi"]),
-      tli = as.numeric(fm["tli"]),
-      rmsea = as.numeric(fm["rmsea"]),
-      rmsea.lower = as.numeric(fm["rmsea.ci.lower"]),
-      rmsea.upper = as.numeric(fm["rmsea.ci.upper"]),
-      srmr = as.numeric(fm["srmr"])
+      chisq       = pick("chisq.scaled",          "chisq"),
+      df          = pick("df.scaled",              "df"),
+      pvalue      = pick("pvalue.scaled",          "pvalue"),
+      cfi         = pick("cfi.scaled",             "cfi"),
+      tli         = pick("tli.scaled",             "tli"),
+      rmsea       = pick("rmsea.scaled",           "rmsea"),
+      rmsea.lower = pick("rmsea.ci.lower.scaled",  "rmsea.ci.lower"),
+      rmsea.upper = pick("rmsea.ci.upper.scaled",  "rmsea.ci.upper"),
+      srmr        = as.numeric(fm["srmr"])
     )
   }
 
@@ -213,10 +263,13 @@ cfa_boosting <- function(data,
     problematic
   }
 
-  # ───────────────── Obtener mejores covarianzas de MI ─────────────────
+  # ───────────────── Obtener covarianzas con misespecificación (Saris-Satorra) ─────────────────
   get_best_covariances <- function(fit, factors, existing_covs, only_within = TRUE) {
+    # Umbral de significancia del MI (chi2 con df=1)
+    c_alpha <- qchisq(1 - mod_indices_config$alpha, df = 1)
+
     mi <- tryCatch({
-      modificationIndices(fit, sort. = TRUE, minimum.value = mod_indices_config$min_mi)
+      modificationIndices(fit, sort. = TRUE, minimum.value = c_alpha)
     }, error = function(e) NULL)
 
     if (is.null(mi) || nrow(mi) == 0) return(NULL)
@@ -240,10 +293,8 @@ cfa_boosting <- function(data,
     # Filtrar por within-factor si se requiere
     if (only_within) {
       within_mask <- sapply(1:nrow(mi_cov), function(i) {
-        lhs <- mi_cov$lhs[i]
-        rhs <- mi_cov$rhs[i]
-        f1 <- item_to_factor[[lhs]]
-        f2 <- item_to_factor[[rhs]]
+        f1 <- item_to_factor[[mi_cov$lhs[i]]]
+        f2 <- item_to_factor[[mi_cov$rhs[i]]]
         !is.null(f1) && !is.null(f2) && f1 == f2
       })
       mi_cov <- mi_cov[within_mask, ]
@@ -257,11 +308,26 @@ cfa_boosting <- function(data,
 
     existing_set <- c()
     for (cov in existing_covs) {
-      cov_clean <- gsub("\\s+", " ", trimws(cov))
-      existing_set <- c(existing_set, cov_clean)
+      existing_set <- c(existing_set, gsub("\\s+", " ", trimws(cov)))
     }
 
     mi_cov <- mi_cov[!(mi_cov$cov_str %in% existing_set | mi_cov$cov_str_rev %in% existing_set), ]
+
+    if (nrow(mi_cov) == 0) return(NULL)
+
+    # Clasificar cada par con framework Saris-Satorra-van der Veld (Table 6)
+    classifications <- lapply(1:nrow(mi_cov), function(i) {
+      classify_restriction(mi_cov$mi[i], mi_cov$epc[i],
+                            delta = mod_indices_config$delta,
+                            power_threshold = mod_indices_config$power_threshold,
+                            alpha = mod_indices_config$alpha)
+    })
+
+    mi_cov$decision <- sapply(classifications, `[[`, "decision")
+    mi_cov$power_mi <- sapply(classifications, `[[`, "power")
+
+    # Solo mantener misespecificaciones sustantivas: "m" o "EPC:m"
+    mi_cov <- mi_cov[mi_cov$decision %in% c("m", "EPC:m"), ]
 
     if (nrow(mi_cov) == 0) return(NULL)
 
@@ -395,8 +461,8 @@ cfa_boosting <- function(data,
       }
     }
 
-    # ─────────── ESTRATEGIA 2: Manejar covarianzas de error ───────────
-    # Para cada par con MI alto, evaluar 4 opciones:
+    # ─────────── ESTRATEGIA 2: Manejar covarianzas de error (Saris-Satorra) ───────────
+    # Para cada par clasificado como misespecificado (m / EPC:m), evaluar 4 opciones:
     # 1) Agregar covarianza
     # 2) Eliminar item 1
     # 3) Eliminar item 2
@@ -405,7 +471,7 @@ cfa_boosting <- function(data,
                                        only_within = mod_indices_config$only_within_factor)
 
     if (!is.null(best_covs) && nrow(best_covs) > 0) {
-      if (verbose) cat("  Evaluando", nrow(best_covs), "pares con MI alto (4 opciones c/u)...\n")
+      if (verbose) cat("  Evaluando", nrow(best_covs), "pares misespecificados [Saris-Satorra] (4 opciones c/u)...\n")
 
       # Crear mapa de items a factores
       item_to_factor <- list()
@@ -425,7 +491,13 @@ cfa_boosting <- function(data,
         factor2 <- item_to_factor[[item2]]
 
         if (verbose) {
-          cat("\n    --- Par:", new_cov, "(MI=", fmt_num(mi_value, 1), ") ---\n")
+          mi_decision <- best_covs$decision[i]
+          mi_power <- best_covs$power_mi[i]
+          cat("\n    --- Par:", new_cov,
+              "(MI=", fmt_num(mi_value, 1),
+              ", EPC=", fmt_num(best_covs$epc[i]),
+              ", Power=", fmt_num(mi_power),
+              ", =>", mi_decision, ") ---\n")
         }
 
         # ─── Opción 1: Agregar covarianza ───

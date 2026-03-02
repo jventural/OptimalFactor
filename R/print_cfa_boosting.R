@@ -251,7 +251,11 @@ print_cfa_boosting <- function(result,
   invisible(result)
 }
 
-# Función para exportar resultados a data.frame
+#' Export CFA Boosting results to structured data frames
+#'
+#' @param result Output from \code{cfa_boosting()}
+#' @return A named list of data frames
+#' @export
 export_cfa_boosting <- function(result) {
 
   list(
