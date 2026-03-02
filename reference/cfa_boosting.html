@@ -99,9 +99,12 @@ configurable constraints.</p>
 
 
 <dt id="arg-mod-indices-config">mod_indices_config<a class="anchor" aria-label="anchor" href="#arg-mod-indices-config"></a></dt>
-<dd><p>Modification indices configuration:</p><ul><li><p><code>min_mi</code>: Minimum modification index to consider (default 10)</p></li>
-<li><p><code>max_covs_to_add</code>: Maximum covariances to add (default 10)</p></li>
-<li><p><code>only_within_factor</code>: Only add within-factor covariances (default TRUE)</p></li>
+<dd><p>Modification indices configuration using the
+  Saris, Satorra &amp; van der Veld (2009) framework (MI + EPC + Power):</p><ul><li><p><code>max_covs_to_add</code>: Maximum covariances to evaluate per iteration (default 10)</p></li>
+<li><p><code>only_within_factor</code>: Only consider within-factor covariances (default TRUE)</p></li>
+<li><p><code>delta</code>: Minimum misspecification size to detect (default 0.10)</p></li>
+<li><p><code>power_threshold</code>: Threshold for high/low power classification (default 0.75)</p></li>
+<li><p><code>alpha</code>: Significance level for the MI test (default 0.05)</p></li>
 </ul></dd>
 
 

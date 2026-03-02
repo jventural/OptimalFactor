@@ -58,14 +58,21 @@ cfa_boosting(
 
 - mod_indices_config:
 
-  Modification indices configuration:
+  Modification indices configuration using the Saris, Satorra & van der
+  Veld (2009) framework (MI + EPC + Power):
 
-  - `min_mi`: Minimum modification index to consider (default 10)
+  - `max_covs_to_add`: Maximum covariances to evaluate per iteration
+    (default 10)
 
-  - `max_covs_to_add`: Maximum covariances to add (default 10)
+  - `only_within_factor`: Only consider within-factor covariances
+    (default TRUE)
 
-  - `only_within_factor`: Only add within-factor covariances (default
-    TRUE)
+  - `delta`: Minimum misspecification size to detect (default 0.10)
+
+  - `power_threshold`: Threshold for high/low power classification
+    (default 0.75)
+
+  - `alpha`: Significance level for the MI test (default 0.05)
 
 - performance:
 
