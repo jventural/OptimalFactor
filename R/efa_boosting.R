@@ -19,10 +19,19 @@ efa_boosting <- function(data,
                          ),
                          # Performance
                          performance = list(
-                           max_candidates_eval = NULL,  # NULL => evalúa TODOS (en modo greedy)
+                           # max_candidates_eval: tope de candidatos por iteración greedy.
+                           # NULL => evalúa TODOS (lento con muchos items: con 32 items se
+                           # corren 500+ EFAs). Default 12 es un buen balance — los
+                           # candidatos se eligen por "smart pruning" (menor max-loading
+                           # primero) en lugar de aleatoriamente.
+                           max_candidates_eval = 12,
+                           smart_pruning = TRUE,
                            timeout_efa = 30,
                            timeout_optimization = 120,
-                           use_timeouts = FALSE
+                           use_timeouts = FALSE,
+                           # Si TRUE, emite message() por cada candidato evaluado para
+                           # que Shiny/consola muestren progreso en tiempo real.
+                           emit_progress = TRUE
                          ),
                          # ACTIVADOR EXPLÍCITO: GLOBAL vs GREEDY
                          use_global = FALSE,  # FALSE = solo greedy; TRUE = activa búsqueda global (con barra)
@@ -102,7 +111,9 @@ efa_boosting <- function(data,
   # Mezclar defaults
   default_thresholds <- list(loading=0.30, min_items_per_factor=3, heywood_tol=1e-6, near_heywood=0.015, min_interfactor_correlation=0.32)
   thresholds <- modifyList(default_thresholds, thresholds)
-  default_perf <- list(max_candidates_eval=NULL, timeout_efa=30, timeout_optimization=120, use_timeouts=FALSE)
+  default_perf <- list(max_candidates_eval=12, smart_pruning=TRUE,
+                        timeout_efa=30, timeout_optimization=120, use_timeouts=FALSE,
+                        emit_progress=TRUE)
   performance <- modifyList(default_perf, performance)
   default_model <- list(estimator="WLSMV", rotation="oblimin")
   model_config <- modifyList(default_model, model_config)
@@ -658,17 +669,35 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
   max_iterations <- min(50, max_steps)
   iteration_count <- 0
   optimization_start <- Sys.time()
+  # `stop_reason` is set before each break so the caller can know exactly
+  # why the loop ended (instead of inferring from logs). Values include:
+  #   "all_criteria_met"               — full success
+  #   "min_items_per_factor_protected" — fit OK but more removals would
+  #                                       break min_items_per_factor
+  #   "max_iterations" / "max_steps"   — safety cap reached
+  #   "not_enough_items"               — too few candidates left
+  #   "timeout"                        — timeout_optimization tripped
+  #   "efa_convergence_failed"         — EFA failed to converge
+  stop_reason <- "unknown"
 
   repeat {
     iteration_count <- iteration_count + 1
-    if (iteration_count > max_iterations) { if (verbose) cat("\n⚠ Maximum safety iterations reached.\n"); break }
+    if (iteration_count > max_iterations) { if (verbose) cat("\n⚠ Maximum safety iterations reached.\n"); stop_reason <- "max_iterations"; break }
     candidates <- setdiff(items, c(exclude_items, removed_items))
-    if (length(candidates) < n_factors * thresholds$min_items_per_factor) { if (verbose) cat("\n⚠ Not enough items remaining to continue.\n"); break }
-    if (step_counter >= max_steps) { if (verbose) cat("\n⚠ Maximum steps reached.\n"); break }
+    if (length(candidates) < n_factors * thresholds$min_items_per_factor) { if (verbose) cat("\n⚠ Not enough items remaining to continue.\n"); stop_reason <- "not_enough_items"; break }
+    if (step_counter >= max_steps) { if (verbose) cat("\n⚠ Maximum steps reached.\n"); stop_reason <- "max_steps"; break }
+
+    # Per-iteration progress beacon — surfaces in the Shiny wizard and
+    # console so users can see how the boosting pass is advancing on
+    # large item sets where each iteration takes minutes.
+    if (isTRUE(performance$emit_progress)) {
+      message(sprintf("Boosting iter %d: %d items activos, %d eliminados hasta ahora",
+                      iteration_count, length(candidates), length(removed_items)))
+    }
 
     if (performance$use_timeouts) {
       elapsed <- as.numeric(difftime(Sys.time(), optimization_start, units = "secs"))
-      if (elapsed > performance$timeout_optimization) { if (verbose) cat("\n⚠ Optimization timeout reached.\n"); break }
+      if (elapsed > performance$timeout_optimization) { if (verbose) cat("\n⚠ Optimization timeout reached.\n"); stop_reason <- "timeout"; break }
     }
 
     converged <- TRUE
@@ -690,7 +719,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
       }
     }, error=function(e) { if (verbose) { if (grepl("timeout", tolower(e$message))) cat("⏱ EFA timeout\n") else cat("⚠ Did not converge:", e$message, "\n") }; converged <<- FALSE; NULL })
 
-    if (!converged || is.null(tmp) || is.null(tmp$Bondades_Original) || is.null(tmp$result_df)) break
+    if (!converged || is.null(tmp) || is.null(tmp$Bondades_Original) || is.null(tmp$result_df)) { stop_reason <- "efa_convergence_failed"; break }
     mod <- tmp
     fit0 <- extract_fit(mod, n_factors)
     curr_rmsea <- as.numeric(fit0$rmsea)
@@ -799,7 +828,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
 
     if (min_items_met && all(ev$ok) && curr_loss <= 0 + 1e-6 && corr_check$ok) {
       if (verbose) cat("\n✅ All criteria met (estructura OK, ajuste dentro de objetivos, y correlaciones >= ", thresholds$min_interfactor_correlation, "). Fin.\n", sep="")
-      break
+      stop_reason <- "all_criteria_met"; break
     }
 
     # Decisión: estructura vs ajuste
@@ -808,7 +837,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     } else if (curr_loss > 0 + 1e-6) {
       decision <- "fit"
     } else {
-      break
+      stop_reason <- "fit_zero_no_structural_problem"; break
     }
 
     if (decision == "fit") {
@@ -836,12 +865,45 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
       # 2) Si global no mejora o está desactivado → GREEDY 1×1
       if (is.null(chosen_subset)) {
         n_cand <- length(candidates)
-        cand_to_eval <- if (!is.null(performance$max_candidates_eval) && n_cand > performance$max_candidates_eval) sample(candidates, performance$max_candidates_eval) else candidates
-        if (verbose && !is.null(performance$max_candidates_eval) && n_cand > performance$max_candidates_eval) {
-          cat("📊 Evaluating", performance$max_candidates_eval, "of", n_cand, "candidates (random sample)\n")
+        # Smart pruning: rank candidates by ascending max-|loading| so that
+        # weak/cross-loaded items (the ones most likely to be removed) are
+        # evaluated first. With max_candidates_eval set, we cut to the top-K
+        # most promising rather than sampling randomly — same accuracy in
+        # the typical case, dramatic speedup on large item sets.
+        if (!is.null(performance$max_candidates_eval) &&
+            n_cand > performance$max_candidates_eval) {
+          if (isTRUE(performance$smart_pruning)) {
+            cur_df <- mod$result_df
+            cur_lc <- which(startsWith(names(cur_df), "f"))
+            cur_max <- apply(abs(as.matrix(cur_df[, cur_lc, drop = FALSE])), 1, max)
+            names(cur_max) <- cur_df$Items %||% cur_df$Item
+            ranked <- names(sort(cur_max[candidates], na.last = TRUE))
+            cand_to_eval <- utils::head(ranked, performance$max_candidates_eval)
+          } else {
+            cand_to_eval <- sample(candidates, performance$max_candidates_eval)
+          }
+        } else {
+          cand_to_eval <- candidates
+        }
+        if (verbose && length(cand_to_eval) < n_cand) {
+          cat("📊 Evaluating top", length(cand_to_eval), "of", n_cand,
+              "candidates (",
+              if (isTRUE(performance$smart_pruning)) "smart pruning by lowest max-loading"
+              else "random sample",
+              ")\n")
+        }
+        if (isTRUE(performance$emit_progress)) {
+          message(sprintf("  [iter %d] Greedy: evaluando %d candidatos para mejorar el ajuste...",
+                          iteration_count, length(cand_to_eval)))
         }
         best_loss <- curr_loss; best_it <- NULL; best_fit <- NULL
+        j_eval <- 0L
         for (it in cand_to_eval) {
+          j_eval <- j_eval + 1L
+          if (isTRUE(performance$emit_progress)) {
+            message(sprintf("    cand %d/%d: probando sin '%s'...",
+                            j_eval, length(cand_to_eval), it))
+          }
           m2 <- tryCatch({
             if (use_timeouts) {
               R.utils::withTimeout({
@@ -917,7 +979,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     # Si estructura OK y RMSEA alcanzado, detener
     if (all(ev$ok) && rmsea_target_reached) {
       if (verbose) cat("\n✓ Target RMSEA achieved (", fmt_num(curr_rmsea), " ≤ ", fit_config$targets$rmsea, ") and structure acceptable; stopping.\n", sep="")
-      break
+      stop_reason <- "fit_target_reached"; break
     }
 
     # Si estructura OK pero RMSEA no alcanzado, eliminar ítem con menor carga
@@ -947,7 +1009,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         next
       } else {
         if (verbose) cat("\n⚠ Cannot remove weakest item (", worst, ") - would violate min_items_per_factor; stopping.\n", sep="")
-        break
+        stop_reason <- "min_items_per_factor_protected"; break
       }
     }
 
@@ -997,11 +1059,11 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
             next
           } else {
             if (verbose) cat("\n⚠ Cannot remove any more items - min_items_per_factor reached. Final RMSEA:", fmt_num(curr_rmsea), "\n", sep="")
-            break
+            stop_reason <- "min_items_per_factor_protected"; break
           }
         } else {
           if (verbose) cat("\n⚠ Structural issue found (", worst, ") but protected by min_items_per_factor; RMSEA target reached, stopping.\n", sep = "")
-          break
+          stop_reason <- "min_items_per_factor_protected"; break
         }
       }
     }
@@ -1193,6 +1255,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     removed_items     = removed_items,
     steps_log         = steps_log,
     iterations        = step_counter,
+    stop_reason       = stop_reason,
     final_rmsea       = as.numeric(extract_fit(mod, n_factors)$rmsea),
     bondades_original = mod$Bondades_Original,
     specifications    = mod$Specifications,

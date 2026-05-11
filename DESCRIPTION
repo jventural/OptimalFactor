@@ -1,8 +1,8 @@
 Package: OptimalFactor
 Type: Package
 Title: Optimal Factor Analysis with EFA-Boosting Algorithm
-Version: 1.0.0
-Date: 2026-01-20
+Version: 1.1.0
+Date: 2026-05-11
 Authors@R:
     person("Jose", "Ventura-Leon",
            email = "jventuraleon@gmail.com",
@@ -52,6 +52,11 @@ Suggests:
     readxl,
     readr,
     future,
-    promises
+    promises,
+    commonmark,
+    officer,
+    flextable,
+    later,
+    semTools
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr
