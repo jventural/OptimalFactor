@@ -67,3 +67,44 @@ Invisibly returns `result`; called for its side effects on the console.
 
 [`cfa_boosting`](https://jventural.github.io/OptimalFactor/reference/cfa_boosting.md),
 [`export_cfa_boosting`](https://jventural.github.io/OptimalFactor/reference/export_cfa_boosting.md)
+
+## Examples
+
+``` r
+# \donttest{
+data(Data_Personality, package = "OptimalFactor")
+res <- cfa_boosting(
+  data       = Data_Personality,
+  name_items = "P",
+  n_factors  = 3,
+  estimator  = "WLSMV",
+  rotation   = "oblimin")
+#> Error in cfa_boosting(data = Data_Personality, name_items = "P", n_factors = 3,     estimator = "WLSMV", rotation = "oblimin"): unused arguments (name_items = "P", n_factors = 3, estimator = "WLSMV", rotation = "oblimin")
+
+# Full printout (default).
+print_cfa_boosting(res)
+#> 
+#> ====================================================================== 
+#>    RESULTADOS CFA BOOSTING
+#> ====================================================================== 
+#> 
+#> --- RESUMEN ---
+#> 
+#> Error: object 'res' not found
+
+# Compact printout — hide steps log, raise the loading threshold, and
+# show fewer decimals when reporting in a slide deck.
+print_cfa_boosting(res,
+  show_steps        = FALSE,
+  loading_threshold = 0.40,
+  digits            = 2)
+#> 
+#> ====================================================================== 
+#>    RESULTADOS CFA BOOSTING
+#> ====================================================================== 
+#> 
+#> --- RESUMEN ---
+#> 
+#> Error: object 'res' not found
+# }
+```

@@ -44,7 +44,7 @@ Functions for displaying and exporting results
 - [`report_cfa_results()`](https://jventural.github.io/OptimalFactor/reference/report_cfa_results.md)
   : Report the CFA boosting results
 - [`export_cfa_boosting()`](https://jventural.github.io/OptimalFactor/reference/export_cfa_boosting.md)
-  : Export CFA Boosting results to structured data frames
+  : Export CFA Boosting Results to Structured Data Frames
 - [`imprimir_items_eliminados()`](https://jventural.github.io/OptimalFactor/reference/imprimir_items_eliminados.md)
   : Impresión de Ítems Eliminados
 

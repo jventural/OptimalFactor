@@ -32,6 +32,7 @@ lines so any frontend can re-render exactly what the console showed.'><meta prop
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/OptimalFactor.html">Introduction to OptimalFactor</a></li>
     <li><a class="dropdown-item" href="../articles/efa-boosting.html">EFA-Boosting Algorithm</a></li>
     <li><a class="dropdown-item" href="../articles/efa-boosting-studio.html">EFA-Boosting Studio</a></li>
+    <li><a class="dropdown-item" href="../articles/efa-boosting-wizard.html">EFA-Boosting Wizard (v2)</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -132,7 +133,46 @@ list is needed.</p></dd>
 
 
 </dl></div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="cfa_boosting.html">cfa_boosting</a></code>, <code><a href="report_efa_results.html">report_efa_results</a></code></p></div>
+    </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">Data_Personality</span>, package <span class="op">=</span> <span class="st">"OptimalFactor"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Run CFA boosting first to obtain an object suitable for the reporter.</span></span></span>
+<span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="cfa_boosting.html">cfa_boosting</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  data        <span class="op">=</span> <span class="va">Data_Personality</span>,</span></span>
+<span class="r-in"><span>  name_items  <span class="op">=</span> <span class="st">"P"</span>,</span></span>
+<span class="r-in"><span>  n_factors   <span class="op">=</span> <span class="fl">3</span>,</span></span>
+<span class="r-in"><span>  estimator   <span class="op">=</span> <span class="st">"WLSMV"</span>,</span></span>
+<span class="r-in"><span>  rotation    <span class="op">=</span> <span class="st">"oblimin"</span>,</span></span>
+<span class="r-in"><span>  fit_targets <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>cfi <span class="op">=</span> <span class="fl">0.95</span>, tli <span class="op">=</span> <span class="fl">0.95</span>,</span></span>
+<span class="r-in"><span>                      rmsea <span class="op">=</span> <span class="fl">0.06</span>, srmr <span class="op">=</span> <span class="fl">0.08</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in cfa_boosting(data = Data_Personality, name_items = "P", n_factors = 3,     estimator = "WLSMV", rotation = "oblimin", fit_targets = list(cfi = 0.95,         tli = 0.95, rmsea = 0.06, srmr = 0.08)):</span> unused arguments (name_items = "P", n_factors = 3, estimator = "WLSMV", rotation = "oblimin", fit_targets = list(cfi = 0.95, tli = 0.95, rmsea = 0.06, srmr = 0.08))</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Pretty print to the console (default).</span></span></span>
+<span class="r-in"><span><span class="fu">report_cfa_results</span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'res' not found</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Capture the structured output without printing — useful inside Shiny</span></span></span>
+<span class="r-in"><span><span class="co"># apps or scripts that need the data programmatically.</span></span></span>
+<span class="r-in"><span><span class="va">rep</span> <span class="op">&lt;-</span> <span class="fu">report_cfa_results</span><span class="op">(</span><span class="va">res</span>, print <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'res' not found</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">rep</span>, max.level <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> function (x, ...)  </span>
+<span class="r-in"><span><span class="va">rep</span><span class="op">$</span><span class="va">fit_indices</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in rep$fit_indices:</span> object of type 'special' is not subsettable</span>
+<span class="r-in"><span><span class="va">rep</span><span class="op">$</span><span class="va">reliability</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in rep$reliability:</span> object of type 'special' is not subsettable</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">rep</span><span class="op">$</span><span class="va">text</span>, collapse <span class="op">=</span> <span class="st">"\n"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in rep$text:</span> object of type 'special' is not subsettable</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

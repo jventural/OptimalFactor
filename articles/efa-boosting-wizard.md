@@ -1,0 +1,280 @@
+# EFA-Boosting Wizard (v2)
+
+## Overview
+
+The **EFA-Boosting Wizard**
+([`run_efa_boosting_wizard()`](https://jventural.github.io/OptimalFactor/reference/run_efa_boosting_wizard.md))
+is a second Shiny application that coexists with the original
+[`run_efa_boosting()`](https://jventural.github.io/OptimalFactor/reference/run_efa_boosting.md)
+studio. While the studio is optimised for power users who want a
+one-screen control panel, the wizard guides the analyst through five
+sequential phases, each one accompanied by a *“proposed action / what
+will happen”* explanation. It also adds three capabilities the studio
+does not have:
+
+1.  **Reliability** (categorical omega and Cronbach’s alpha by factor)
+    immediately after the boosting step.
+2.  **Convergent / discriminant validity** with automatic detection of
+    multidimensional comparator instruments and AI-assisted
+    classification.
+3.  **Downloadable artifacts**: a full TXT audit log of the session and
+    an APA-7 Word manuscript whose tables come from the actual session
+    data (the AI writes only the surrounding prose).
+
+The wizard is fully bilingual (Spanish primary, English) and ships with
+an **autopilot** mode that drives every step on its own when an OpenAI
+API key is provided.
+
+## Launching the wizard
+
+``` r
+
+library(OptimalFactor)
+run_efa_boosting_wizard()
+```
+
+For headless or programmatic launches (e.g. embedding the app inside
+Posit Connect or a custom hosting environment) pass
+`launch.browser = FALSE`:
+
+``` r
+
+app <- run_efa_boosting_wizard(launch.browser = FALSE)
+```
+
+The wizard relies on `shiny`, `bslib` and `DT`; it strongly benefits
+from `psych`, `lavaan`, `semTools`, `ggplot2` and `commonmark` (chat
+Markdown rendering). For the AI features (autopilot, conceptual
+analysis, manuscript drafting) it additionally needs `httr`, `jsonlite`,
+and for the Word export `officer` plus `flextable`. The autopilot timer
+uses `later`.
+
+## The five phases
+
+### Phase 1 — Data
+
+Load a CSV / TSV / Excel / RDS file from the sidebar. The wizard
+auto-detects the items of the scale under analysis by prefix
+(e.g. typing `EAF` selects `EAF1`, `EAF2`, …). A manual *override*
+selector exposes **all** columns of the dataset, mirroring the
+EasyValidation convention; you can mix and match items that do not share
+a prefix.
+
+The stats row at the top of the wizard immediately reports the number of
+items detected, the number of rows, and the active phase.
+
+### Phase 2 — Parallel diagnostic
+
+The wizard runs four independent decision rules in parallel and presents
+the consensus:
+
+- **Kaiser** — eigenvalues \> 1 on the polychoric correlation.
+- **Horn’s parallel analysis** — eigenvalues compared against a random
+  parallel data set (Horn, 1965).
+- **Velicer’s MAP** — minimum average partial correlation (Velicer,
+  1976).
+- **BIC** — Schwarz criterion across candidate factor structures.
+
+Each method votes for a number of factors and the wizard recommends the
+modal choice. The user can accept the recommendation or override it with
+a theoretical value derived from prior literature.
+
+### Phase 3 — EFA boosting
+
+Runs
+[`efa_boosting()`](https://jventural.github.io/OptimalFactor/reference/efa_boosting.md)
+with the chosen `k`. The verbose stdout produced by the algorithm —
+including the per-iteration structure, which item was removed and why —
+is captured into the **Trace** tab. When an OpenAI key is provided,
+[`print_conceptual_analysis()`](https://jventural.github.io/OptimalFactor/reference/print_conceptual_analysis.md)
+is appended to the same tab, giving a narrative explanation of why each
+item was dropped (item-content + statistical reason).
+
+After the boost finishes the user reviews a card with the final fit
+indices, the number of items retained vs original, and **red pills**
+listing every removed item. From here the user confirms and moves to
+reliability.
+
+``` r
+
+# What happens under the hood (you don't run this yourself in the wizard).
+boost <- efa_boosting(
+  data        = my_data[, my_items],
+  name_items  = "EAF",
+  n_factors   = 3L,
+  thresholds  = list(loading = 0.30, min_items_per_factor = 3L),
+  performance = list(max_candidates_eval = 12L, smart_pruning = TRUE,
+                      emit_progress = TRUE),
+  verbose     = TRUE)
+boost$stop_reason    # canonical reason for stopping
+boost$final_structure
+```
+
+### Phase 4 — Reliability
+
+For every factor of the boosted solution the wizard reports:
+
+- **McDonald’s omega** computed with
+  `semTools::compRelSEM(..., ord.scale = TRUE)`, the categorical variant
+  recommended for ordinal data (Green & Yang, 2009).
+- **Cronbach’s alpha** from
+  [`psych::alpha()`](https://rdrr.io/pkg/psych/man/alpha.html) as a
+  complementary indicator.
+- The EFA-derived CFA model is fitted with
+  [`lavaan::cfa()`](https://rdrr.io/pkg/lavaan/man/cfa.html) so that CFI
+  / TLI / RMSEA / SRMR can be reported alongside the reliability
+  coefficients.
+
+### Phase 5 — Validity
+
+The validity phase is split into two complementary blocks:
+
+**(a) Standalone criterion variables.** A multi-select picker lets the
+user choose any numeric variable in the dataset (e.g. age, GPA, an
+external criterion score). The wizard correlates each factor’s sum-score
+with each criterion variable using Pearson’s *r*, IC95 % and *p*.
+
+**(b) Comparison instruments (convergent / discriminant).** Click the
+magnifier icon and the wizard auto-detects candidate instruments from
+the column names. A hierarchical regex separates **multidimensional**
+comparators from unidimensional ones:
+
+- `BAI1`, `BAI2`, … `BAI21` → unidimensional instrument `BAI` (21
+  items).
+- `DERS_AC1`, `DERS_OB1`, `DERS_GO1` → multidimensional instrument
+  `DERS` with three subscales (`AC`, `OB`, `GO`).
+
+For each candidate, a quick parallel analysis (Kaiser on the polychoric
+correlation) is shown as a hint — *“parallel analysis suggests k = 3
+(eigen top: 4.2, 1.8, 1.3)”* — so you can confirm or correct the
+detected dimensionality. When the autopilot is on, OpenAI also
+classifies each instrument as **convergent** or **discriminant** based
+on its label (e.g. it knows that BAI measures anxiety, DERS measures
+emotion regulation).
+
+For every (factor × convergent column) pair the wizard reports:
+
+| Column | Description |
+|----|----|
+| *r* | Pearson coefficient |
+| IC 95 % | Confidence interval |
+| *p* | Significance |
+| Magnitude | Cohen (1988): *strong* / *moderate* / *small* / *insignificant* |
+| Verdict | *Convergence strong / moderate / weak / not supported* (when expected = convergent), or *discriminates / dubious / does NOT discriminate* (when expected = discriminant) |
+
+A heatmap visualises the matrix `principal × convergent`, with asterisks
+for `p < .05`. The mini-detail is what makes the wizard go beyond a flat
+sum: if you only correlated the total score of a multidimensional
+comparator, you’d miss the fact that one of its subscales
+(e.g. `DERS_GO`) does not relate to your construct even though the rest
+does.
+
+## Autopilot mode
+
+A checkbox in the sidebar activates the autopilot. When ON, after a
+configurable read-delay the wizard auto-confirms every step. Three
+persistent buttons appear on top of every step:
+
+- `← Back` — rewind to the previous phase. Pauses the autopilot for
+  safety. Computed results are kept, not erased.
+- `⏸ Pause autopilot` — visible when autopilot is active. Stops the
+  countdown without leaving the phase.
+- `▶ Resume AI` — visible when autopilot is paused and AI is still
+  available.
+
+Specifically for Phase 5, the autopilot first calls OpenAI with the
+detected instruments and a JSON-formatted system prompt asking
+*“classify each as convergent or discriminant for a scale called X”*.
+The resulting decisions appear in an orange banner above the
+configuration card, with each instrument’s chip (green for convergent,
+orange for discriminant) and the AI’s textual rationale. The countdown
+is automatically extended by 4 seconds in this phase to give the user
+time to review and tweak before the auto-compute fires.
+
+## Downloads
+
+Two large gradient cards live at the top of the **Reporte** panel:
+
+### Session log (`.txt`)
+
+A plain-text audit trail of the entire session: configuration,
+multi-method consensus details, final loadings (rounded to 2 decimals),
+per-iteration fit indices, the conceptual AI block (when run), the
+verbose trace, reliability, external validity, and the convergent /
+discriminant table with per-pair verdicts. **Does not require an API
+key.**
+
+### Manuscript (`.docx`)
+
+An APA-7 Word document with two sections drafted by the AI:
+
+- `## 2. Método → 2.4. Análisis de datos` (5–7 dense paragraphs covering
+  software, preprocessing, factor-number consensus, EFA-boosting,
+  reliability and validity).
+- `## 3. Resultados` (subsections 3.1 to 3.5; an additional 3.6
+  *Evidencia convergente y discriminante* is added when comparator
+  instruments are defined).
+
+Tables are inserted via placeholders — `{{TABLE_LOADINGS}}`,
+`{{TABLE_FIT}}`, `{{TABLE_OMEGA}}`, `{{TABLE_EXTERNAL}}`,
+`{{TABLE_CONVERGENT}}` — which the runtime replaces with `flextable`
+objects built from the actual session data. The AI never writes a number
+on its own; it only writes the surrounding prose. **Requires an OpenAI
+API key.**
+
+## IA Chat tab
+
+A free-form chat with full context of the fitted model. The system
+prompt is automatically primed with the dataset shape, the items
+retained vs removed, the `stop_reason` and the fit indices, so questions
+like *“why was item EAF6 removed?”* can be answered specifically.
+Replies are rendered as real HTML via
+[`commonmark::markdown_html()`](https://docs.ropensci.org/commonmark/reference/commonmark.html)
+— `**bold**`, lists, tables, fenced code. Press **Enter** to send;
+**Shift+Enter** to insert a newline.
+
+## Sample size and execution time
+
+[`efa_boosting()`](https://jventural.github.io/OptimalFactor/reference/efa_boosting.md)
+evaluates the top *K* candidate item-removals at each iteration (default
+`max_candidates_eval = 12`) using smart pruning on the maximum loading.
+This typically reduces the wall-clock time on long instruments by an
+order of magnitude. As a benchmark, a 32-item scale that took \>30
+minutes with the exhaustive search of v1.0 now completes in ~2–3 minutes
+on the same machine.
+
+The `stop_reason` field of `boost$stop_reason` returned by the boosting
+reports exactly why the loop ended:
+
+| Value | Meaning |
+|----|----|
+| `all_criteria_met` | All fit targets satisfied (CFI, TLI, RMSEA, SRMR) |
+| `min_items_per_factor_protected` | Cannot remove more without violating the floor |
+| `fit_target_reached` | A single fit target was reached and no further gains expected |
+| `max_iterations` | Hit the hard-cap on iterations |
+| `not_enough_items` | Too few candidate items left |
+| `efa_convergence_failed` | EFA model failed to converge |
+| `fit_zero_no_structural_problem` | All fit indices are zero, model is saturated |
+| `timeout` | Time budget exhausted |
+
+The wizard surfaces this value verbatim in the Phase 3 review card and
+in the TXT export.
+
+## References
+
+- Cohen, J. (1988). *Statistical power analysis for the behavioral
+  sciences* (2nd ed.).
+- Fornell, C., & Larcker, D. F. (1981). Evaluating structural equation
+  models with unobservable variables and measurement error. *Journal of
+  Marketing Research*, 18(1), 39–50.
+- Green, S. B., & Yang, Y. (2009). Reliability of summed item scores
+  using structural equation modeling: an alternative to coefficient
+  alpha. *Psychometrika*, 74, 155–167.
+- Henseler, J., Ringle, C. M., & Sarstedt, M. (2015). A new criterion
+  for assessing discriminant validity. *Journal of the Academy of
+  Marketing Science*, 43, 115–135.
+- Horn, J. L. (1965). A rationale and test for the number of factors in
+  factor analysis. *Psychometrika*, 30, 179–185.
+- McDonald, R. P. (1999). *Test theory: A unified treatment*. Erlbaum.
+- Velicer, W. F. (1976). Determining the number of components from the
+  matrix of partial correlations. *Psychometrika*, 41(3), 321–327.
