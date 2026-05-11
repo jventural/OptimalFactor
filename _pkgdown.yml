@@ -13,6 +13,8 @@ home:
   description: >
     A comprehensive R package for optimal factor model refinement in both
     EFA and CFA using machine-learning inspired boosting algorithms.
+  sidebar:
+    structure: [links, license, community, citation, authors]
 
 navbar:
   structure:
