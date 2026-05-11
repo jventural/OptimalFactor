@@ -17,7 +17,9 @@ Description: Provides an advanced iterative optimization algorithm for
     cross-loadings, low loadings), greedy and global search strategies for
     optimal item selection, interfactor correlation verification, and optional
     AI-assisted conceptual analysis of removed items using GPT models. Supports
-    ordinal data with WLSMV estimation and various rotation methods.
+    ordinal data with WLSMV estimation and various rotation methods. A
+    heuristic CFA specification search routine (MacCallum, 1986) is also
+    provided, exploring move/drop/cov operations across seed configurations.
 License: GPL (>= 3)
 URL: https://github.com/jventural/OptimalFactor,
     https://jventural.github.io/OptimalFactor/
