@@ -1,3 +1,52 @@
+#' Print CFA-Boosting Results
+#'
+#' Formatted console printer for the object returned by
+#' \code{\link{cfa_boosting}}. Displays fit indices, the iteration trail,
+#' factor loadings (above a threshold), latent correlations, reliability
+#' coefficients and the final lavaan model syntax.
+#'
+#' @param result Output from \code{\link{cfa_boosting}}.
+#' @param show_loadings Logical. Print standardized factor loadings of
+#'   the final model. Default \code{TRUE}.
+#' @param show_correlations Logical. Print latent factor correlations.
+#'   Default \code{TRUE}.
+#' @param show_reliability Logical. Print omega and alpha by factor.
+#'   Default \code{TRUE}.
+#' @param show_steps Logical. Print the per-iteration log of move / drop
+#'   / cov operations and the resulting fit indices. Default \code{TRUE}.
+#' @param show_model Logical. Print the final lavaan model syntax.
+#'   Default \code{TRUE}.
+#' @param loading_threshold Numeric. Loadings below this absolute value
+#'   are hidden in the printed table. Default \code{0.30}.
+#' @param digits Integer. Number of decimal places. Default \code{3}.
+#'
+#' @return Invisibly returns \code{result}; called for its side effects
+#'   on the console.
+#'
+#' @examples
+#' \donttest{
+#' data(Data_Personality, package = "OptimalFactor")
+#' res <- cfa_boosting(
+#'   data       = Data_Personality,
+#'   name_items = "P",
+#'   n_factors  = 3,
+#'   estimator  = "WLSMV",
+#'   rotation   = "oblimin")
+#'
+#' # Full printout (default).
+#' print_cfa_boosting(res)
+#'
+#' # Compact printout — hide steps log, raise the loading threshold, and
+#' # show fewer decimals when reporting in a slide deck.
+#' print_cfa_boosting(res,
+#'   show_steps        = FALSE,
+#'   loading_threshold = 0.40,
+#'   digits            = 2)
+#' }
+#'
+#' @seealso \code{\link{cfa_boosting}}, \code{\link{export_cfa_boosting}}
+#'
+#' @export
 print_cfa_boosting <- function(result,
                                show_loadings = TRUE,
                                show_correlations = TRUE,
@@ -251,10 +300,39 @@ print_cfa_boosting <- function(result,
   invisible(result)
 }
 
-#' Export CFA Boosting results to structured data frames
+#' Export CFA Boosting Results to Structured Data Frames
 #'
-#' @param result Output from \code{cfa_boosting()}
-#' @return A named list of data frames
+#' Export CFA Boosting results to structured data frames suitable for
+#' saving as CSV, embedding in a manuscript table, or further analysis.
+#'
+#' @param result Output from \code{\link{cfa_boosting}}.
+#'
+#' @return A named list of data frames (\code{fit_indices},
+#'   \code{standardized_loadings}, \code{factor_correlations},
+#'   \code{reliability}, \code{steps_log}).
+#'
+#' @examples
+#' \donttest{
+#' data(Data_Personality, package = "OptimalFactor")
+#' res <- cfa_boosting(Data_Personality, name_items = "P", n_factors = 3)
+#' out <- export_cfa_boosting(res)
+#' names(out)
+#'
+#' # Each component is a data.frame ready for write.csv() / openxlsx
+#' head(out$fit_indices)
+#' head(out$standardized_loadings)
+#' head(out$steps_log)
+#'
+#' # Save the lot to disk in one shot.
+#' \dontrun{
+#'   for (nm in names(out))
+#'     write.csv(out[[nm]],
+#'               sprintf("cfa_boost_\%s.csv", nm), row.names = FALSE)
+#' }
+#' }
+#'
+#' @seealso \code{\link{cfa_boosting}}, \code{\link{print_cfa_boosting}}
+#'
 #' @export
 export_cfa_boosting <- function(result) {
 

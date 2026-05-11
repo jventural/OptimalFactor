@@ -2,16 +2,43 @@
 % Please edit documentation in R/print_cfa_boosting.R
 \name{export_cfa_boosting}
 \alias{export_cfa_boosting}
-\title{Export CFA Boosting results to structured data frames}
+\title{Export CFA Boosting Results to Structured Data Frames}
 \usage{
 export_cfa_boosting(result)
 }
 \arguments{
-\item{result}{Output from \code{cfa_boosting()}}
+\item{result}{Output from \code{\link{cfa_boosting}}.}
 }
 \value{
-A named list of data frames
+A named list of data frames (\code{fit_indices},
+  \code{standardized_loadings}, \code{factor_correlations},
+  \code{reliability}, \code{steps_log}).
 }
 \description{
-Export CFA Boosting results to structured data frames
+Export CFA Boosting results to structured data frames suitable for
+saving as CSV, embedding in a manuscript table, or further analysis.
+}
+\examples{
+\donttest{
+data(Data_Personality, package = "OptimalFactor")
+res <- cfa_boosting(Data_Personality, name_items = "P", n_factors = 3)
+out <- export_cfa_boosting(res)
+names(out)
+
+# Each component is a data.frame ready for write.csv() / openxlsx
+head(out$fit_indices)
+head(out$standardized_loadings)
+head(out$steps_log)
+
+# Save the lot to disk in one shot.
+\dontrun{
+  for (nm in names(out))
+    write.csv(out[[nm]],
+              sprintf("cfa_boost_\\%s.csv", nm), row.names = FALSE)
+}
+}
+
+}
+\seealso{
+\code{\link{cfa_boosting}}, \code{\link{print_cfa_boosting}}
 }

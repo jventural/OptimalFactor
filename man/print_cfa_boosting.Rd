@@ -48,6 +48,27 @@ Formatted console printer for the object returned by
 factor loadings (above a threshold), latent correlations, reliability
 coefficients and the final lavaan model syntax.
 }
+\examples{
+\donttest{
+data(Data_Personality, package = "OptimalFactor")
+res <- cfa_boosting(
+  data       = Data_Personality,
+  name_items = "P",
+  n_factors  = 3,
+  estimator  = "WLSMV",
+  rotation   = "oblimin")
+
+# Full printout (default).
+print_cfa_boosting(res)
+
+# Compact printout — hide steps log, raise the loading threshold, and
+# show fewer decimals when reporting in a slide deck.
+print_cfa_boosting(res,
+  show_steps        = FALSE,
+  loading_threshold = 0.40,
+  digits            = 2)
+}
+}
 \seealso{
 \code{\link{cfa_boosting}}, \code{\link{export_cfa_boosting}}
 }

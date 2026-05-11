@@ -38,6 +38,33 @@
 #'     \item{text}{Character vector — same lines that were printed}
 #'   }
 #'
+#' @examples
+#' \donttest{
+#' data(Data_Personality, package = "OptimalFactor")
+#' # Run CFA boosting first to obtain an object suitable for the reporter.
+#' res <- cfa_boosting(
+#'   data        = Data_Personality,
+#'   name_items  = "P",
+#'   n_factors   = 3,
+#'   estimator   = "WLSMV",
+#'   rotation    = "oblimin",
+#'   fit_targets = list(cfi = 0.95, tli = 0.95,
+#'                       rmsea = 0.06, srmr = 0.08))
+#'
+#' # Pretty print to the console (default).
+#' report_cfa_results(res)
+#'
+#' # Capture the structured output without printing — useful inside Shiny
+#' # apps or scripts that need the data programmatically.
+#' rep <- report_cfa_results(res, print = FALSE)
+#' str(rep, max.level = 1)
+#' rep$fit_indices
+#' rep$reliability
+#' cat(paste(rep$text, collapse = "\n"))
+#' }
+#'
+#' @seealso \code{\link{cfa_boosting}}, \code{\link{report_efa_results}}
+#'
 #' @export
 report_cfa_results <- function(res, show_plot = TRUE, print = TRUE) {
   rpt   <- .build_cfa_report(res)

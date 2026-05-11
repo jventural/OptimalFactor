@@ -3,12 +3,14 @@
 
 ## Features
 
-- **EFA-Boosting Algorithm**: Advanced iterative optimization for Exploratory Factor Analysis
+- **EFA-Boosting Algorithm**: Advanced iterative optimization for Exploratory Factor Analysis with smart-pruning of the candidate space (large speed-ups on long instruments) and a canonical `stop_reason` field that explains exactly why the loop ended
 - **Adaptive Fit Indices**: Dynamic weights based on df x N following Kenny, Shi & Savalei (2022)
 - **Automatic Problem Detection**: Heywood cases, cross-loadings, and low loadings
 - **Global Search**: Multi-item removal optimization
 - **AI Integration**: Optional GPT-powered conceptual analysis of removed items
-- **Interactive Shiny App**: EFA-Boosting Studio for user-friendly EFA optimization
+- **Two Shiny apps** (coexist, neither replaces the other):
+  - **EFA-Boosting Studio** (`run_efa_boosting()`) — one-screen control panel for power users
+  - **EFA-Boosting Wizard v2** (`run_efa_boosting_wizard()`) — 5-phase guided flow with autopilot mode, reliability (omega + alpha), convergent / discriminant validity that preserves the internal structure of multidimensional comparators, and downloadable TXT log + APA-7 Word manuscript
 - **Specification Search (CFA)**: Heuristic hill-climbing over seed configurations following MacCallum (1986), with move / drop / cov operations and optional bifactor variant
 
 ## Installation
@@ -44,14 +46,31 @@ library(OptimalFactor)
 run_efa_boosting()
 ```
 
+### EFA-Boosting Wizard v2 (Shiny App)
+
+A guided 5-phase wizard with reliability, convergent / discriminant validity,
+AI autopilot, and downloadable session log (`.txt`) + APA-7 manuscript (`.docx`):
+
+```r
+library(OptimalFactor)
+run_efa_boosting_wizard()
+```
+
+See the *EFA-Boosting Wizard (v2)* article for a complete walkthrough of
+the five phases, the autopilot mode and the multidimensional-comparator
+validity workflow.
+
 ## Main Functions
 
 | Function | Description |
 |----------|-------------|
 | `efa_boosting()` | EFA optimization with adaptive composite fit |
 | `run_efa_boosting()` | Launch EFA-Boosting Studio (Shiny app) |
+| `run_efa_boosting_wizard()` | Launch EFA-Boosting Wizard v2 (Shiny app) |
 | `cfa_boosting()` | CFA optimization with modification indices |
 | `specification_search()` | Heuristic CFA specification search (MacCallum, 1986) |
+| `report_efa_results()` | Structured + console report of an EFA-boosting run |
+| `report_cfa_results()` | Structured + console report of a CFA-boosting run |
 | `print_conceptual_analysis()` | Display AI-generated item analyses |
 
 ### Specification Search (CFA)

@@ -33,6 +33,8 @@ navbar:
         href: articles/efa-boosting.html
       - text: EFA-Boosting Studio
         href: articles/efa-boosting-studio.html
+      - text: EFA-Boosting Wizard (v2)
+        href: articles/efa-boosting-wizard.html
     reference:
       text: Reference
       href: reference/index.html
