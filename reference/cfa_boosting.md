@@ -103,7 +103,7 @@ A list containing:
 ## See also
 
 [`efa_boosting`](https://jventural.github.io/OptimalFactor/reference/efa_boosting.md),
-`print_cfa_boosting`
+[`print_cfa_boosting`](https://jventural.github.io/OptimalFactor/reference/print_cfa_boosting.md)
 
 ## Examples
 

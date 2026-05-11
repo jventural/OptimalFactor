@@ -61,6 +61,7 @@ exceeded - No improvement possible
 ### Basic Usage
 
 ``` r
+
 library(OptimalFactor)
 
 result <- efa_boosting(
@@ -74,6 +75,7 @@ result <- efa_boosting(
 ### Advanced Configuration
 
 ``` r
+
 result <- efa_boosting(
   data = Data_Personality,
   name_items = "item",
@@ -94,6 +96,7 @@ result <- efa_boosting(
 ### With AI Analysis
 
 ``` r
+
 result <- efa_boosting(
   data = Data_Personality,
   name_items = "item",

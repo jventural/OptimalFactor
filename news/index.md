@@ -1,5 +1,88 @@
 # Changelog
 
+## OptimalFactor 1.1.0
+
+### New: Guided wizard for EFA-Boosting
+
+- **run_efa_boosting_wizard()**: a second Shiny app that coexists with
+  the original
+  [`run_efa_boosting()`](https://jventural.github.io/OptimalFactor/reference/run_efa_boosting.md)
+  studio. Provides a guided 5-phase flow (Data → Parallel diagnostic →
+  EFA boosting → Reliability → External and convergent/discriminant
+  validity), each with a “proposed action / what will happen” panel.
+
+#### Wizard features
+
+- **Multi-method consensus for number of factors**: Kaiser, parallel
+  analysis (Horn, 1965), MAP (Velicer, 1976) and BIC. The user can
+  accept the consensus recommendation or override it with a theoretical
+  value.
+- **Trace tab**: captures the verbose stdout of
+  [`efa_boosting()`](https://jventural.github.io/OptimalFactor/reference/efa_boosting.md)
+  plus the
+  [`print_conceptual_analysis()`](https://jventural.github.io/OptimalFactor/reference/print_conceptual_analysis.md)
+  output so the entire item-purification process is auditable in a
+  single pane. Downloadable as `.txt`.
+- **AI integration**: optional autopilot mode that uses OpenAI
+  (`gpt-4.1` default) to drive the wizard step by step. Includes a chat
+  panel with Markdown rendering of replies (via `commonmark`).
+- **Reliability**: omega
+  ([`semTools::compRelSEM`](https://rdrr.io/pkg/semTools/man/compRelSEM.html),
+  `ord.scale = TRUE`) and Cronbach’s alpha per factor, reported
+  alongside CFI/TLI/RMSEA/SRMR of the EFA-derived CFA model.
+- **Convergent / discriminant validity with multidimensional
+  comparators**:
+  - Automatic detection of comparison instruments from column names via
+    hierarchical regex (e.g. `DERS_AC1`, `DERS_OB1` → multidimensional
+    instrument with two subscales).
+  - Mini parallel analysis on each candidate confirms or challenges the
+    detected dimensionality.
+  - AI auto-classification of each instrument as convergent or
+    discriminant based on its label, using
+    `response_format = "json_object"`.
+  - Per-pair verdict using Cohen’s (1988) magnitude conventions:
+    `convergencia fuerte` / `moderada` / `débil` / `no significativa`
+    for convergent expectations; `discrimina` / `dudosa` /
+    `NO discrimina` for discriminant expectations.
+  - Score construction preserves the comparator’s internal structure
+    (sub-totals when multidimensional, optional grand total).
+  - Heatmap visualization (ggplot2 `geom_tile`) with asterisks for
+    `p < .05`.
+- **Downloadable session log (.txt)**: full audit trail of every phase,
+  numerical detail, items removed, fit indices, omega/alpha and validity
+  correlations.
+- **Downloadable manuscript (.docx)**: AI-drafted APA-7 sections “2.4
+  Análisis de datos” and “3. Resultados” (subsections 3.1–3.6 when
+  convergent instruments are present). Tables are inserted from real
+  session data via placeholders (`{{TABLE_LOADINGS}}`, `{{TABLE_FIT}}`,
+  `{{TABLE_OMEGA}}`, `{{TABLE_EXTERNAL}}`, `{{TABLE_CONVERGENT}}`). The
+  AI never invents numbers — it only writes prose around the embedded
+  tables. Requires an OpenAI API key.
+- **Autopilot controls**: each step exposes `← Back`,
+  `⏸ Pause autopilot` and `▶ Resume AI` in a persistent toolbar. The
+  user can rewind to any previous phase (even from the “wizard
+  completed” state) without losing previously computed results.
+
+### Improvements to `efa_boosting()`
+
+- Added `performance$max_candidates_eval` (default 12) and
+  `performance$smart_pruning = TRUE`: ranks candidate items by their
+  maximum factor loading and evaluates only the top-K, giving large
+  speed-ups on long instruments (e.g. 32 items: \>30 min → ~2–3 min).
+- New return field `stop_reason` with canonical values
+  (`all_criteria_met`, `min_items_per_factor_protected`,
+  `max_iterations`, `not_enough_items`, `efa_convergence_failed`,
+  `fit_target_reached`, `fit_zero_no_structural_problem`, `timeout`).
+  Allows downstream code to give precise messages without inferring why
+  the loop stopped.
+
+### New helpers
+
+- **report_efa_results()** / **report_cfa_results()**: structured
+  text-and-data reports of the optimization process. Each returns an
+  invisible list with a `$text` field suitable for embedding in
+  manuscripts or printing to console.
+
 ## OptimalFactor 1.0.0
 
 ### Initial CRAN Release

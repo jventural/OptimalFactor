@@ -10,6 +10,7 @@ visualization, and export capabilities.
 ## Launching the Application
 
 ``` r
+
 library(OptimalFactor)
 run_efa_boosting()
 ```

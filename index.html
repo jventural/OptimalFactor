@@ -6,6 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>OptimalFactor - Optimal Factor Analysis with EFA-Boosting Algorithm • OptimalFactor</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" sizes="any" href="favicon.ico">
+<link rel="manifest" href="site.webmanifest">
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -15,6 +20,7 @@
 ">
 <meta property="og:description" content="A comprehensive R package for optimal factor model refinement in both EFA and CFA using machine-learning inspired boosting algorithms.
 ">
+<meta property="og:image" content="https://jventural.github.io/OptimalFactor/logo.png">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -24,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="index.html">OptimalFactor</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,14 +64,16 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><p align="center">
-<img src="https://github.com/jventural/OptimalFactor/blob/master/logo_optimalfactor.png" alt="OptimalFactor" width="200" height="200"></p>
-<div class="page-header"><h1 align="center">
+<img src="reference/figures/logo.png" alt="OptimalFactor" width="220"></p>
+<div class="page-header">
+<img src="logo.png" class="logo" alt=""><h1 align="center">
 OptimalFactor
-</h1></div>
+</h1>
+</div>
 <p align="center">
 A comprehensive package for optimal factor model refinement in both EFA and CFA using machine-learning inspired boosting algorithms. <br><a href="https://joseventuraleon.com/" class="external-link"><strong>Visit the author’s website</strong></a> <br><br></p>
 <p align="center">
-<img src="https://www.r-pkg.org/badges/version/OptimalFactor" alt="CRAN version"><a href="https://jventural.github.io/OptimalFactor/"><img src="https://img.shields.io/badge/docs-pkgdown-blue.svg" alt="Documentation"></a>
+<a href="https://jventural.github.io/OptimalFactor/"><img src="https://img.shields.io/badge/docs-pkgdown-blue.svg" alt="Documentation"></a>
 </p>
 <div class="section level2">
 <h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
@@ -83,6 +91,8 @@ A comprehensive package for optimal factor model refinement in both EFA and CFA 
 <strong>AI Integration</strong>: Optional GPT-powered conceptual analysis of removed items</li>
 <li>
 <strong>Interactive Shiny App</strong>: EFA-Boosting Studio for user-friendly EFA optimization</li>
+<li>
+<strong>Specification Search (CFA)</strong>: Heuristic hill-climbing over seed configurations following MacCallum (1986), with move / drop / cov operations and optional bifactor variant</li>
 </ul>
 </div>
 <div class="section level2">
@@ -123,34 +133,113 @@ A comprehensive package for optimal factor model refinement in both EFA and CFA 
 <h2 id="main-functions">Main Functions<a class="anchor" aria-label="anchor" href="#main-functions"></a>
 </h2>
 <table class="table">
-<thead><tr class="header">
+<colgroup>
+<col width="43%">
+<col width="56%">
+</colgroup>
+<thead><tr>
 <th>Function</th>
 <th>Description</th>
 </tr></thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><code><a href="reference/efa_boosting.html">efa_boosting()</a></code></td>
 <td>EFA optimization with adaptive composite fit</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code><a href="reference/run_efa_boosting.html">run_efa_boosting()</a></code></td>
 <td>Launch EFA-Boosting Studio (Shiny app)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code><a href="reference/cfa_boosting.html">cfa_boosting()</a></code></td>
 <td>CFA optimization with modification indices</td>
 </tr>
-<tr class="even">
+<tr>
+<td><code><a href="reference/specification_search.html">specification_search()</a></code></td>
+<td>Heuristic CFA specification search (MacCallum, 1986)</td>
+</tr>
+<tr>
 <td><code><a href="reference/print_conceptual_analysis.html">print_conceptual_analysis()</a></code></td>
 <td>Display AI-generated item analyses</td>
 </tr>
 </tbody>
 </table>
+<div class="section level3">
+<h3 id="specification-search-cfa">Specification Search (CFA)<a class="anchor" aria-label="anchor" href="#specification-search-cfa"></a>
+</h3>
+<p><code><a href="reference/specification_search.html">specification_search()</a></code> runs a heuristic hill-climbing search over CFA model configurations in the spirit of MacCallum (1986). For each seed (a candidate number of factors with an initial item-to-factor assignment) the algorithm iteratively tries three local operations and keeps the change with the lowest composite loss:</p>
+<ul>
+<li>
+<strong>move</strong> an item from its current factor to another;</li>
+<li>
+<strong>drop</strong> an item with low loading or causing strain;</li>
+<li>
+<strong>cov</strong> add a residual covariance suggested by modification indices.</li>
+</ul>
+<p>A bifactor variant (one orthogonal general factor plus the configured group factors) can be tried automatically for every seed with k &gt;= 2. The procedure returns every model evaluated, the subset that meets the user-supplied fit targets (CFI / RMSEA), and the best model under a composite loss.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lavaan.ugent.be" class="external-link">lavaan</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/jventural/OptimalFactor" class="external-link">OptimalFactor</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Simulated 3-factor data</span></span>
+<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="st">'</span></span>
+<span><span class="st">  F1 =~ 0.75*x1 + 0.70*x2 + 0.65*x3</span></span>
+<span><span class="st">  F2 =~ 0.75*x4 + 0.70*x5 + 0.65*x6</span></span>
+<span><span class="st">  F3 =~ 0.75*x7 + 0.70*x8 + 0.65*x9</span></span>
+<span><span class="st">  F1 ~~ 0.30*F2 + 0.30*F3</span></span>
+<span><span class="st">  F2 ~~ 0.30*F3</span></span>
+<span><span class="st">'</span></span>
+<span><span class="va">df</span>    <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lavaan/man/simulateData.html" class="external-link">simulateData</a></span><span class="op">(</span><span class="va">sim</span>, sample.nobs <span class="op">=</span> <span class="fl">500</span>, seed <span class="op">=</span> <span class="fl">2026</span><span class="op">)</span></span>
+<span><span class="va">items</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">9</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/specification_search.html">specification_search</a></span><span class="op">(</span></span>
+<span>  data         <span class="op">=</span> <span class="va">df</span>,</span>
+<span>  items        <span class="op">=</span> <span class="va">items</span>,</span>
+<span>  max_factors  <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  estimator    <span class="op">=</span> <span class="st">"ML"</span>,</span>
+<span>  ordered      <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  try_bifactor <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  verbose      <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">res</span>, top <span class="op">=</span> <span class="fl">8</span><span class="op">)</span>         <span class="co"># ranking by composite loss</span></span>
+<span><span class="va">res</span><span class="op">$</span><span class="va">successful</span>              <span class="co"># configurations meeting CFI / RMSEA targets</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">best</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span>       <span class="co"># fitted lavaan object for the best model</span></span></code></pre></div>
+<p>Pass your own theoretically motivated seeds via the <code>seeds</code> argument:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">seeds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  <span class="st">"3"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>F1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x1"</span>,<span class="st">"x2"</span>,<span class="st">"x3"</span><span class="op">)</span>,</span>
+<span>         F2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x4"</span>,<span class="st">"x5"</span>,<span class="st">"x6"</span><span class="op">)</span>,</span>
+<span>         F3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x7"</span>,<span class="st">"x8"</span>,<span class="st">"x9"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/specification_search.html">specification_search</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">df</span>, items <span class="op">=</span> <span class="va">items</span>, seeds <span class="op">=</span> <span class="va">seeds</span>,</span>
+<span>                     estimator <span class="op">=</span> <span class="st">"ML"</span>, ordered <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>                     try_bifactor <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<p>A complete runnable script is available at <a href="examples/example_specification_search.R"><code>examples/example_specification_search.R</code></a>.</p>
+<p><strong>Important caveat — MacCallum (1986).</strong> Specification search capitalizes on chance. Use it as an <strong>exploratory</strong> device only and:</p>
+<ol style="list-style-type: decimal">
+<li>Report the procedure transparently as exploratory.</li>
+<li>Cross-validate the resulting model with an independent sample or via bootstrap.</li>
+<li>Justify every accepted modification on substantive theoretical grounds.</li>
+</ol>
+<p>The function prints this warning at the start of every run (suppress with <code>verbose = FALSE</code>).</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
 </h2>
 <p><a href="https://rpubs.com/jventural/OptimalFactor" class="external-link">Basic tutorial of the R OptimalFactor library</a></p>
+</div>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<ul>
+<li>MacCallum, R. C. (1986). Specification searches in covariance structure modeling. <em>Psychological Bulletin, 100</em>(1), 107–120.</li>
+<li>Saris, W. E., Satorra, A., &amp; van der Veld, W. M. (2009). Testing structural equation models or detection of misspecifications? <em>Structural Equation Modeling, 16</em>(4), 561–582.</li>
+<li>Kenny, D. A., Shi, D., &amp; Savalei, V. (2022). Improvements in the goodness of fit assessment for confirmatory factor analysis. <em>Psychological Methods</em>.</li>
+</ul>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
@@ -199,8 +288,6 @@ A comprehensive package for optimal factor model refinement in both EFA and CFA 
 <a href="https://joseventuraleon.com/" class="external-link">Jose Ventura-Leon</a> <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0003-2996-4244" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
 </ul>
 </div>
-
-
 
   </aside>
 </div>

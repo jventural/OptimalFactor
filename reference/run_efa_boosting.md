@@ -44,6 +44,7 @@ EFA-Boosting Studio provides:
 
 ## Quick Start
 
+
     library(OptimalFactor)
     run_efa_boosting()
 

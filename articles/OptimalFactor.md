@@ -12,6 +12,7 @@ algorithms.
 You can install the latest version of OptimalFactor from GitHub:
 
 ``` r
+
 if (!require("devtools")) {
   install.packages("devtools")
 }
@@ -64,6 +65,7 @@ function provides CFA optimization:
 ### Basic EFA-Boosting
 
 ``` r
+
 library(OptimalFactor)
 
 # Run EFA-Boosting
@@ -82,6 +84,7 @@ print(result$fit_indices)
 ### Interactive Analysis with EFA-Boosting Studio
 
 ``` r
+
 library(OptimalFactor)
 
 # Launch the interactive application
