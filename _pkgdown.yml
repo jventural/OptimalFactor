@@ -44,6 +44,7 @@ reference:
   contents:
   - efa_boosting
   - run_efa_boosting
+  - run_efa_boosting_wizard
   - efa_optimizer
   - optimal_efa_with_ai
 
@@ -52,13 +53,17 @@ reference:
   contents:
   - cfa_boosting
   - optimal_cfa_with_ai
+  - specification_search
 
 - title: Results Display
   desc: Functions for displaying and exporting results
   contents:
   - print_efa_results
   - print_cfa_results
+  - print_cfa_boosting
   - report_efa_results
+  - report_cfa_results
+  - export_cfa_boosting
   - imprimir_items_eliminados
 
 - title: AI Analysis
