@@ -56,6 +56,7 @@ reference:
   - cfa_boosting
   - optimal_cfa_with_ai
   - specification_search
+  - print.specification_search
 
 - title: Results Display
   desc: Functions for displaying and exporting results
