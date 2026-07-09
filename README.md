@@ -8,10 +8,13 @@
 - **Automatic Problem Detection**: Heywood cases, cross-loadings, and low loadings
 - **Global Search**: Multi-item removal optimization
 - **AI Integration**: Optional GPT-powered conceptual analysis of removed items
-- **Two Shiny apps** (coexist, neither replaces the other):
-  - **EFA-Boosting Studio** (`run_efa_boosting()`) — one-screen control panel for power users
-  - **EFA-Boosting Wizard v2** (`run_efa_boosting_wizard()`) — 5-phase guided flow with autopilot mode, reliability (omega + alpha), convergent / discriminant validity that preserves the internal structure of multidimensional comparators, and downloadable TXT log + APA-7 Word manuscript
 - **Specification Search (CFA)**: Heuristic hill-climbing over seed configurations following MacCallum (1986), with move / drop / cov operations and optional bifactor variant
+
+> **Looking for the interactive app?** The *OptimalFactor Wizard* (guided
+> 5-phase Shiny interface with reliability, convergent/discriminant validity,
+> AI autopilot and APA-7 report downloads) is distributed separately as a
+> web application on Posit Connect Cloud. This package contains the analysis
+> engine only.
 
 ## Installation
 
@@ -39,47 +42,34 @@ result <- efa_boosting(
 )
 ```
 
-### EFA-Boosting Studio (Shiny App)
-
-```r
-library(OptimalFactor)
-run_efa_boosting()
-```
-
-### EFA-Boosting Wizard v2 (Shiny App)
-
-A guided 5-phase wizard with reliability, convergent / discriminant validity,
-AI autopilot, and downloadable session log (`.txt`) + APA-7 manuscript (`.docx`):
-
-```r
-library(OptimalFactor)
-run_efa_boosting_wizard()
-```
-
-See the *EFA-Boosting Wizard (v2)* article for a complete walkthrough of
-the five phases, the autopilot mode and the multidimensional-comparator
-validity workflow.
-
 ## Main Functions
 
 | Function | Description |
 |----------|-------------|
 | `efa_boosting()` | EFA optimization with adaptive composite fit |
-| `run_efa_boosting()` | Launch EFA-Boosting Studio (Shiny app) |
-| `run_efa_boosting_wizard()` | Launch EFA-Boosting Wizard v2 (Shiny app) |
 | `cfa_boosting()` | CFA optimization with modification indices |
-| `specification_search()` | Heuristic CFA specification search (MacCallum, 1986) |
+| `specification_search_theory()` | Theory-guided CFA specification search (MacCallum, 1986 + theory-congruence loss) |
+| `cross_validate_cfa()` | Split-half cross-validation of a factor model |
+| `bifactor_indices()` | Bifactor statistical indices |
+| `redundancy_short_form()` | Redundancy-guided short form of a unidimensional scale |
 | `report_efa_results()` | Structured + console report of an EFA-boosting run |
 | `report_cfa_results()` | Structured + console report of a CFA-boosting run |
 | `print_conceptual_analysis()` | Display AI-generated item analyses |
 
-### Specification Search (CFA)
+### Theory-Guided Specification Search (CFA)
 
-`specification_search()` runs a heuristic hill-climbing search over CFA model
-configurations in the spirit of MacCallum (1986). For each seed (a candidate
-number of factors with an initial item-to-factor assignment) the algorithm
-iteratively tries three local operations and keeps the change with the lowest
-composite loss:
+`specification_search_theory()` runs a heuristic hill-climbing search over CFA
+model configurations in the spirit of MacCallum (1986), extended with a
+**theory-congruence term** in the loss: candidate models are penalized for
+moving items away from their theoretical factor or for dropping theoretical
+items, so the search cannot drift toward models that fit well but break the
+intended structure. A single `theory_weight` parameter grades how much theory
+counts relative to fit (`0` reproduces the classic fit-only search).
+
+For each seed (a candidate number of factors with an initial item-to-factor
+assignment — the theoretical structure itself is always included as a seed)
+the algorithm iteratively tries three local operations and keeps the change
+with the lowest composite loss:
 
 - **move** an item from its current factor to another;
 - **drop** an item with low loading or causing strain;
@@ -88,7 +78,7 @@ composite loss:
 A bifactor variant (one orthogonal general factor plus the configured group
 factors) can be tried automatically for every seed with k >= 2. The procedure
 returns every model evaluated, the subset that meets the user-supplied fit
-targets (CFI / RMSEA), and the best model under a composite loss.
+targets (CFI / RMSEA), and the best model under the composite loss.
 
 ```r
 library(lavaan)
@@ -105,38 +95,28 @@ sim <- '
 df    <- simulateData(sim, sample.nobs = 500, seed = 2026)
 items <- paste0("x", 1:9)
 
-res <- specification_search(
-  data         = df,
-  items        = items,
-  max_factors  = 4,
-  estimator    = "ML",
-  ordered      = FALSE,
-  try_bifactor = TRUE,
-  verbose      = TRUE
+res <- specification_search_theory(
+  data          = df,
+  items         = items,
+  theory        = list(F1 = c("x1","x2","x3"),
+                        F2 = c("x4","x5","x6"),
+                        F3 = c("x7","x8","x9")),
+  theory_weight = 0.5,   # 0 = fit-only (classic search); higher = more conservative
+  estimator     = "ML",
+  ordered       = FALSE,
+  try_bifactor  = TRUE,
+  verbose       = TRUE
 )
 
-print(res, top = 8)         # ranking by composite loss
+print(res, top = 8)         # ranking by composite loss (+ theory congruence)
 res$successful              # configurations meeting CFI / RMSEA targets
 summary(res$best$fit)       # fitted lavaan object for the best model
 ```
 
-Pass your own theoretically motivated seeds via the `seeds` argument:
-
-```r
-seeds <- list(
-  "3" = list(
-    list(F1 = c("x1","x2","x3"),
-         F2 = c("x4","x5","x6"),
-         F3 = c("x7","x8","x9"))
-  )
-)
-specification_search(data = df, items = items, seeds = seeds,
-                     estimator = "ML", ordered = FALSE,
-                     try_bifactor = FALSE)
-```
-
-A complete runnable script is available at
-[`examples/example_specification_search.R`](examples/example_specification_search.R).
+> **Deprecated:** the original fit-only `specification_search()` is kept for
+> backward compatibility but emits a deprecation warning; use
+> `specification_search_theory()` (with `theory_weight = 0` if you really
+> want the fit-only behaviour).
 
 **Important caveat — MacCallum (1986).** Specification search capitalizes on
 chance. Use it as an **exploratory** device only and:

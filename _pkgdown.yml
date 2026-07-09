@@ -31,10 +31,6 @@ navbar:
         href: articles/OptimalFactor.html
       - text: EFA-Boosting Algorithm
         href: articles/efa-boosting.html
-      - text: EFA-Boosting Studio
-        href: articles/efa-boosting-studio.html
-      - text: EFA-Boosting Wizard (v2)
-        href: articles/efa-boosting-wizard.html
     reference:
       text: Reference
       href: reference/index.html
@@ -47,17 +43,18 @@ reference:
   desc: Functions for Exploratory Factor Analysis optimization
   contents:
   - efa_boosting
-  - run_efa_boosting
-  - run_efa_boosting_wizard
   - efa_optimizer
   - optimal_efa_with_ai
+  - redundancy_short_form
 
 - title: CFA Optimization
   desc: Functions for Confirmatory Factor Analysis optimization
   contents:
   - cfa_boosting
   - optimal_cfa_with_ai
-  - specification_search
+  - specification_search_theory
+  - cross_validate_cfa
+  - bifactor_indices
   - print.specification_search
 
 - title: Results Display
@@ -82,6 +79,13 @@ reference:
   contents:
   - Data_Expectativas
   - Data_Personality
+
+- title: Deprecated
+  desc: >
+    Kept for backward compatibility. Use specification_search_theory()
+    instead, which adds a theory-congruence penalty to the loss.
+  contents:
+  - specification_search
 
 footer:
   structure:

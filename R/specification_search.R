@@ -1,6 +1,14 @@
-#' Heuristic Specification Search for CFA Models
+#' Heuristic Specification Search for CFA Models (deprecated)
 #'
 #' @description
+#' \strong{[Deprecated]} This fit-only search has been superseded by
+#' \code{\link{specification_search_theory}}, which adds a theory-congruence
+#' term to the loss and avoids drifting toward models that fit well but break
+#' the intended factor structure. \code{specification_search()} is kept for
+#' backward compatibility and emits a deprecation warning on every call; new
+#' code should use \code{specification_search_theory()} (set
+#' \code{theory_weight = 0} there to reproduce the fit-only behaviour).
+#'
 #' Performs a heuristic specification search over CFA models in the spirit of
 #' MacCallum (1986). For each seed configuration (with a fixed number of
 #' factors), the algorithm runs a hill-climbing loop that evaluates, at each
@@ -76,6 +84,11 @@
 #'   stops the hill climb. Default 8.
 #' @param early_stop_after_meet Once a configuration meets the targets, the
 #'   loop runs at most this many additional non-improving iterations. Default 3.
+#' @param n_cores Number of CPU cores for parallel evaluation of the candidate
+#'   models within each greedy iteration (they are independent). Default 1
+#'   (sequential). Values > 1 use a PSOCK cluster (works on Windows, where
+#'   \code{fork} is unavailable); results are identical to the sequential run,
+#'   only faster. A practical choice is \code{parallel::detectCores() - 1}.
 #' @param verbose Logical. Print progress and the MacCallum warning. Default
 #'   \code{TRUE}.
 #'
@@ -120,7 +133,9 @@
 #'   summary(res$best$fit)
 #' }
 #'
-#' @seealso \code{\link{cfa_boosting}}
+#' @seealso \code{\link{specification_search_theory}} (recommended
+#'   replacement), \code{\link{cfa_boosting}}
+#' @keywords internal
 #' @export
 specification_search <- function(data,
                                  items,
@@ -143,7 +158,14 @@ specification_search <- function(data,
                                  loss_weights = c(rmsea = 0.5, cfi = 0.3, srmr = 0.2),
                                  patience = 8,
                                  early_stop_after_meet = 3,
+                                 n_cores = 1,
                                  verbose = TRUE) {
+
+  .Deprecated("specification_search_theory",
+    msg = paste("specification_search() is deprecated:",
+                 "use specification_search_theory(), which adds a",
+                 "theory-congruence penalty to the loss",
+                 "(theory_weight = 0 reproduces the fit-only search)."))
 
   if (!requireNamespace("lavaan", quietly = TRUE)) {
     stop("Package 'lavaan' is required.")
@@ -253,6 +275,38 @@ specification_search <- function(data,
       as.numeric(wts["srmr"])  * srmr_l
   }
 
+  # ---- Optional parallel evaluation of candidate fits (PSOCK; Windows-ok) ----
+  .cl <- NULL
+  if (n_cores > 1L && requireNamespace("parallel", quietly = TRUE)) {
+    .cl <- parallel::makeCluster(n_cores)
+    parallel::clusterExport(.cl, c("data", "estimator", "ordered", "std.lv"), envir = environment())
+    parallel::clusterEvalQ(.cl, { suppressMessages(library(lavaan)); TRUE })
+    on.exit(try(parallel::stopCluster(.cl), silent = TRUE), add = TRUE)
+  }
+  .fit_worker <- function(spec) {
+    fit <- try(lavaan::cfa(spec$syntax, data = data, estimator = estimator,
+                           ordered = if (isTRUE(ordered)) spec$items_used else FALSE,
+                           std.lv = std.lv), silent = TRUE)
+    if (inherits(fit, "try-error")) return(list(ok = FALSE))
+    conv <- try(lavaan::lavInspect(fit, "converged"), silent = TRUE)
+    if (inherits(conv, "try-error") || !isTRUE(conv)) return(list(ok = FALSE))
+    lat <- unique(lavaan::lavNames(fit, type = "lv"))
+    pe  <- lavaan::parameterEstimates(fit, standardized = TRUE)
+    neg <- any(pe$op == "~~" & pe$lhs == pe$rhs & pe$lhs %in% lat & pe$est < 0)
+    std <- try(lavaan::standardizedSolution(fit), silent = TRUE)
+    big <- if (inherits(std, "try-error")) FALSE else any(std$op == "=~" & std$lhs %in% lat & abs(std$est.std) > 1)
+    if (neg || big) return(list(ok = FALSE))
+    fm <- suppressWarnings(lavaan::fitMeasures(fit))
+    pick <- function(s, n) if (s %in% names(fm)) as.numeric(fm[s]) else if (n %in% names(fm)) as.numeric(fm[n]) else NA_real_
+    list(ok = TRUE, cfi = pick("cfi.scaled", "cfi"), tli = pick("tli.scaled", "tli"),
+         rmsea = pick("rmsea.scaled", "rmsea"), srmr = as.numeric(fm["srmr"]),
+         chisq = pick("chisq.scaled", "chisq"), df = pick("df.scaled", "df"))
+  }
+  .eval_specs <- function(specs) {
+    if (length(specs) == 0) return(list())
+    if (!is.null(.cl)) parallel::parLapply(.cl, specs, .fit_worker) else lapply(specs, .fit_worker)
+  }
+
   asig_to_syntax <- function(asig, covs = character(0)) {
     lines <- vapply(names(asig), function(f) {
       paste0(f, " =~ ", paste(asig[[f]], collapse = " + "))
@@ -330,129 +384,58 @@ specification_search <- function(data,
     for (iter in seq_len(max_iter_per_config)) {
       if (mejoras_sin_avance >= patience) break
 
-      mejor_accion <- NULL
-      mejor_loss <- current_loss
-      mejor_fit_new  <- NULL
-      mejor_asig_new <- NULL
-      mejor_covs_new <- NULL
-
       fnames <- names(current_asig)
       items_actuales <- items_en_asig(current_asig)
+      mk <- function(asig, cv) if (es_bifactor) asig_to_bifactor(asig, cv) else asig_to_syntax(asig, cv)
 
-      # ---- Op 1: MOVE ----
-      if ("move" %in% operations && length(fnames) >= 2) {
-        for (fi in seq_along(fnames)) {
-          f_o <- fnames[fi]
-          its_f <- current_asig[[f_o]]
+      # ---- Enumerate candidates (same order as the sequential version) ----
+      cand <- list()
+      addc <- function(asig, cv, label) cand[[length(cand) + 1L]] <<-
+        list(asig = asig, covs = cv, label = label, syntax = mk(asig, cv), items_used = items_en_asig(asig))
+      if ("move" %in% operations && length(fnames) >= 2)
+        for (fi in seq_along(fnames)) { f_o <- fnames[fi]; its_f <- current_asig[[f_o]]
           if (length(its_f) <= min_items_factor) next
-          for (item in its_f) {
-            for (fj in seq_along(fnames)) {
-              if (fi == fj) next
-              f_d <- fnames[fj]
-              nueva <- current_asig
-              nueva[[f_o]] <- setdiff(nueva[[f_o]], item)
-              nueva[[f_d]] <- c(nueva[[f_d]], item)
-
-              syn_new <- if (es_bifactor) asig_to_bifactor(nueva, covs)
-                         else             asig_to_syntax(nueva, covs)
-              fit_new <- fit_modelo(syn_new, items_en_asig(nueva))
-              if (!is.null(fit_new) && es_admisible(fit_new)) {
-                l <- loss(get_indices(fit_new))
-                if (l < mejor_loss) {
-                  mejor_loss <- l
-                  mejor_accion <- paste0("MOVE ", item, ": ", f_o, " -> ", f_d)
-                  mejor_fit_new  <- fit_new
-                  mejor_asig_new <- nueva
-                  mejor_covs_new <- covs
-                }
-              }
-            }
-          }
-        }
-      }
-
-      # ---- Op 2: DROP ----
-      if ("drop" %in% operations) {
-        n_removidos <- length(items) - length(items_actuales)
-        if (n_removidos < max_items_removed) {
-          for (fi in seq_along(fnames)) {
-            f_n <- fnames[fi]
-            its_f <- current_asig[[f_n]]
-            if (length(its_f) <= min_items_factor) next
-            for (item in its_f) {
-              nueva <- current_asig
-              nueva[[f_n]] <- setdiff(nueva[[f_n]], item)
-              syn_new <- if (es_bifactor) asig_to_bifactor(nueva, covs)
-                         else             asig_to_syntax(nueva, covs)
-              fit_new <- fit_modelo(syn_new, items_en_asig(nueva))
-              if (!is.null(fit_new) && es_admisible(fit_new)) {
-                l <- loss(get_indices(fit_new))
-                if (l < mejor_loss) {
-                  mejor_loss <- l
-                  mejor_accion <- paste0("DROP ", item, " from ", f_n)
-                  mejor_fit_new  <- fit_new
-                  mejor_asig_new <- nueva
-                  mejor_covs_new <- covs
-                }
-              }
-            }
-          }
-        }
-      }
-
-      # ---- Op 3: COV (residual) ----
+          for (item in its_f) for (fj in seq_along(fnames)) { if (fi == fj) next
+            f_d <- fnames[fj]; nueva <- current_asig
+            nueva[[f_o]] <- setdiff(nueva[[f_o]], item); nueva[[f_d]] <- c(nueva[[f_d]], item)
+            addc(nueva, covs, paste0("MOVE ", item, ": ", f_o, " -> ", f_d)) } }
+      if ("drop" %in% operations && (length(items) - length(items_actuales)) < max_items_removed)
+        for (fi in seq_along(fnames)) { f_n <- fnames[fi]; its_f <- current_asig[[f_n]]
+          if (length(its_f) <= min_items_factor) next
+          for (item in its_f) { nueva <- current_asig; nueva[[f_n]] <- setdiff(nueva[[f_n]], item)
+            addc(nueva, covs, paste0("DROP ", item, " from ", f_n)) } }
       if ("cov" %in% operations && length(covs) < max_covs) {
-        mi <- tryCatch(
-          lavaan::modificationIndices(current_fit, sort. = TRUE,
-                                      minimum.value = mi_min),
-          error = function(e) data.frame()
-        )
+        mi <- tryCatch(lavaan::modificationIndices(current_fit, sort. = TRUE, minimum.value = mi_min),
+                       error = function(e) data.frame())
         if (NROW(mi) > 0) {
-          mi_cov <- mi[mi$op == "~~" &
-                         mi$lhs %in% items_actuales &
-                         mi$rhs %in% items_actuales &
-                         mi$lhs != mi$rhs, , drop = FALSE]
-          if (NROW(mi_cov) > 0) {
-            mi_cov <- utils::head(mi_cov, mi_top)
+          mi_cov <- mi[mi$op == "~~" & mi$lhs %in% items_actuales & mi$rhs %in% items_actuales & mi$lhs != mi$rhs, , drop = FALSE]
+          if (NROW(mi_cov) > 0) { mi_cov <- utils::head(mi_cov, mi_top)
             for (r in seq_len(nrow(mi_cov))) {
-              new_cov <- paste0(mi_cov$lhs[r], " ~~ ", mi_cov$rhs[r])
-              rev_cov <- paste0(mi_cov$rhs[r], " ~~ ", mi_cov$lhs[r])
+              new_cov <- paste0(mi_cov$lhs[r], " ~~ ", mi_cov$rhs[r]); rev_cov <- paste0(mi_cov$rhs[r], " ~~ ", mi_cov$lhs[r])
               if (new_cov %in% covs || rev_cov %in% covs) next
-              covs_new <- c(covs, new_cov)
-              syn_new <- if (es_bifactor) asig_to_bifactor(current_asig, covs_new)
-                         else             asig_to_syntax(current_asig, covs_new)
-              fit_new <- fit_modelo(syn_new, items_actuales)
-              if (!is.null(fit_new) && es_admisible(fit_new)) {
-                l <- loss(get_indices(fit_new))
-                if (l < mejor_loss) {
-                  mejor_loss <- l
-                  mejor_accion <- paste0("COV ", new_cov,
-                                         " (MI=", round(mi_cov$mi[r], 1), ")")
-                  mejor_fit_new  <- fit_new
-                  mejor_asig_new <- current_asig
-                  mejor_covs_new <- covs_new
-                }
-              }
-            }
-          }
-        }
+              addc(current_asig, c(covs, new_cov), paste0("COV ", new_cov, " (MI=", round(mi_cov$mi[r], 1), ")")) } } }
       }
 
-      # ---- apply best ----
-      if (!is.null(mejor_accion)) {
-        current_loss <- mejor_loss
-        current_fit  <- mejor_fit_new
-        current_asig <- mejor_asig_new
-        covs         <- mejor_covs_new
-        mejoras_sin_avance <- 0L
-        if (verbose) {
-          inew <- get_indices(current_fit)
-          cat(sprintf("    [%s] iter %d: %s -> CFI=%.4f RMSEA=%.4f SRMR=%.4f loss=%.4f\n",
-                      config_id, iter, mejor_accion,
-                      inew$cfi, inew$rmsea, inew$srmr, current_loss))
-        }
-      } else {
+      # ---- Evaluate candidates (parallel if n_cores > 1) and pick the best ----
+      if (length(cand) == 0) {
         mejoras_sin_avance <- mejoras_sin_avance + 1L
+      } else {
+        res <- .eval_specs(cand)
+        losses <- vapply(seq_along(cand), function(i) { rr <- res[[i]]
+          if (is.null(rr) || !isTRUE(rr$ok)) return(Inf); loss(rr) }, numeric(1))
+        bi <- which.min(losses)
+        if (length(bi) == 1L && is.finite(losses[bi]) && losses[bi] < current_loss) {
+          current_loss <- losses[bi]; current_asig <- cand[[bi]]$asig; covs <- cand[[bi]]$covs
+          current_fit  <- fit_modelo(cand[[bi]]$syntax, cand[[bi]]$items_used)
+          mejoras_sin_avance <- 0L
+          if (verbose) {
+            inew <- get_indices(current_fit)
+            cat(sprintf("    [%s] iter %d: %s -> CFI=%.4f RMSEA=%.4f SRMR=%.4f loss=%.4f\n",
+                        config_id, iter, cand[[bi]]$label, inew$cfi, inew$rmsea, inew$srmr, current_loss))
+          }
+        } else {
+          mejoras_sin_avance <- mejoras_sin_avance + 1L
+        }
       }
 
       # Early stop after meeting targets

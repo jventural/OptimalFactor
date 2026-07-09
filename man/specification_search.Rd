@@ -1,9 +1,17 @@
 \name{specification_search}
 \alias{specification_search}
 \alias{print.specification_search}
-\title{Heuristic Specification Search for CFA Models}
+\title{Heuristic Specification Search for CFA Models (deprecated)}
 
 \description{
+\strong{[Deprecated]} This fit-only search has been superseded by
+\code{\link{specification_search_theory}}, which adds a theory-congruence
+term to the loss and avoids drifting toward models that fit well but break
+the intended factor structure. \code{specification_search()} is kept for
+backward compatibility and emits a deprecation warning on every call; new
+code should use \code{specification_search_theory()} (set
+\code{theory_weight = 0} there to reproduce the fit-only behaviour).
+
 Performs a heuristic specification search over CFA models in the spirit of
 MacCallum (1986). For each seed configuration (with a fixed number of
 factors), the algorithm runs a hill-climbing loop that evaluates three local
@@ -38,6 +46,7 @@ specification_search(
   loss_weights = c(rmsea = 0.5, cfi = 0.3, srmr = 0.2),
   patience = 8,
   early_stop_after_meet = 3,
+  n_cores = 1,
   verbose = TRUE
 )
 
@@ -69,6 +78,11 @@ specification_search(
 \item{loss_weights}{Named numeric vector with weights for the composite loss.}
 \item{patience}{Iterations without improvement that stop the hill climb.}
 \item{early_stop_after_meet}{Extra iterations allowed after targets are met.}
+\item{n_cores}{Number of CPU cores for parallel evaluation of the candidate
+models within each greedy iteration (they are independent). Default 1
+(sequential). Values > 1 use a PSOCK cluster (works on Windows, where
+\code{fork} is unavailable); results are identical to the sequential run,
+only faster. A practical choice is \code{parallel::detectCores() - 1}.}
 \item{verbose}{Print progress and the MacCallum warning.}
 \item{x}{An object returned by \code{specification_search}.}
 \item{top}{Number of rows displayed by the print method.}
@@ -129,7 +143,9 @@ summary(res$best$fit)
 }
 
 \seealso{
+\code{\link{specification_search_theory}} (recommended replacement),
 \code{\link{cfa_boosting}}
 }
+\keyword{internal}
 
 \encoding{UTF-8}

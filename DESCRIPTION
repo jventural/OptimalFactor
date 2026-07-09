@@ -1,8 +1,8 @@
 Package: OptimalFactor
 Type: Package
 Title: Optimal Factor Analysis with EFA-Boosting Algorithm
-Version: 1.1.0
-Date: 2026-05-11
+Version: 1.2.0
+Date: 2026-07-09
 Authors@R:
     person("Jose", "Ventura-Leon",
            email = "jventuraleon@gmail.com",
@@ -46,17 +46,6 @@ Suggests:
     R.utils,
     knitr,
     rmarkdown,
-    shiny (>= 1.7.0),
-    bslib (>= 0.5.0),
-    DT,
-    readxl,
-    readr,
-    future,
-    promises,
-    commonmark,
-    officer,
-    flextable,
-    later,
     semTools
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr
