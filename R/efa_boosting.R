@@ -328,7 +328,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     for (attempt in 1:max_attempts) {
       resp <- tryCatch({
         httr::POST(
-          "https://api.openai.com/v1/chat/completions",
+          .openai_chat_url(),
           httr::add_headers(
             Authorization = paste("Bearer", ai_config$api_key),
             `Content-Type` = "application/json"

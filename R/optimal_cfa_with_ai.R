@@ -51,7 +51,7 @@ optimal_cfa_with_ai <- function(initial_model,
     while(attempt <= 3) {
       resp <- tryCatch({
         httr::POST(
-          "https://api.openai.com/v1/chat/completions",
+          .openai_chat_url(),
           add_headers(Authorization = paste("Bearer", api_key),
                       `Content-Type` = "application/json"),
           timeout(160),

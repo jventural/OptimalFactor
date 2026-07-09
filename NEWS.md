@@ -1,3 +1,13 @@
+# OptimalFactor 1.2.1
+
+* All AI calls (conceptual analysis in `efa_boosting()`, `efa_optimizer()`,
+  `optimal_efa_with_ai()` and `optimal_cfa_with_ai()`) now honour the
+  `OPENAI_BASE_URL` environment variable, so they can be redirected to any
+  OpenAI-compatible provider — e.g. the Hugging Face router
+  (`https://router.huggingface.co/v1`) to use models such as
+  `Qwen/Qwen2.5-72B-Instruct` with an `hf_` token. Default behaviour
+  (variable unset) is unchanged.
+
 # OptimalFactor 1.2.0
 
 ## Breaking changes

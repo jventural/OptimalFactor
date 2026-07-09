@@ -34,7 +34,7 @@ optimal_efa_with_ai <- function(data,
     while (at <= 3) {
       resp <- tryCatch({
         httr::POST(
-          "https://api.openai.com/v1/chat/completions",
+          .openai_chat_url(),
           httr::add_headers(
             Authorization = paste("Bearer", api_key),
             `Content-Type` = "application/json"

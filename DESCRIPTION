@@ -1,7 +1,7 @@
 Package: OptimalFactor
 Type: Package
 Title: Optimal Factor Analysis with EFA-Boosting Algorithm
-Version: 1.2.0
+Version: 1.2.1
 Date: 2026-07-09
 Authors@R:
     person("Jose", "Ventura-Leon",
