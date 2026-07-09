@@ -1,12 +1,10 @@
 pandoc: 3.8.3
-pkgdown: 2.2.0
+pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
-  efa-boosting-studio: efa-boosting-studio.html
-  efa-boosting-wizard: efa-boosting-wizard.html
   efa-boosting: efa-boosting.html
   OptimalFactor: OptimalFactor.html
-last_built: 2026-05-11T15:54Z
+last_built: 2026-07-09T06:37Z
 urls:
   reference: https://jventural.github.io/OptimalFactor/reference
   article: https://jventural.github.io/OptimalFactor/articles

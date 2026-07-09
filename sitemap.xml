@@ -2,8 +2,6 @@
 <url><loc>https://jventural.github.io/OptimalFactor/404.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/LICENSE.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/articles/OptimalFactor.html</loc></url>
-<url><loc>https://jventural.github.io/OptimalFactor/articles/efa-boosting-studio.html</loc></url>
-<url><loc>https://jventural.github.io/OptimalFactor/articles/efa-boosting-wizard.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/articles/efa-boosting.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/articles/index.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/authors.html</loc></url>
@@ -11,7 +9,9 @@
 <url><loc>https://jventural.github.io/OptimalFactor/news/index.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/Data_Expectativas.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/Data_Personality.html</loc></url>
+<url><loc>https://jventural.github.io/OptimalFactor/reference/bifactor_indices.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/cfa_boosting.html</loc></url>
+<url><loc>https://jventural.github.io/OptimalFactor/reference/cross_validate_cfa.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/efa_boosting.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/efa_optimizer.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/export_cfa_boosting.html</loc></url>
@@ -25,10 +25,10 @@
 <url><loc>https://jventural.github.io/OptimalFactor/reference/print_cfa_results.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/print_conceptual_analysis.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/print_efa_results.html</loc></url>
+<url><loc>https://jventural.github.io/OptimalFactor/reference/redundancy_short_form.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/report_cfa_results.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/report_efa_results.html</loc></url>
-<url><loc>https://jventural.github.io/OptimalFactor/reference/run_efa_boosting.html</loc></url>
-<url><loc>https://jventural.github.io/OptimalFactor/reference/run_efa_boosting_wizard.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/specification_search.html</loc></url>
+<url><loc>https://jventural.github.io/OptimalFactor/reference/specification_search_theory.html</loc></url>
 </urlset>
 

@@ -37,19 +37,6 @@ EFA:
 - **Interfactor correlation verification**
 - **Optional AI-assisted conceptual analysis** via GPT models
 
-### EFA-Boosting Studio
-
-The
-[`run_efa_boosting()`](https://jventural.github.io/OptimalFactor/reference/run_efa_boosting.md)
-function launches an interactive Shiny application:
-
-- Modern Bootstrap 5 interface
-- Real-time console output with auto-scroll
-- CSV/Excel data import
-- Configurable fit targets and thresholds
-- Option to exclude specific items
-- Export results to CSV
-
 ### CFA Optimization
 
 The
@@ -79,16 +66,6 @@ result <- efa_boosting(
 # View results
 print(result$final_structure)
 print(result$fit_indices)
-```
-
-### Interactive Analysis with EFA-Boosting Studio
-
-``` r
-
-library(OptimalFactor)
-
-# Launch the interactive application
-run_efa_boosting()
 ```
 
 ## Theoretical Background

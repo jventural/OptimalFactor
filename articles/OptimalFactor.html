@@ -12,8 +12,8 @@
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Introduction to OptimalFactor">
 </head>
@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">OptimalFactor</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,8 +41,6 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/OptimalFactor.html">Introduction to OptimalFactor</a></li>
     <li><a class="dropdown-item" href="../articles/efa-boosting.html">EFA-Boosting Algorithm</a></li>
-    <li><a class="dropdown-item" href="../articles/efa-boosting-studio.html">EFA-Boosting Studio</a></li>
-    <li><a class="dropdown-item" href="../articles/efa-boosting-wizard.html">EFA-Boosting Wizard (v2)</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
@@ -120,20 +118,6 @@ models</li>
 </ul>
 </div>
 <div class="section level3">
-<h3 id="efa-boosting-studio">EFA-Boosting Studio<a class="anchor" aria-label="anchor" href="#efa-boosting-studio"></a>
-</h3>
-<p>The <code><a href="../reference/run_efa_boosting.html">run_efa_boosting()</a></code> function launches an interactive
-Shiny application:</p>
-<ul>
-<li>Modern Bootstrap 5 interface</li>
-<li>Real-time console output with auto-scroll</li>
-<li>CSV/Excel data import</li>
-<li>Configurable fit targets and thresholds</li>
-<li>Option to exclude specific items</li>
-<li>Export results to CSV</li>
-</ul>
-</div>
-<div class="section level3">
 <h3 id="cfa-optimization">CFA Optimization<a class="anchor" aria-label="anchor" href="#cfa-optimization"></a>
 </h3>
 <p>The <code><a href="../reference/cfa_boosting.html">cfa_boosting()</a></code> function provides CFA
@@ -165,15 +149,6 @@ optimization:</p>
 <span><span class="co"># View results</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">final_structure</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">fit_indices</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="interactive-analysis-with-efa-boosting-studio">Interactive Analysis with EFA-Boosting Studio<a class="anchor" aria-label="anchor" href="#interactive-analysis-with-efa-boosting-studio"></a>
-</h3>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/jventural/OptimalFactor" class="external-link">OptimalFactor</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Launch the interactive application</span></span>
-<span><span class="fu"><a href="../reference/run_efa_boosting.html">run_efa_boosting</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -221,7 +196,7 @@ Psychological Measurement, 79</em>(2), 310-334.</p></li>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

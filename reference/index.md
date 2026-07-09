@@ -6,14 +6,12 @@ Functions for Exploratory Factor Analysis optimization
 
 - [`efa_boosting()`](https://jventural.github.io/OptimalFactor/reference/efa_boosting.md)
   : EFA-Boosting Optimization
-- [`run_efa_boosting()`](https://jventural.github.io/OptimalFactor/reference/run_efa_boosting.md)
-  : Launch EFA-Boosting Studio - EFA-Boosting Interactive Analyzer
-- [`run_efa_boosting_wizard()`](https://jventural.github.io/OptimalFactor/reference/run_efa_boosting_wizard.md)
-  : Launch the OptimalFactor Wizard (v2)
 - [`efa_optimizer()`](https://jventural.github.io/OptimalFactor/reference/efa_optimizer.md)
   : Exploratory Factor Analysis Optimizer with Optional LLM Support
 - [`optimal_efa_with_ai()`](https://jventural.github.io/OptimalFactor/reference/optimal_efa_with_ai.md)
   : Exploratory Factor Analysis Optimization with AI Assistance
+- [`redundancy_short_form()`](https://jventural.github.io/OptimalFactor/reference/redundancy_short_form.md)
+  : Redundancy-Guided Short Form of a Unidimensional Scale
 
 ## CFA Optimization
 
@@ -23,9 +21,12 @@ Functions for Confirmatory Factor Analysis optimization
   : CFA-Boosting Optimization
 - [`optimal_cfa_with_ai()`](https://jventural.github.io/OptimalFactor/reference/optimal_cfa_with_ai.md)
   : Confirmatory Factor Analysis Optimization with AI Assistance
-- [`specification_search()`](https://jventural.github.io/OptimalFactor/reference/specification_search.md)
-  [`print(`*`<specification_search>`*`)`](https://jventural.github.io/OptimalFactor/reference/specification_search.md)
-  : Heuristic Specification Search for CFA Models
+- [`specification_search_theory()`](https://jventural.github.io/OptimalFactor/reference/specification_search_theory.md)
+  : Theory-Guided Specification Search for CFA Models
+- [`cross_validate_cfa()`](https://jventural.github.io/OptimalFactor/reference/cross_validate_cfa.md)
+  : Split-Half Cross-Validation of a Factor Model
+- [`bifactor_indices()`](https://jventural.github.io/OptimalFactor/reference/bifactor_indices.md)
+  : Bifactor Statistical Indices
 - [`print(`*`<specification_search>`*`)`](https://jventural.github.io/OptimalFactor/reference/print.specification_search.md)
   : Print method for specification_search
 
@@ -65,3 +66,12 @@ Datasets included in the package
   : Expectativas Dataset
 - [`Data_Personality`](https://jventural.github.io/OptimalFactor/reference/Data_Personality.md)
   : Personality Dataset
+
+## Deprecated
+
+Kept for backward compatibility. Use specification_search_theory()
+instead, which adds a theory-congruence penalty to the loss.
+
+- [`specification_search()`](https://jventural.github.io/OptimalFactor/reference/specification_search.md)
+  [`print(`*`<specification_search>`*`)`](https://jventural.github.io/OptimalFactor/reference/specification_search.md)
+  : Heuristic Specification Search for CFA Models (deprecated)

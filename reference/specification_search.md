@@ -1,4 +1,13 @@
-# Heuristic Specification Search for CFA Models
+# Heuristic Specification Search for CFA Models (deprecated)
+
+**\[Deprecated\]** This fit-only search has been superseded by
+[`specification_search_theory`](https://jventural.github.io/OptimalFactor/reference/specification_search_theory.md),
+which adds a theory-congruence term to the loss and avoids drifting
+toward models that fit well but break the intended factor structure.
+`specification_search()` is kept for backward compatibility and emits a
+deprecation warning on every call; new code should use
+[`specification_search_theory()`](https://jventural.github.io/OptimalFactor/reference/specification_search_theory.md)
+(set `theory_weight = 0` there to reproduce the fit-only behaviour).
 
 Performs a heuristic specification search over CFA models in the spirit
 of MacCallum (1986). For each seed configuration (with a fixed number of
@@ -35,6 +44,7 @@ specification_search(
   loss_weights = c(rmsea = 0.5, cfi = 0.3, srmr = 0.2),
   patience = 8,
   early_stop_after_meet = 3,
+  n_cores = 1,
   verbose = TRUE
 )
 
@@ -126,6 +136,14 @@ print(x, top = 10, ...)
 
   Extra iterations allowed after targets are met.
 
+- n_cores:
+
+  Number of CPU cores for parallel evaluation of the candidate models
+  within each greedy iteration (they are independent). Default 1
+  (sequential). Values \> 1 use a PSOCK cluster (works on Windows, where
+  `fork` is unavailable); results are identical to the sequential run,
+  only faster. A practical choice is `parallel::detectCores() - 1`.
+
 - verbose:
 
   Print progress and the MacCallum warning.
@@ -179,6 +197,8 @@ structural equation models or detection of misspecifications?
 
 ## See also
 
+[`specification_search_theory`](https://jventural.github.io/OptimalFactor/reference/specification_search_theory.md)
+(recommended replacement),
 [`cfa_boosting`](https://jventural.github.io/OptimalFactor/reference/cfa_boosting.md)
 
 ## Examples

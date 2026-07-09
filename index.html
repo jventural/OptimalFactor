@@ -12,8 +12,8 @@
 <link rel="icon" sizes="any" href="favicon.ico">
 <link rel="manifest" href="site.webmanifest">
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="OptimalFactor - Optimal Factor Analysis with EFA-Boosting Algorithm">
 <meta name="description" content="A comprehensive R package for optimal factor model refinement in both EFA and CFA using machine-learning inspired boosting algorithms.
@@ -30,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="index.html">OptimalFactor</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,8 +46,6 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/OptimalFactor.html">Introduction to OptimalFactor</a></li>
     <li><a class="dropdown-item" href="articles/efa-boosting.html">EFA-Boosting Algorithm</a></li>
-    <li><a class="dropdown-item" href="articles/efa-boosting-studio.html">EFA-Boosting Studio</a></li>
-    <li><a class="dropdown-item" href="articles/efa-boosting-wizard.html">EFA-Boosting Wizard (v2)</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">News</a></li>
@@ -91,17 +89,11 @@ A comprehensive package for optimal factor model refinement in both EFA and CFA 
 <li>
 <strong>AI Integration</strong>: Optional GPT-powered conceptual analysis of removed items</li>
 <li>
-<strong>Two Shiny apps</strong> (coexist, neither replaces the other):
-<ul>
-<li>
-<strong>EFA-Boosting Studio</strong> (<code><a href="reference/run_efa_boosting.html">run_efa_boosting()</a></code>) — one-screen control panel for power users</li>
-<li>
-<strong>EFA-Boosting Wizard v2</strong> (<code><a href="reference/run_efa_boosting_wizard.html">run_efa_boosting_wizard()</a></code>) — 5-phase guided flow with autopilot mode, reliability (omega + alpha), convergent / discriminant validity that preserves the internal structure of multidimensional comparators, and downloadable TXT log + APA-7 Word manuscript</li>
-</ul>
-</li>
-<li>
 <strong>Specification Search (CFA)</strong>: Heuristic hill-climbing over seed configurations following MacCallum (1986), with move / drop / cov operations and optional bifactor variant</li>
 </ul>
+<blockquote>
+<p><strong>Looking for the interactive app?</strong> The <em>OptimalFactor Wizard</em> (guided 5-phase Shiny interface with reliability, convergent/discriminant validity, AI autopilot and APA-7 report downloads) is distributed separately as a web application on Posit Connect Cloud. This package contains the analysis engine only.</p>
+</blockquote>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -129,22 +121,6 @@ A comprehensive package for optimal factor model refinement in both EFA and CFA 
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="efa-boosting-studio-shiny-app">EFA-Boosting Studio (Shiny App)<a class="anchor" aria-label="anchor" href="#efa-boosting-studio-shiny-app"></a>
-</h3>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/jventural/OptimalFactor" class="external-link">OptimalFactor</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/run_efa_boosting.html">run_efa_boosting</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="efa-boosting-wizard-v2-shiny-app">EFA-Boosting Wizard v2 (Shiny App)<a class="anchor" aria-label="anchor" href="#efa-boosting-wizard-v2-shiny-app"></a>
-</h3>
-<p>A guided 5-phase wizard with reliability, convergent / discriminant validity, AI autopilot, and downloadable session log (<code>.txt</code>) + APA-7 manuscript (<code>.docx</code>):</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/jventural/OptimalFactor" class="external-link">OptimalFactor</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/run_efa_boosting_wizard.html">run_efa_boosting_wizard</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>See the <em>EFA-Boosting Wizard (v2)</em> article for a complete walkthrough of the five phases, the autopilot mode and the multidimensional-comparator validity workflow.</p>
-</div>
 </div>
 <div class="section level2">
 <h2 id="main-functions">Main Functions<a class="anchor" aria-label="anchor" href="#main-functions"></a>
@@ -164,20 +140,24 @@ A comprehensive package for optimal factor model refinement in both EFA and CFA 
 <td>EFA optimization with adaptive composite fit</td>
 </tr>
 <tr>
-<td><code><a href="reference/run_efa_boosting.html">run_efa_boosting()</a></code></td>
-<td>Launch EFA-Boosting Studio (Shiny app)</td>
-</tr>
-<tr>
-<td><code><a href="reference/run_efa_boosting_wizard.html">run_efa_boosting_wizard()</a></code></td>
-<td>Launch EFA-Boosting Wizard v2 (Shiny app)</td>
-</tr>
-<tr>
 <td><code><a href="reference/cfa_boosting.html">cfa_boosting()</a></code></td>
 <td>CFA optimization with modification indices</td>
 </tr>
 <tr>
-<td><code><a href="reference/specification_search.html">specification_search()</a></code></td>
-<td>Heuristic CFA specification search (MacCallum, 1986)</td>
+<td><code><a href="reference/specification_search_theory.html">specification_search_theory()</a></code></td>
+<td>Theory-guided CFA specification search (MacCallum, 1986 + theory-congruence loss)</td>
+</tr>
+<tr>
+<td><code><a href="reference/cross_validate_cfa.html">cross_validate_cfa()</a></code></td>
+<td>Split-half cross-validation of a factor model</td>
+</tr>
+<tr>
+<td><code><a href="reference/bifactor_indices.html">bifactor_indices()</a></code></td>
+<td>Bifactor statistical indices</td>
+</tr>
+<tr>
+<td><code><a href="reference/redundancy_short_form.html">redundancy_short_form()</a></code></td>
+<td>Redundancy-guided short form of a unidimensional scale</td>
 </tr>
 <tr>
 <td><code><a href="reference/report_efa_results.html">report_efa_results()</a></code></td>
@@ -194,9 +174,10 @@ A comprehensive package for optimal factor model refinement in both EFA and CFA 
 </tbody>
 </table>
 <div class="section level3">
-<h3 id="specification-search-cfa">Specification Search (CFA)<a class="anchor" aria-label="anchor" href="#specification-search-cfa"></a>
+<h3 id="theory-guided-specification-search-cfa">Theory-Guided Specification Search (CFA)<a class="anchor" aria-label="anchor" href="#theory-guided-specification-search-cfa"></a>
 </h3>
-<p><code><a href="reference/specification_search.html">specification_search()</a></code> runs a heuristic hill-climbing search over CFA model configurations in the spirit of MacCallum (1986). For each seed (a candidate number of factors with an initial item-to-factor assignment) the algorithm iteratively tries three local operations and keeps the change with the lowest composite loss:</p>
+<p><code><a href="reference/specification_search_theory.html">specification_search_theory()</a></code> runs a heuristic hill-climbing search over CFA model configurations in the spirit of MacCallum (1986), extended with a <strong>theory-congruence term</strong> in the loss: candidate models are penalized for moving items away from their theoretical factor or for dropping theoretical items, so the search cannot drift toward models that fit well but break the intended structure. A single <code>theory_weight</code> parameter grades how much theory counts relative to fit (<code>0</code> reproduces the classic fit-only search).</p>
+<p>For each seed (a candidate number of factors with an initial item-to-factor assignment — the theoretical structure itself is always included as a seed) the algorithm iteratively tries three local operations and keeps the change with the lowest composite loss:</p>
 <ul>
 <li>
 <strong>move</strong> an item from its current factor to another;</li>
@@ -205,8 +186,8 @@ A comprehensive package for optimal factor model refinement in both EFA and CFA 
 <li>
 <strong>cov</strong> add a residual covariance suggested by modification indices.</li>
 </ul>
-<p>A bifactor variant (one orthogonal general factor plus the configured group factors) can be tried automatically for every seed with k &gt;= 2. The procedure returns every model evaluated, the subset that meets the user-supplied fit targets (CFI / RMSEA), and the best model under a composite loss.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<p>A bifactor variant (one orthogonal general factor plus the configured group factors) can be tried automatically for every seed with k &gt;= 2. The procedure returns every model evaluated, the subset that meets the user-supplied fit targets (CFI / RMSEA), and the best model under the composite loss.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lavaan.ugent.be" class="external-link">lavaan</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/jventural/OptimalFactor" class="external-link">OptimalFactor</a></span><span class="op">)</span></span>
 <span></span>
@@ -221,32 +202,25 @@ A comprehensive package for optimal factor model refinement in both EFA and CFA 
 <span><span class="va">df</span>    <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lavaan/man/simulateData.html" class="external-link">simulateData</a></span><span class="op">(</span><span class="va">sim</span>, sample.nobs <span class="op">=</span> <span class="fl">500</span>, seed <span class="op">=</span> <span class="fl">2026</span><span class="op">)</span></span>
 <span><span class="va">items</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">9</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/specification_search.html">specification_search</a></span><span class="op">(</span></span>
-<span>  data         <span class="op">=</span> <span class="va">df</span>,</span>
-<span>  items        <span class="op">=</span> <span class="va">items</span>,</span>
-<span>  max_factors  <span class="op">=</span> <span class="fl">4</span>,</span>
-<span>  estimator    <span class="op">=</span> <span class="st">"ML"</span>,</span>
-<span>  ordered      <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  try_bifactor <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  verbose      <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/specification_search_theory.html">specification_search_theory</a></span><span class="op">(</span></span>
+<span>  data          <span class="op">=</span> <span class="va">df</span>,</span>
+<span>  items         <span class="op">=</span> <span class="va">items</span>,</span>
+<span>  theory        <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>F1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x1"</span>,<span class="st">"x2"</span>,<span class="st">"x3"</span><span class="op">)</span>,</span>
+<span>                        F2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x4"</span>,<span class="st">"x5"</span>,<span class="st">"x6"</span><span class="op">)</span>,</span>
+<span>                        F3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x7"</span>,<span class="st">"x8"</span>,<span class="st">"x9"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  theory_weight <span class="op">=</span> <span class="fl">0.5</span>,   <span class="co"># 0 = fit-only (classic search); higher = more conservative</span></span>
+<span>  estimator     <span class="op">=</span> <span class="st">"ML"</span>,</span>
+<span>  ordered       <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  try_bifactor  <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  verbose       <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">res</span>, top <span class="op">=</span> <span class="fl">8</span><span class="op">)</span>         <span class="co"># ranking by composite loss</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">res</span>, top <span class="op">=</span> <span class="fl">8</span><span class="op">)</span>         <span class="co"># ranking by composite loss (+ theory congruence)</span></span>
 <span><span class="va">res</span><span class="op">$</span><span class="va">successful</span>              <span class="co"># configurations meeting CFI / RMSEA targets</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">best</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span>       <span class="co"># fitted lavaan object for the best model</span></span></code></pre></div>
-<p>Pass your own theoretically motivated seeds via the <code>seeds</code> argument:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">seeds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  <span class="st">"3"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>F1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x1"</span>,<span class="st">"x2"</span>,<span class="st">"x3"</span><span class="op">)</span>,</span>
-<span>         F2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x4"</span>,<span class="st">"x5"</span>,<span class="st">"x6"</span><span class="op">)</span>,</span>
-<span>         F3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x7"</span>,<span class="st">"x8"</span>,<span class="st">"x9"</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/specification_search.html">specification_search</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">df</span>, items <span class="op">=</span> <span class="va">items</span>, seeds <span class="op">=</span> <span class="va">seeds</span>,</span>
-<span>                     estimator <span class="op">=</span> <span class="st">"ML"</span>, ordered <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>                     try_bifactor <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p>A complete runnable script is available at <a href="examples/example_specification_search.R"><code>examples/example_specification_search.R</code></a>.</p>
+<blockquote>
+<p><strong>Deprecated:</strong> the original fit-only <code><a href="reference/specification_search.html">specification_search()</a></code> is kept for backward compatibility but emits a deprecation warning; use <code><a href="reference/specification_search_theory.html">specification_search_theory()</a></code> (with <code>theory_weight = 0</code> if you really want the fit-only behaviour).</p>
+</blockquote>
 <p><strong>Important caveat — MacCallum (1986).</strong> Specification search capitalizes on chance. Use it as an <strong>exploratory</strong> device only and:</p>
 <ol style="list-style-type: decimal">
 <li>Report the procedure transparently as exploratory.</li>
@@ -327,7 +301,7 @@ A comprehensive package for optimal factor model refinement in both EFA and CFA 
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

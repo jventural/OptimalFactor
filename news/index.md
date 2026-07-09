@@ -1,15 +1,47 @@
 # Changelog
 
+## OptimalFactor 1.2.0
+
+### Breaking changes
+
+- **The Shiny apps moved out of the package.** `run_efa_boosting()` and
+  `run_efa_boosting_wizard()` (plus `inst/shiny-apps/` and the two app
+  vignettes) were removed: the interactive *OptimalFactor Wizard* is now
+  distributed separately as a web application on Posit Connect Cloud.
+  The package keeps the analysis engine only, which also trims the
+  suggested dependencies (shiny, bslib, DT, officer, flextable, readxl,
+  readr, commonmark, later, future, promises are no longer suggested).
+
+### New functions
+
+- **specification_search_theory()**: theory-guided specification search.
+  Extends the MacCallum (1986) hill-climbing search with a
+  theory-congruence term in the loss (penalizes moving items away from
+  their theoretical factor and dropping theoretical items). A single
+  `theory_weight` parameter grades how much theory counts relative to
+  fit (`0` reproduces the fit-only search).
+- **cross_validate_cfa()**: split-half cross-validation of a factor
+  model.
+- **bifactor_indices()**: bifactor statistical indices.
+- **redundancy_short_form()**: redundancy-guided short form of a
+  unidimensional scale.
+
+### Deprecated
+
+- **specification_search()** is deprecated in favour of
+  [`specification_search_theory()`](https://jventural.github.io/OptimalFactor/reference/specification_search_theory.md)
+  and now emits a deprecation warning on every call. It is kept for
+  backward compatibility.
+
 ## OptimalFactor 1.1.0
 
 ### New: Guided wizard for EFA-Boosting
 
 - **run_efa_boosting_wizard()**: a second Shiny app that coexists with
-  the original
-  [`run_efa_boosting()`](https://jventural.github.io/OptimalFactor/reference/run_efa_boosting.md)
-  studio. Provides a guided 5-phase flow (Data → Parallel diagnostic →
-  EFA boosting → Reliability → External and convergent/discriminant
-  validity), each with a “proposed action / what will happen” panel.
+  the original `run_efa_boosting()` studio. Provides a guided 5-phase
+  flow (Data → Parallel diagnostic → EFA boosting → Reliability →
+  External and convergent/discriminant validity), each with a “proposed
+  action / what will happen” panel.
 
 #### Wizard features
 
