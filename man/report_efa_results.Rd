@@ -9,11 +9,11 @@ Designed for quick inspection in interactive sessions; returns \code{invisible(N
 }
 
 \usage{
-report_efa_results(res, show_plot = TRUE)
+report_efa_results(res, show_plot = TRUE, print = TRUE)
 }
 
 \arguments{
-\item{\code{res}}{A result list as returned by \code{\link{efa_boosting}}, expected to contain:
+\item{res}{A result list as returned by \code{\link{efa_boosting}}, expected to contain:
 \itemize{
   \item \code{$final_structure}: data frame of thresholded factor loadings and item labels.
   \item \code{$removed_items}: character vector of removed items in order.
@@ -24,7 +24,8 @@ report_efa_results(res, show_plot = TRUE)
   \item \code{$inter_factor_correlation}: optional factor correlation matrix.
   \item \code{$interfactor_check}: optional list describing correlation-threshold checks.
 }}
-\item{\code{show_plot}}{Logical; if \code{TRUE}, prints three ASCII evolution bars (RMSEA, SRMR, CFI).}
+\item{show_plot}{Logical; if \code{TRUE}, prints three ASCII evolution bars (RMSEA, SRMR, CFI).}
+\item{print}{Logical; if \code{TRUE} (default), the formatted report is printed to the console. If \code{FALSE}, the structured report object is returned without printing.}
 }
 
 \details{

@@ -13,8 +13,8 @@ export_conceptual_analysis(resultado, file = "conceptual_analysis.txt")
 }
 
 \arguments{
-\item{\code{resultado}}{A result list returned by \code{\link{efa_optimizer}}; must contain \code{$conceptual_analysis} and \code{$config_used} (see \code{\link{print_conceptual_analysis}}).}
-\item{\code{file}}{Character path to the output text file (UTF-8). If it exists, it will be overwritten.}
+\item{resultado}{A result list returned by \code{\link{efa_optimizer}}; must contain \code{$conceptual_analysis} and \code{$config_used} (see \code{\link{print_conceptual_analysis}}).}
+\item{file}{Character path to the output text file (UTF-8). If it exists, it will be overwritten.}
 }
 
 \details{
@@ -44,7 +44,8 @@ resultado <- list(
   conceptual_analysis = list(
     removed = list(DP1 = "Desde el punto de vista psicométrico..."),
     kept = list(DP2 = "Psychometrically, the item shows..."),
-    item_stats = list(DP1 = list(loading = 0.22, h2 = 0.11, rmsea_at_removal = 0.095, reason = "Cross-loading"))
+    item_stats = list(DP1 = list(loading = 0.22, h2 = 0.11,
+                                 rmsea_at_removal = 0.095, reason = "Cross-loading"))
   ),
   config_used = list(
     ai_config = list(

@@ -1,3 +1,21 @@
+# OptimalFactor 1.2.2
+
+## CRAN readiness
+
+* `R CMD check --as-cran` now passes with 0 errors and 0 warnings (apart
+  from the expected note about `PsyMetricTools` not yet being on CRAN):
+  non-ASCII characters in R code were escaped to `\uXXXX`, runtime calls to
+  `install.packages()` / `devtools::install_github()` were replaced by
+  informative errors, `library()` calls inside functions were removed, and
+  the `Remotes` field was dropped from `DESCRIPTION`.
+* `imprimir_items_eliminados()` is now exported.
+* Documentation fixes: usage sections synchronized with the real default
+  arguments of `cfa_boosting()` and `efa_boosting()`, examples updated to
+  the current `cfa_boosting(data, model)` signature, duplicated alias for
+  `print.specification_search` removed, and the new `print` argument of
+  `report_efa_results()` documented.
+* `parallel` and `stats` are now declared in `Imports`.
+
 # OptimalFactor 1.2.1
 
 * All AI calls (conceptual analysis in `efa_boosting()`, `efa_optimizer()`,

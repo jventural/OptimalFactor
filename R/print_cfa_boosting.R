@@ -24,14 +24,14 @@
 #'   on the console.
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' data(Data_Personality, package = "OptimalFactor")
-#' res <- cfa_boosting(
-#'   data       = Data_Personality,
-#'   name_items = "P",
-#'   n_factors  = 3,
-#'   estimator  = "WLSMV",
-#'   rotation   = "oblimin")
+#' model <- '
+#' F1 =~ PPTQ1 + PPTQ2 + PPTQ3 + PPTQ4 + PPTQ5
+#' F2 =~ PPTQ6 + PPTQ7 + PPTQ8 + PPTQ9 + PPTQ10
+#' F3 =~ PPTQ11 + PPTQ12 + PPTQ13 + PPTQ14 + PPTQ15
+#' '
+#' res <- cfa_boosting(Data_Personality, model)
 #'
 #' # Full printout (default).
 #' print_cfa_boosting(res)
@@ -86,13 +86,13 @@ print_cfa_boosting <- function(result,
              0), "\n\n")
 
   # ───────────────── Índices de Ajuste ─────────────────
-  cat("--- ÍNDICES DE AJUSTE ---\n\n")
+  cat("--- \u00CDNDICES DE AJUSTE ---\n\n")
 
   fit <- result$fit_indices
   targets <- result$targets_met
 
   # Tabla de índices
-  cat(sprintf("%-15s %10s %10s %10s\n", "Índice", "Valor", "Criterio", "Estado"))
+  cat(sprintf("%-15s %10s %10s %10s\n", "\u00CDndice", "Valor", "Criterio", "Estado"))
   cat(line_sep("-", 50), "\n")
 
   cat(sprintf("%-15s %10s %10s %10s\n",
@@ -191,7 +191,7 @@ print_cfa_boosting <- function(result,
 
     rel <- result$reliability
 
-    cat(sprintf("  %-15s %8s %10s\n", "Factor", "Omega", "Interpretación"))
+    cat(sprintf("  %-15s %8s %10s\n", "Factor", "Omega", "Interpretaci\u00F3n"))
     cat(paste0("  ", line_sep("-", 40)), "\n")
 
     for (i in seq_along(rel)) {
@@ -206,7 +206,7 @@ print_cfa_boosting <- function(result,
 
   # ───────────────── Historial de Pasos ─────────────────
   if (show_steps && !is.null(result$steps_log) && nrow(result$steps_log) > 1) {
-    cat("--- HISTORIAL DE OPTIMIZACIÓN ---\n\n")
+    cat("--- HISTORIAL DE OPTIMIZACI\u00D3N ---\n\n")
 
     steps <- result$steps_log
 
@@ -231,7 +231,7 @@ print_cfa_boosting <- function(result,
     }
 
     cat(sprintf("  %-4s %-16s %-30s %7s %7s %7s\n",
-                "Paso", "Acción", "Detalle", "RMSEA", "CFI", "SRMR"))
+                "Paso", "Acci\u00F3n", "Detalle", "RMSEA", "CFI", "SRMR"))
     cat(paste0("  ", line_sep("-", 75)), "\n")
 
     for (i in 1:nrow(steps)) {
@@ -312,9 +312,14 @@ print_cfa_boosting <- function(result,
 #'   \code{reliability}, \code{steps_log}).
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' data(Data_Personality, package = "OptimalFactor")
-#' res <- cfa_boosting(Data_Personality, name_items = "P", n_factors = 3)
+#' model <- '
+#' F1 =~ PPTQ1 + PPTQ2 + PPTQ3 + PPTQ4 + PPTQ5
+#' F2 =~ PPTQ6 + PPTQ7 + PPTQ8 + PPTQ9 + PPTQ10
+#' F3 =~ PPTQ11 + PPTQ12 + PPTQ13 + PPTQ14 + PPTQ15
+#' '
+#' res <- cfa_boosting(Data_Personality, model)
 #' out <- export_cfa_boosting(res)
 #' names(out)
 #'
@@ -324,11 +329,9 @@ print_cfa_boosting <- function(result,
 #' head(out$steps_log)
 #'
 #' # Save the lot to disk in one shot.
-#' \dontrun{
-#'   for (nm in names(out))
-#'     write.csv(out[[nm]],
-#'               sprintf("cfa_boost_\%s.csv", nm), row.names = FALSE)
-#' }
+#' for (nm in names(out))
+#'   write.csv(out[[nm]],
+#'             sprintf("cfa_boost_\%s.csv", nm), row.names = FALSE)
 #' }
 #'
 #' @seealso \code{\link{cfa_boosting}}, \code{\link{print_cfa_boosting}}

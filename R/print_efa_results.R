@@ -7,7 +7,7 @@ print_efa_results <- function(res) {
     } else {
       "Ninguno"
     }
-    cat("Ítems eliminados:", msg, "\n")
+    cat("\u00CDtems eliminados:", msg, "\n")
   }
 
   cat("\n===== Resumen =====\n")

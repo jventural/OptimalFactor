@@ -12,9 +12,9 @@ print_conceptual_analysis(resultado, width = 80, show_stats = FALSE)
 }
 
 \arguments{
-\item{\code{resultado}}{A result list returned by \code{\link{efa_optimizer}} containing \code{$conceptual_analysis}, \code{$config_used}, and (optionally) \code{$conceptual_analysis$item_stats}.}
-\item{\code{width}}{Integer console width in characters used to wrap paragraphs (passed to \code{strwrap}).}
-\item{\code{show_stats}}{Logical; if \code{TRUE}, prints technical statistics (primary loading, \eqn{h^2}, RMSEA at removal, and removal reason) when available for each item.}
+\item{resultado}{A result list returned by \code{\link{efa_optimizer}} containing \code{$conceptual_analysis}, \code{$config_used}, and (optionally) \code{$conceptual_analysis$item_stats}.}
+\item{width}{Integer console width in characters used to wrap paragraphs (passed to \code{strwrap}).}
+\item{show_stats}{Logical; if \code{TRUE}, prints technical statistics (primary loading, \eqn{h^2}, RMSEA at removal, and removal reason) when available for each item.}
 }
 
 \details{

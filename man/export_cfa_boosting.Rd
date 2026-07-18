@@ -19,9 +19,14 @@ Export CFA Boosting results to structured data frames suitable for
 saving as CSV, embedding in a manuscript table, or further analysis.
 }
 \examples{
-\donttest{
+\dontrun{
 data(Data_Personality, package = "OptimalFactor")
-res <- cfa_boosting(Data_Personality, name_items = "P", n_factors = 3)
+model <- '
+F1 =~ PPTQ1 + PPTQ2 + PPTQ3 + PPTQ4 + PPTQ5
+F2 =~ PPTQ6 + PPTQ7 + PPTQ8 + PPTQ9 + PPTQ10
+F3 =~ PPTQ11 + PPTQ12 + PPTQ13 + PPTQ14 + PPTQ15
+'
+res <- cfa_boosting(Data_Personality, model)
 out <- export_cfa_boosting(res)
 names(out)
 
@@ -31,11 +36,9 @@ head(out$standardized_loadings)
 head(out$steps_log)
 
 # Save the lot to disk in one shot.
-\dontrun{
-  for (nm in names(out))
-    write.csv(out[[nm]],
-              sprintf("cfa_boost_\\%s.csv", nm), row.names = FALSE)
-}
+for (nm in names(out))
+  write.csv(out[[nm]],
+            sprintf("cfa_boost_\\%s.csv", nm), row.names = FALSE)
 }
 
 }

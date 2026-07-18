@@ -39,17 +39,15 @@
 #'   }
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' data(Data_Personality, package = "OptimalFactor")
 #' # Run CFA boosting first to obtain an object suitable for the reporter.
-#' res <- cfa_boosting(
-#'   data        = Data_Personality,
-#'   name_items  = "P",
-#'   n_factors   = 3,
-#'   estimator   = "WLSMV",
-#'   rotation    = "oblimin",
-#'   fit_targets = list(cfi = 0.95, tli = 0.95,
-#'                       rmsea = 0.06, srmr = 0.08))
+#' model <- '
+#' F1 =~ PPTQ1 + PPTQ2 + PPTQ3 + PPTQ4 + PPTQ5
+#' F2 =~ PPTQ6 + PPTQ7 + PPTQ8 + PPTQ9 + PPTQ10
+#' F3 =~ PPTQ11 + PPTQ12 + PPTQ13 + PPTQ14 + PPTQ15
+#' '
+#' res <- cfa_boosting(Data_Personality, model)
 #'
 #' # Pretty print to the console (default).
 #' report_cfa_results(res)
@@ -112,10 +110,10 @@ report_cfa_results <- function(res, show_plot = TRUE, print = TRUE) {
 .format_cfa_report <- function(rpt, show_plot = TRUE) {
   max_bars <- 20L
   out <- character(0)
-  hr  <- paste(rep("─", 65), collapse = "")
+  hr  <- paste(rep("\u2500", 65), collapse = "")
 
   out <- c(out, "", hr,
-           "ANÁLISIS FACTORIAL CONFIRMATORIO - REPORTE DE OPTIMIZACIÓN",
+           "AN\u00C1LISIS FACTORIAL CONFIRMATORIO - REPORTE DE OPTIMIZACI\u00D3N",
            hr, "")
 
   s  <- rpt$summary
@@ -151,7 +149,7 @@ report_cfa_results <- function(res, show_plot = TRUE, print = TRUE) {
       is.data.frame(rpt$steps_log) && nrow(rpt$steps_log) > 0L) {
 
     if ("rmsea" %in% names(rpt$steps_log)) {
-      out <- c(out, "", "", "EVOLUCIÓN DEL RMSEA", "")
+      out <- c(out, "", "", "EVOLUCI\u00D3N DEL RMSEA", "")
       vals <- as.numeric(rpt$steps_log$rmsea)
       lo <- 0.05; hi <- 0.13
       for (i in seq_along(vals)) {
@@ -159,13 +157,13 @@ report_cfa_results <- function(res, show_plot = TRUE, print = TRUE) {
         bars <- round(max(0, min((v - lo) / (hi - lo) * max_bars, max_bars)))
         out <- c(out, sprintf("  Paso %2d [%.3f] %s",
                                i - 1, v,
-                               if (bars > 0) paste(rep("█", bars), collapse = "") else ""))
+                               if (bars > 0) paste(rep("\u2588", bars), collapse = "") else ""))
       }
-      out <- c(out, "                    └─────┴─────┴─────┴─────┘",
+      out <- c(out, "                    \u2514\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2518",
                     "                     0.05  0.08  0.10  0.13")
     }
     if ("cfi" %in% names(rpt$steps_log)) {
-      out <- c(out, "", "", "EVOLUCIÓN DEL CFI", "")
+      out <- c(out, "", "", "EVOLUCI\u00D3N DEL CFI", "")
       vals <- as.numeric(rpt$steps_log$cfi)
       lo <- 0.70; hi <- 1.00
       for (i in seq_along(vals)) {
@@ -173,13 +171,13 @@ report_cfa_results <- function(res, show_plot = TRUE, print = TRUE) {
         bars <- round(max(0, min((v - lo) / (hi - lo) * max_bars, max_bars)))
         out <- c(out, sprintf("  Paso %2d [%.3f] %s",
                                i - 1, v,
-                               if (bars > 0) paste(rep("█", bars), collapse = "") else ""))
+                               if (bars > 0) paste(rep("\u2588", bars), collapse = "") else ""))
       }
-      out <- c(out, "                    └─────┴─────┴─────┴─────┴─────┘",
+      out <- c(out, "                    \u2514\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2518",
                     "                     0.70  0.80  0.90  0.95  1.00")
     }
     if ("srmr" %in% names(rpt$steps_log)) {
-      out <- c(out, "", "", "EVOLUCIÓN DEL SRMR", "")
+      out <- c(out, "", "", "EVOLUCI\u00D3N DEL SRMR", "")
       vals <- as.numeric(rpt$steps_log$srmr)
       lo <- 0.03; hi <- 0.10
       for (i in seq_along(vals)) {
@@ -187,14 +185,14 @@ report_cfa_results <- function(res, show_plot = TRUE, print = TRUE) {
         bars <- round(max(0, min((v - lo) / (hi - lo) * max_bars, max_bars)))
         out <- c(out, sprintf("  Paso %2d [%.3f] %s",
                                i - 1, v,
-                               if (bars > 0) paste(rep("█", bars), collapse = "") else ""))
+                               if (bars > 0) paste(rep("\u2588", bars), collapse = "") else ""))
       }
-      out <- c(out, "                    └─────┴─────┴─────┴─────┘",
+      out <- c(out, "                    \u2514\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2518",
                     "                     0.03  0.05  0.08  0.10")
     }
   }
 
-  out <- c(out, "", "", "ÍNDICES DE AJUSTE DEL MODELO FINAL", "")
+  out <- c(out, "", "", "\u00CDNDICES DE AJUSTE DEL MODELO FINAL", "")
   fit_df <- data.frame(
     Indice = c("Chi-cuadrado", "gl", "RMSEA", "CFI", "TLI", "SRMR"),
     Valor  = c(sprintf("%.2f", fi$chisq), fi$df,

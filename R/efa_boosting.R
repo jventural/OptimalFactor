@@ -2,7 +2,7 @@ efa_boosting <- function(data,
                          name_items,
                          item_range = NULL,
                          n_factors = 3,
-                         n_sample = NULL,  # Tamaño de muestra (requerido para pesos adaptativos)
+                         n_sample = NULL,  # Tama\u00F1o de muestra (requerido para pesos adaptativos)
                          exclude_items = NULL,
                          # Thresholds (estructura y correlaciones)
                          thresholds = list(
@@ -34,20 +34,20 @@ efa_boosting <- function(data,
                            emit_progress = TRUE
                          ),
                          # ACTIVADOR EXPLÍCITO: GLOBAL vs GREEDY
-                         use_global = FALSE,  # FALSE = solo greedy; TRUE = activa búsqueda global (con barra)
+                         use_global = FALSE,  # FALSE = solo greedy; TRUE = activa b\u00FAsqueda global (con barra)
                          # Parámetros de búsqueda global
                          global_opt = list(
-                           max_drop = 2,                    # tamaño máximo del subconjunto a evaluar a la vez
-                           max_global_combinations = 5000,  # límite de combinaciones a evaluar
-                           verbose = TRUE,                  # mensajes de la búsqueda global
-                           progress_bar = TRUE              # barra de progreso durante la búsqueda global
+                           max_drop = 2,                    # tama\u00F1o m\u00E1ximo del subconjunto a evaluar a la vez
+                           max_global_combinations = 5000,  # l\u00EDmite de combinaciones a evaluar
+                           verbose = TRUE,                  # mensajes de la b\u00FAsqueda global
+                           progress_bar = TRUE              # barra de progreso durante la b\u00FAsqueda global
                          ),
                          # Config de FIT COMPUESTO
                          fit_config = list(
                            targets = list(rmsea = 0.08, srmr = 0.06, cfi = 0.95),
                            margins = list(rmsea = 0.03, srmr = 0.03, cfi = 0.03),
                            base_weights = list(rmsea = 0.50, srmr = 0.25, cfi = 0.25),
-                           small_df_cut = 5,          # df < 5 ⇒ bajar peso RMSEA
+                           small_df_cut = 5,          # df < 5 \u21D2 bajar peso RMSEA
                            small_df_weights = list(rmsea = 0.15, srmr = 0.45, cfi = 0.40),
                            wlsmv_boost = list(rmsea = 0.8, srmr = 1.2, cfi = 1.1),  # multiplicadores si estimator == WLSMV
                            use_pclose_if_available = TRUE,
@@ -76,8 +76,8 @@ efa_boosting <- function(data,
     if (total == 0) return("No items")
     percent <- current / total
     filled  <- floor(percent * width)
-    bar <- paste0("[", paste0(rep("█", filled), collapse = ""),
-                  paste0(rep("░", width - filled), collapse = ""), "]")
+    bar <- paste0("[", paste0(rep("\u2588", filled), collapse = ""),
+                  paste0(rep("\u2591", width - filled), collapse = ""), "]")
     sprintf("%s %d/%d (%.1f%%)", bar, current, total, percent * 100)
   }
   `%||%` <- function(a, b) if (is.null(a)) b else a
@@ -133,9 +133,9 @@ efa_boosting <- function(data,
     # df 5-19 & N >= 200: situación mejorada
     df_mid_n_high_weights=list(rmsea=0.30, srmr=0.38, cfi=0.32),
     # Umbrales para clasificación
-    critical_df_cut=5,    # df < 5 = crítico
+    critical_df_cut=5,    # df < 5 = cr\u00EDtico
     moderate_df_cut=20,   # df < 20 = moderado
-    small_n_cut=200,      # N < 200 = muestra pequeña
+    small_n_cut=200,      # N < 200 = muestra peque\u00F1a
     wlsmv_boost=list(rmsea=0.8, srmr=1.2, cfi=1.1),
     use_pclose_if_available=TRUE,
     pclose_bonus=0.10
@@ -143,15 +143,15 @@ efa_boosting <- function(data,
   fit_config <- modifyList(default_fitcfg, fit_config)
 
   if (verbose) {
-    cat("\n╔════════════════════════════════════════════════════════════════╗\n")
-    cat("║   EFA OPTIMIZER v4.1 (Greedy/Global + Objetivo compuesto)      ║\n")
-    cat("╚════════════════════════════════════════════════════════════════╝\n\n")
+    cat("\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n")
+    cat("\u2551   EFA OPTIMIZER v4.1 (Greedy/Global + Objetivo compuesto)      \u2551\n")
+    cat("\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255D\n\n")
     cat("Items iniciales:", n_items, "| Factores:", n_factors, "\n")
-    cat("Targets → RMSEA≤", fit_config$targets$rmsea,
-        " | SRMR≤", fit_config$targets$srmr,
-        " | CFI≥",  fit_config$targets$cfi, "\n")
-    cat("Modo de búsqueda:", if (isTRUE(use_global)) "GLOBAL (con barra de progreso)" else "GREEDY 1×1", "\n")
-    cat("Min ítems/factor:", thresholds$min_items_per_factor, "| Loading umbral:", thresholds$loading, "\n\n")
+    cat("Targets \u2192 RMSEA\u2264", fit_config$targets$rmsea,
+        " | SRMR\u2264", fit_config$targets$srmr,
+        " | CFI\u2265",  fit_config$targets$cfi, "\n")
+    cat("Modo de b\u00FAsqueda:", if (isTRUE(use_global)) "GLOBAL (con barra de progreso)" else "GREEDY 1\u00D71", "\n")
+    cat("Min \u00EDtems/factor:", thresholds$min_items_per_factor, "| Loading umbral:", thresholds$loading, "\n\n")
   }
 
   # IA (hook intacto)
@@ -161,8 +161,11 @@ efa_boosting <- function(data,
                      language="english", analysis_detail="detailed")
   ai_config <- modifyList(default_ai, ai_config)
 
-  if (use_ai_analysis && !requireNamespace("httr", quietly = TRUE)) install.packages("httr")
-  if (use_ai_analysis && !requireNamespace("jsonlite", quietly = TRUE)) install.packages("jsonlite")
+  if (use_ai_analysis && (!requireNamespace("httr", quietly = TRUE) ||
+                          !requireNamespace("jsonlite", quietly = TRUE))) {
+    stop("Packages 'httr' and 'jsonlite' are required for AI analysis. ",
+         "Install them with: install.packages(c('httr', 'jsonlite'))")
+  }
 
   use_timeouts <- performance$use_timeouts
   if (use_timeouts && !requireNamespace("R.utils", quietly = TRUE)) {
@@ -201,9 +204,9 @@ efa_boosting <- function(data,
 
     technical_info <- ""
     if (!is.null(item_stats)) {
-      if (tolower(ai_config$language) %in% c("spanish","español")) {
+      if (tolower(ai_config$language) %in% c("spanish","espa\u00F1ol")) {
         base_txt <- sprintf(
-          "Información técnica: Carga primaria=%s; h²=%s; Razón=%s; RMSEA en ese paso=%s.",
+          "Informaci\u00F3n t\u00E9cnica: Carga primaria=%s; h\u00B2=%s; Raz\u00F3n=%s; RMSEA en ese paso=%s.",
           fmt_num(item_stats$loading),
           fmt_num(item_stats$h2),
           r_reason,
@@ -211,14 +214,14 @@ efa_boosting <- function(data,
         )
         ambi_txt <- ""
         if (!is.null(item_stats$second_loading) || !is.null(item_stats$delta_loading)) {
-          ambi_txt <- sprintf(" Ambigüedad: segunda carga=%s; Δ=|λ1|-|λ2|=%s.",
+          ambi_txt <- sprintf(" Ambig\u00FCedad: segunda carga=%s; \u0394=|\u03BB1|-|\u03BB2|=%s.",
                               fmt_num(item_stats$second_loading),
                               fmt_num(item_stats$delta_loading))
         }
         technical_info <- paste0(base_txt, ambi_txt)
       } else {
         base_txt <- sprintf(
-          "Technical information: Primary loading=%s; h²=%s; Reason=%s; RMSEA at that step=%s.",
+          "Technical information: Primary loading=%s; h\u00B2=%s; Reason=%s; RMSEA at that step=%s.",
           fmt_num(item_stats$loading),
           fmt_num(item_stats$h2),
           r_reason,
@@ -226,7 +229,7 @@ efa_boosting <- function(data,
         )
         ambi_txt <- ""
         if (!is.null(item_stats$second_loading) || !is.null(item_stats$delta_loading)) {
-          ambi_txt <- sprintf(" Ambiguity: second loading=%s; Δ=|λ1|-|λ2|=%s.",
+          ambi_txt <- sprintf(" Ambiguity: second loading=%s; \u0394=|\u03BB1|-|\u03BB2|=%s.",
                               fmt_num(item_stats$second_loading),
                               fmt_num(item_stats$delta_loading))
         }
@@ -234,20 +237,20 @@ efa_boosting <- function(data,
       }
     }
 
-    if (tolower(ai_config$language) %in% c("spanish","español")) {
+    if (tolower(ai_config$language) %in% c("spanish","espa\u00F1ol")) {
       if (act == "exclude") {
         prompt <- sprintf(
-          "Como experto en psicometría, proporciona un análisis detallado de por qué el ítem '%s' (\"%s\") fue correctamente eliminado de una escala que mide '%s'. %s
+          "Como experto en psicometr\u00EDa, proporciona un an\u00E1lisis detallado de por qu\u00E9 el \u00EDtem '%s' (\"%s\") fue correctamente eliminado de una escala que mide '%s'. %s
 
 Contexto breve del modelo:
 %s
 
-Estructura tu análisis en tres aspectos integrados:
-1) Problemas psicométricos identificados: comienza explícitamente indicando la Razón registrada por el algoritmo: '%s' y el RMSEA al momento de la eliminación: %s; enlaza esto con la evidencia (cargas factoriales, comunalidades, cargas cruzadas, posibles dependencias locales) y explica cómo estos factores justifican la salida del ítem.
-2) Desalineación conceptual con el constructo central (si aplica) o redundancia con otros ítems.
-3) Impacto positivo de su eliminación en la validez y coherencia de la escala (mejoras en ajuste, claridad factorial, parsimonia).
+Estructura tu an\u00E1lisis en tres aspectos integrados:
+1) Problemas psicom\u00E9tricos identificados: comienza expl\u00EDcitamente indicando la Raz\u00F3n registrada por el algoritmo: '%s' y el RMSEA al momento de la eliminaci\u00F3n: %s; enlaza esto con la evidencia (cargas factoriales, comunalidades, cargas cruzadas, posibles dependencias locales) y explica c\u00F3mo estos factores justifican la salida del \u00EDtem.
+2) Desalineaci\u00F3n conceptual con el constructo central (si aplica) o redundancia con otros \u00EDtems.
+3) Impacto positivo de su eliminaci\u00F3n en la validez y coherencia de la escala (mejoras en ajuste, claridad factorial, parsimonia).
 
-Proporciona un análisis técnico pero fluido, conectando los tres aspectos de forma narrativa (%s palabras).
+Proporciona un an\u00E1lisis t\u00E9cnico pero fluido, conectando los tres aspectos de forma narrativa (%s palabras).
 
 IMPORTANTE: NO uses formato markdown (sin asteriscos, sin negritas). Escribe en texto plano continuo.",
           item, definition, ai_config$construct_definition, technical_info,
@@ -255,20 +258,20 @@ IMPORTANTE: NO uses formato markdown (sin asteriscos, sin negritas). Escribe en 
           r_reason, r_rmsea_txt,
           word_limit
         )
-        system_msg <- "Eres un experto en psicometría y desarrollo de escalas. Proporciona análisis técnicos detallados en español, usando terminología psicométrica precisa. NO uses formato markdown, solo texto plano."
+        system_msg <- "Eres un experto en psicometr\u00EDa y desarrollo de escalas. Proporciona an\u00E1lisis t\u00E9cnicos detallados en espa\u00F1ol, usando terminolog\u00EDa psicom\u00E9trica precisa. NO uses formato markdown, solo texto plano."
       } else {
         prompt <- sprintf(
-          "Como experto en psicometría, justifica detalladamente por qué el ítem '%s' (\"%s\") debe mantenerse en una escala que mide '%s'. %s
+          "Como experto en psicometr\u00EDa, justifica detalladamente por qu\u00E9 el \u00EDtem '%s' (\"%s\") debe mantenerse en una escala que mide '%s'. %s
 
 Contexto breve del modelo:
 %s
 
-Estructura tu análisis en tres aspectos integrados:
-1) Fortalezas psicométricas del ítem (cargas, comunalidades, especificidad factorial). Si corresponde, incluye el registro del algoritmo: Razón='%s'; RMSEA en ese momento: %s.
-2) Alineación conceptual con el constructo central.
-3) Contribución única a la validez de la escala (discriminación, cobertura de contenido, no redundancia).
+Estructura tu an\u00E1lisis en tres aspectos integrados:
+1) Fortalezas psicom\u00E9tricas del \u00EDtem (cargas, comunalidades, especificidad factorial). Si corresponde, incluye el registro del algoritmo: Raz\u00F3n='%s'; RMSEA en ese momento: %s.
+2) Alineaci\u00F3n conceptual con el constructo central.
+3) Contribuci\u00F3n \u00FAnica a la validez de la escala (discriminaci\u00F3n, cobertura de contenido, no redundancia).
 
-Proporciona un análisis técnico pero fluido (%s palabras).
+Proporciona un an\u00E1lisis t\u00E9cnico pero fluido (%s palabras).
 
 IMPORTANTE: NO uses formato markdown (sin asteriscos, sin negritas). Escribe en texto plano continuo.",
           item, definition, ai_config$construct_definition, technical_info,
@@ -276,7 +279,7 @@ IMPORTANTE: NO uses formato markdown (sin asteriscos, sin negritas). Escribe en 
           r_reason, r_rmsea_txt,
           word_limit
         )
-        system_msg <- "Eres un experto en psicometría y desarrollo de escalas. Proporciona análisis técnicos detallados en español. NO uses formato markdown, solo texto plano."
+        system_msg <- "Eres un experto en psicometr\u00EDa y desarrollo de escalas. Proporciona an\u00E1lisis t\u00E9cnicos detallados en espa\u00F1ol. NO uses formato markdown, solo texto plano."
       }
     } else {
       if (act == "exclude") {
@@ -360,7 +363,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
           if (attempt < max_attempts) {
             wait_time <- 2^attempt
             if (verbose) {
-              msg <- if (tolower(ai_config$language) %in% c("spanish","español")) {
+              msg <- if (tolower(ai_config$language) %in% c("spanish","espa\u00F1ol")) {
                 sprintf("   Servidor ocupado (HTTP %d). Reintentando en %d segundos...\n", status, wait_time)
               } else {
                 sprintf("   Server busy (HTTP %d). Retrying in %d seconds...\n", status, wait_time)
@@ -375,8 +378,8 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
           if (attempt < max_attempts) {
             wait_time <- 10 * attempt
             if (verbose) {
-              msg <- if (tolower(ai_config$language) %in% c("spanish","español")) {
-                sprintf("   Límite de velocidad alcanzado. Esperando %d segundos...\n", wait_time)
+              msg <- if (tolower(ai_config$language) %in% c("spanish","espa\u00F1ol")) {
+                sprintf("   L\u00EDmite de velocidad alcanzado. Esperando %d segundos...\n", wait_time)
               } else {
                 sprintf("   Rate limit reached. Waiting %d seconds...\n", wait_time)
               }
@@ -393,8 +396,8 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         if (attempt < max_attempts) {
           wait_time <- 2^attempt
           if (verbose) {
-            msg <- if (tolower(ai_config$language) %in% c("spanish","español")) {
-              sprintf("   Error de conexión. Reintentando en %d segundos...\n", wait_time)
+            msg <- if (tolower(ai_config$language) %in% c("spanish","espa\u00F1ol")) {
+              sprintf("   Error de conexi\u00F3n. Reintentando en %d segundos...\n", wait_time)
             } else {
               sprintf("   Connection error. Retrying in %d seconds...\n", wait_time)
             }
@@ -594,10 +597,10 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     if (n_cand == 0) return(NULL)
     total_comb <- count_combinations(n_cand, max_drop)
     if (total_comb > max_global_combinations) {
-      if (verbose_loc) cat(sprintf("⚠ Global search skipped: %d combinations exceed limit (%d)\n", total_comb, max_global_combinations))
+      if (verbose_loc) cat(sprintf("\u26A0 Global search skipped: %d combinations exceed limit (%d)\n", total_comb, max_global_combinations))
       return(NULL)
     }
-    if (verbose_loc) cat(sprintf("🔎 Global search (k ≤ %d): evaluating %d combinations...\n", max_drop, total_comb))
+    if (verbose_loc) cat(sprintf("\U0001F50E Global search (k \u2264 %d): evaluating %d combinations...\n", max_drop, total_comb))
 
     best_subset <- NULL; best_loss <- curr_loss; best_fit <- NULL
     eval_counter <- 0
@@ -682,10 +685,10 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
 
   repeat {
     iteration_count <- iteration_count + 1
-    if (iteration_count > max_iterations) { if (verbose) cat("\n⚠ Maximum safety iterations reached.\n"); stop_reason <- "max_iterations"; break }
+    if (iteration_count > max_iterations) { if (verbose) cat("\n\u26A0 Maximum safety iterations reached.\n"); stop_reason <- "max_iterations"; break }
     candidates <- setdiff(items, c(exclude_items, removed_items))
-    if (length(candidates) < n_factors * thresholds$min_items_per_factor) { if (verbose) cat("\n⚠ Not enough items remaining to continue.\n"); stop_reason <- "not_enough_items"; break }
-    if (step_counter >= max_steps) { if (verbose) cat("\n⚠ Maximum steps reached.\n"); stop_reason <- "max_steps"; break }
+    if (length(candidates) < n_factors * thresholds$min_items_per_factor) { if (verbose) cat("\n\u26A0 Not enough items remaining to continue.\n"); stop_reason <- "not_enough_items"; break }
+    if (step_counter >= max_steps) { if (verbose) cat("\n\u26A0 Maximum steps reached.\n"); stop_reason <- "max_steps"; break }
 
     # Per-iteration progress beacon — surfaces in the Shiny wizard and
     # console so users can see how the boosting pass is advancing on
@@ -697,7 +700,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
 
     if (performance$use_timeouts) {
       elapsed <- as.numeric(difftime(Sys.time(), optimization_start, units = "secs"))
-      if (elapsed > performance$timeout_optimization) { if (verbose) cat("\n⚠ Optimization timeout reached.\n"); stop_reason <- "timeout"; break }
+      if (elapsed > performance$timeout_optimization) { if (verbose) cat("\n\u26A0 Optimization timeout reached.\n"); stop_reason <- "timeout"; break }
     }
 
     converged <- TRUE
@@ -717,7 +720,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
           apply_threshold=FALSE, exclude_items=c(exclude_items, removed_items), ...
         )
       }
-    }, error=function(e) { if (verbose) { if (grepl("timeout", tolower(e$message))) cat("⏱ EFA timeout\n") else cat("⚠ Did not converge:", e$message, "\n") }; converged <<- FALSE; NULL })
+    }, error=function(e) { if (verbose) { if (grepl("timeout", tolower(e$message))) cat("\u23F1 EFA timeout\n") else cat("\u26A0 Did not converge:", e$message, "\n") }; converged <<- FALSE; NULL })
 
     if (!converged || is.null(tmp) || is.null(tmp$Bondades_Original) || is.null(tmp$result_df)) { stop_reason <- "efa_convergence_failed"; break }
     mod <- tmp
@@ -734,14 +737,14 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     last_ev <- ev
 
     if (verbose) {
-      cat("\n", paste(rep("─", 70), collapse = ""), "\n", sep = "")
+      cat("\n", paste(rep("\u2500", 70), collapse = ""), "\n", sep = "")
       cat("ITERATION", step_counter, "| Loss:", sprintf("%.3f", curr_loss),
           "| RMSEA:", sprintf("%.3f", curr_rmsea),
           "| SRMR:", fmt_num(fit0$srmr),
           "| CFI:",  fmt_num(fit0$cfi),
           "| df:",   fmt_num(fit0$df, 0), "\n")
       cat("Items per factor:", paste(ev$counts, collapse = " | "), "\n")
-      cat(paste(rep("─", 70), collapse = ""), "\n\n", sep = "")
+      cat(paste(rep("\u2500", 70), collapse = ""), "\n\n", sep = "")
       df_display <- mod$result_df
       load_cols_display <- which(startsWith(names(df_display), "f"))
       df_display[load_cols_display] <- lapply(df_display[load_cols_display], function(x) ifelse(abs(x) < thresholds$loading, 0, round(x, 3)))
@@ -757,7 +760,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
       steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason="Heywood",
                                                rmsea=curr_rmsea, srmr=as.numeric(fit0$srmr), cfi=as.numeric(fit0$cfi),
                                                stringsAsFactors=FALSE))
-      if (verbose) cat("❌ Removed", worst, "due to: Heywood (ψ min)\n")
+      if (verbose) cat("\u274C Removed", worst, "due to: Heywood (\u03C8 min)\n")
       next
     }
     if (any(ev$near_heywood)) {
@@ -768,7 +771,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
       steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason="Near-Heywood",
                                                rmsea=curr_rmsea, srmr=as.numeric(fit0$srmr), cfi=as.numeric(fit0$cfi),
                                                stringsAsFactors=FALSE))
-      if (verbose) cat("❌ Removed", worst, "due to: Near-Heywood (ψ≈0)\n")
+      if (verbose) cat("\u274C Removed", worst, "due to: Near-Heywood (\u03C8\u22480)\n")
       next
     }
     cross_idx <- which(ev$reasons == "Cross-loading")
@@ -785,13 +788,13 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=selected, reason="Cross-loading (priority)",
                                                  rmsea=curr_rmsea, srmr=as.numeric(fit0$srmr), cfi=as.numeric(fit0$cfi),
                                                  stringsAsFactors=FALSE))
-        if (verbose) cat("❌ Removed", selected, "due to: Cross-loading (priority)\n")
+        if (verbose) cat("\u274C Removed", selected, "due to: Cross-loading (priority)\n")
         next
       } else {
         # Cross-loadings protegidos, pero verificar si RMSEA > target
         rmsea_target_reached <- !is.na(curr_rmsea) && curr_rmsea <= fit_config$targets$rmsea
         if (!rmsea_target_reached) {
-          if (verbose) cat("⚠ Cross-loadings protected but RMSEA (", fmt_num(curr_rmsea), ") > target (", fit_config$targets$rmsea, "); removing weakest item...\n", sep="")
+          if (verbose) cat("\u26A0 Cross-loadings protected but RMSEA (", fmt_num(curr_rmsea), ") > target (", fit_config$targets$rmsea, "); removing weakest item...\n", sep="")
 
           # Eliminar ítem con menor carga para mejorar RMSEA
           load_cols <- which(startsWith(names(mod$result_df), "f"))
@@ -811,11 +814,11 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
             steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason="Weakest loading (RMSEA > target)",
                                                      rmsea=curr_rmsea, srmr=as.numeric(fit0$srmr), cfi=as.numeric(fit0$cfi),
                                                      stringsAsFactors=FALSE))
-            if (verbose) cat("❌ Removed", worst, "| Loading:", fmt_num(max_loadings[weakest_idx]), "\n")
+            if (verbose) cat("\u274C Removed", worst, "| Loading:", fmt_num(max_loadings[weakest_idx]), "\n")
             next
           }
         } else {
-          if (verbose) cat("⚠ Cross-loadings detected but protected by min_items_per_factor; RMSEA target reached, stopping.\n")
+          if (verbose) cat("\u26A0 Cross-loadings detected but protected by min_items_per_factor; RMSEA target reached, stopping.\n")
         }
       }
     }
@@ -827,7 +830,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     corr_check <- check_interfactor_correlations(phi, thresholds$min_interfactor_correlation)
 
     if (min_items_met && all(ev$ok) && curr_loss <= 0 + 1e-6 && corr_check$ok) {
-      if (verbose) cat("\n✅ All criteria met (estructura OK, ajuste dentro de objetivos, y correlaciones >= ", thresholds$min_interfactor_correlation, "). Fin.\n", sep="")
+      if (verbose) cat("\n\u2705 All criteria met (estructura OK, ajuste dentro de objetivos, y correlaciones >= ", thresholds$min_interfactor_correlation, "). Fin.\n", sep="")
       stop_reason <- "all_criteria_met"; break
     }
 
@@ -886,7 +889,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
           cand_to_eval <- candidates
         }
         if (verbose && length(cand_to_eval) < n_cand) {
-          cat("📊 Evaluating top", length(cand_to_eval), "of", n_cand,
+          cat("\U0001F4CA Evaluating top", length(cand_to_eval), "of", n_cand,
               "candidates (",
               if (isTRUE(performance$smart_pruning)) "smart pruning by lowest max-loading"
               else "random sample",
@@ -951,13 +954,13 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         }
         if (verbose) {
           if (length(chosen_subset) == 1) {
-            cat("❌ Removed", chosen_subset, "→ Loss:", sprintf("%.3f", chosen_loss),
+            cat("\u274C Removed", chosen_subset, "\u2192 Loss:", sprintf("%.3f", chosen_loss),
                 " | RMSEA:", fmt_num(chosen_fit$rmsea),
                 " | SRMR:",  fmt_num(chosen_fit$srmr),
                 " | CFI:",   fmt_num(chosen_fit$cfi), "\n")
           } else {
-            cat("❌ Removed {", paste(chosen_subset, collapse = ", "),
-                "} → Loss:", sprintf("%.3f", chosen_loss),
+            cat("\u274C Removed {", paste(chosen_subset, collapse = ", "),
+                "} \u2192 Loss:", sprintf("%.3f", chosen_loss),
                 " | RMSEA:", fmt_num(chosen_fit$rmsea),
                 " | SRMR:",  fmt_num(chosen_fit$srmr),
                 " | CFI:",   fmt_num(chosen_fit$cfi),
@@ -971,20 +974,20 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
       decision <- "structure"
     }
 
-    if (verbose && decision == "structure") cat("📐 STRATEGY: Structural optimization (non-cross-loading)\n")
+    if (verbose && decision == "structure") cat("\U0001F4D0 STRATEGY: Structural optimization (non-cross-loading)\n")
 
     # Verificar si alcanzamos el target de RMSEA
     rmsea_target_reached <- !is.na(curr_rmsea) && curr_rmsea <= fit_config$targets$rmsea
 
     # Si estructura OK y RMSEA alcanzado, detener
     if (all(ev$ok) && rmsea_target_reached) {
-      if (verbose) cat("\n✓ Target RMSEA achieved (", fmt_num(curr_rmsea), " ≤ ", fit_config$targets$rmsea, ") and structure acceptable; stopping.\n", sep="")
+      if (verbose) cat("\n\u2713 Target RMSEA achieved (", fmt_num(curr_rmsea), " \u2264 ", fit_config$targets$rmsea, ") and structure acceptable; stopping.\n", sep="")
       stop_reason <- "fit_target_reached"; break
     }
 
     # Si estructura OK pero RMSEA no alcanzado, eliminar ítem con menor carga
     if (all(ev$ok) && !rmsea_target_reached) {
-      if (verbose) cat("⚠ Structure acceptable but RMSEA (", fmt_num(curr_rmsea), ") > target (", fit_config$targets$rmsea, "); removing weakest item to improve fit...\n", sep="")
+      if (verbose) cat("\u26A0 Structure acceptable but RMSEA (", fmt_num(curr_rmsea), ") > target (", fit_config$targets$rmsea, "); removing weakest item to improve fit...\n", sep="")
 
       # Encontrar el ítem con menor carga primaria
       load_cols <- which(startsWith(names(mod$result_df), "f"))
@@ -1005,10 +1008,10 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason=reason,
                                                  rmsea=curr_rmsea, srmr=as.numeric(fit0$srmr), cfi=as.numeric(fit0$cfi),
                                                  stringsAsFactors=FALSE))
-        if (verbose) cat("❌ Removed", worst, "| Loading:", fmt_num(max_loadings[weakest_idx]), "\n")
+        if (verbose) cat("\u274C Removed", worst, "| Loading:", fmt_num(max_loadings[weakest_idx]), "\n")
         next
       } else {
-        if (verbose) cat("\n⚠ Cannot remove weakest item (", worst, ") - would violate min_items_per_factor; stopping.\n", sep="")
+        if (verbose) cat("\n\u26A0 Cannot remove weakest item (", worst, ") - would violate min_items_per_factor; stopping.\n", sep="")
         stop_reason <- "min_items_per_factor_protected"; break
       }
     }
@@ -1029,13 +1032,13 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason=reason,
                                                  rmsea=curr_rmsea, srmr=as.numeric(fit0$srmr), cfi=as.numeric(fit0$cfi),
                                                  stringsAsFactors=FALSE))
-        if (verbose) cat("❌ Removed", worst, "due to:", reason, "\n")
+        if (verbose) cat("\u274C Removed", worst, "due to:", reason, "\n")
         next
       } else {
         # Problema estructural protegido, verificar si RMSEA > target
         rmsea_target_reached <- !is.na(curr_rmsea) && curr_rmsea <= fit_config$targets$rmsea
         if (!rmsea_target_reached) {
-          if (verbose) cat("\n⚠ Structural issue (", worst, ") protected but RMSEA (", fmt_num(curr_rmsea), ") > target (", fit_config$targets$rmsea, "); removing weakest item...\n", sep="")
+          if (verbose) cat("\n\u26A0 Structural issue (", worst, ") protected but RMSEA (", fmt_num(curr_rmsea), ") > target (", fit_config$targets$rmsea, "); removing weakest item...\n", sep="")
 
           # Eliminar ítem con menor carga para mejorar RMSEA
           load_cols <- which(startsWith(names(mod$result_df), "f"))
@@ -1055,14 +1058,14 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
             steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst_weak, reason="Weakest loading (RMSEA > target)",
                                                      rmsea=curr_rmsea, srmr=as.numeric(fit0$srmr), cfi=as.numeric(fit0$cfi),
                                                      stringsAsFactors=FALSE))
-            if (verbose) cat("❌ Removed", worst_weak, "| Loading:", fmt_num(max_loadings[weakest_idx]), "\n")
+            if (verbose) cat("\u274C Removed", worst_weak, "| Loading:", fmt_num(max_loadings[weakest_idx]), "\n")
             next
           } else {
-            if (verbose) cat("\n⚠ Cannot remove any more items - min_items_per_factor reached. Final RMSEA:", fmt_num(curr_rmsea), "\n", sep="")
+            if (verbose) cat("\n\u26A0 Cannot remove any more items - min_items_per_factor reached. Final RMSEA:", fmt_num(curr_rmsea), "\n", sep="")
             stop_reason <- "min_items_per_factor_protected"; break
           }
         } else {
-          if (verbose) cat("\n⚠ Structural issue found (", worst, ") but protected by min_items_per_factor; RMSEA target reached, stopping.\n", sep = "")
+          if (verbose) cat("\n\u26A0 Structural issue found (", worst, ") but protected by min_items_per_factor; RMSEA target reached, stopping.\n", sep = "")
           stop_reason <- "min_items_per_factor_protected"; break
         }
       }
@@ -1103,15 +1106,15 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
   if (use_ai_analysis && length(items) > 0 && !is.null(ai_config$api_key) &&
       !is.null(ai_config$item_definitions)) {
 
-    is_spanish <- tolower(ai_config$language) %in% c("spanish","español")
+    is_spanish <- tolower(ai_config$language) %in% c("spanish","espa\u00F1ol")
 
     if (verbose) {
       if (is_spanish) {
-        cat("\n═══ Análisis Conceptual con IA ═══\n")
+        cat("\n\u2550\u2550\u2550 An\u00E1lisis Conceptual con IA \u2550\u2550\u2550\n")
         cat("Modelo:", ai_config$gpt_model, "\n")
         cat("Nivel de detalle:", ai_config$analysis_detail, "\n")
       } else {
-        cat("\n═══ AI Conceptual Analysis ═══\n")
+        cat("\n\u2550\u2550\u2550 AI Conceptual Analysis \u2550\u2550\u2550\n")
         cat("Model:", ai_config$gpt_model, "\n")
         cat("Detail level:", ai_config$analysis_detail, "\n")
       }
@@ -1129,7 +1132,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         it <- removed_items[i]
         if (verbose) {
           progress <- create_progress_bar(i - 1, length(removed_items), width = 20)
-          label <- if (is_spanish) "Analizando ítems eliminados:" else "Analyzing removed items:"
+          label <- if (is_spanish) "Analizando \u00EDtems eliminados:" else "Analyzing removed items:"
           cat("\r", label, progress, sep = " ")
           flush.console()
         }
@@ -1148,7 +1151,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
       }
       if (verbose) {
         progress <- create_progress_bar(length(removed_items), length(removed_items), width = 20)
-        label <- if (is_spanish) "Analizando ítems eliminados:" else "Analyzing removed items:"
+        label <- if (is_spanish) "Analizando \u00EDtems eliminados:" else "Analyzing removed items:"
         cat("\r", label, progress, "\n", sep = " ")
       }
     }
@@ -1162,7 +1165,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
           it <- kept[i]
           if (verbose) {
             progress <- create_progress_bar(i - 1, length(kept), width = 20)
-            label <- if (is_spanish) "Analizando ítems conservados:" else "Analyzing retained items:"
+            label <- if (is_spanish) "Analizando \u00EDtems conservados:" else "Analyzing retained items:"
             cat("\r", label, progress, sep = " ")
             flush.console()
           }
@@ -1204,7 +1207,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         }
         if (verbose) {
           progress <- create_progress_bar(length(kept), length(kept), width = 20)
-          label <- if (is_spanish) "Analizando ítems conservados:" else "Analyzing retained items:"
+          label <- if (is_spanish) "Analizando \u00EDtems conservados:" else "Analyzing retained items:"
           cat("\r", label, progress, "\n", sep = " ")
         }
       }
@@ -1218,7 +1221,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     )
 
     if (verbose) {
-      complete_msg <- if (is_spanish) "✅ Análisis conceptual completado\n" else "✅ Conceptual analysis completed\n"
+      complete_msg <- if (is_spanish) "\u2705 An\u00E1lisis conceptual completado\n" else "\u2705 Conceptual analysis completed\n"
       cat(complete_msg)
     }
   }
@@ -1228,26 +1231,26 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
   corr_check_final <- check_interfactor_correlations(phi_final, thresholds$min_interfactor_correlation)
 
   if (verbose) {
-    cat("\n╔════════════════════════════════════════════════════════════════╗\n")
-    cat("║                  OPTIMIZATION COMPLETED                        ║\n")
-    cat("╚════════════════════════════════════════════════════════════════╝\n\n")
+    cat("\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n")
+    cat("\u2551                  OPTIMIZATION COMPLETED                        \u2551\n")
+    cat("\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255D\n\n")
     cat("Total iterations:", step_counter, "\n")
     if (length(removed_items)) cat("Items removed:", paste(removed_items, collapse = ", "), "\n")
     cat("Final RMSEA:", fmt_num(extract_fit(mod, n_factors)$rmsea), "\n")
 
     # Advertencia sobre correlaciones inter-factoriales
     if (!corr_check_final$ok) {
-      cat("\n⚠️  ADVERTENCIA: No se alcanzó el criterio de correlación mínima entre factores (>= ", thresholds$min_interfactor_correlation, ")\n", sep="")
+      cat("\n\u26A0\uFE0F  ADVERTENCIA: No se alcanz\u00F3 el criterio de correlaci\u00F3n m\u00EDnima entre factores (>= ", thresholds$min_interfactor_correlation, ")\n", sep="")
       cat("    Correlaciones que no cumplen el criterio:\n")
       for (viol in corr_check_final$violated) {
         cat("    - ", viol, "\n", sep="")
       }
-      cat("    Correlación mínima encontrada: ", fmt_num(corr_check_final$min_value), "\n", sep="")
+      cat("    Correlaci\u00F3n m\u00EDnima encontrada: ", fmt_num(corr_check_final$min_value), "\n", sep="")
     } else {
-      cat("\n✓ Criterio de correlación inter-factorial cumplido (todas >= ", thresholds$min_interfactor_correlation, ")\n", sep="")
+      cat("\n\u2713 Criterio de correlaci\u00F3n inter-factorial cumplido (todas >= ", thresholds$min_interfactor_correlation, ")\n", sep="")
     }
 
-    cat("\n✅ Analysis finished successfully.\n\n")
+    cat("\n\u2705 Analysis finished successfully.\n\n")
   }
 
   list(

@@ -74,9 +74,9 @@ cfa_boosting <- function(data,
 
     # Tabla 6 de decisiones
     if (mi_sig && power < power_threshold) {
-      decision <- "m"            # Misespecificación (baja potencia pero significativo)
+      decision <- "m"            # Misespecificaci\u00F3n (baja potencia pero significativo)
     } else if (!mi_sig && power >= power_threshold) {
-      decision <- "nm"           # No hay misespecificación
+      decision <- "nm"           # No hay misespecificaci\u00F3n
     } else if (mi_sig && power >= power_threshold) {
       # MI significativo con alta potencia: inspeccionar relevancia sustantiva del EPC
       decision <- if (abs(epc_val) > delta) "EPC:m" else "EPC:nm"
@@ -87,16 +87,15 @@ cfa_boosting <- function(data,
     list(decision = decision, power = power)
   }
 
-  # Cargar lavaan
+  # Verificar lavaan
   if (!requireNamespace("lavaan", quietly = TRUE)) {
-    stop("El paquete 'lavaan' es requerido. Instálelo con: install.packages('lavaan')")
+    stop("El paquete 'lavaan' es requerido. Inst\u00E1lelo con: install.packages('lavaan')")
   }
-  library(lavaan)
 
   # Detectar tamaño de muestra si no se proporciona
   if (is.null(n_sample)) {
     n_sample <- nrow(data)
-    if (verbose) cat("Tamaño de muestra detectado: N =", n_sample, "\n")
+    if (verbose) cat("Tama\u00F1o de muestra detectado: N =", n_sample, "\n")
   }
 
   # Mezclar defaults
@@ -117,14 +116,14 @@ cfa_boosting <- function(data,
   if (verbose) {
     cat("\n")
     cat(paste(rep("=", 70), collapse = ""), "\n")
-    cat("   CFA BOOSTING v1.0 - Optimización de Modelo Confirmatorio\n")
+    cat("   CFA BOOSTING v1.0 - Optimizaci\u00F3n de Modelo Confirmatorio\n")
     cat(paste(rep("=", 70), collapse = ""), "\n\n")
     cat("Targets -> RMSEA <=", thresholds$rmsea_target,
         " | CFI >=", thresholds$cfi_target,
         " | SRMR <=", thresholds$srmr_target, "\n")
     cat("Estimador:", model_config$estimator, "\n")
     cat("Min items/factor:", thresholds$min_items_per_factor, "\n")
-    cat("Loading mínimo:", thresholds$loading, "\n")
+    cat("Loading m\u00EDnimo:", thresholds$loading, "\n")
     cat("MI framework: Saris-Satorra-van der Veld (delta=", mod_indices_config$delta,
         ", power>=", mod_indices_config$power_threshold,
         ", alpha=", mod_indices_config$alpha, ")\n\n")
@@ -409,7 +408,7 @@ cfa_boosting <- function(data,
 
     if (verbose) {
       cat(paste(rep("-", 60), collapse = ""), "\n")
-      cat("ITERACIÓN", iteration, "\n")
+      cat("ITERACI\u00D3N", iteration, "\n")
       cat(paste(rep("-", 60), collapse = ""), "\n")
     }
 
@@ -423,7 +422,7 @@ cfa_boosting <- function(data,
     problematic <- get_problematic_items(current_fit, current_factors)
 
     if (length(problematic) > 0) {
-      if (verbose) cat("  Evaluando eliminación de", length(problematic), "items problemáticos...\n")
+      if (verbose) cat("  Evaluando eliminaci\u00F3n de", length(problematic), "items problem\u00E1ticos...\n")
 
       for (item in names(problematic)) {
         info <- problematic[[item]]
@@ -454,7 +453,7 @@ cfa_boosting <- function(data,
           best_fit <- test_fit
           best_syntax <- test_syntax
           best_action <- "remove_item"
-          best_detail <- paste0("Eliminar ", item, " (", factor_name, ", λ=", fmt_num(info$loading), ")")
+          best_detail <- paste0("Eliminar ", item, " (", factor_name, ", \u03BB=", fmt_num(info$loading), ")")
           best_item <- item
           best_factor <- factor_name
         }
@@ -772,7 +771,7 @@ cfa_boosting <- function(data,
     cat("Covarianzas agregadas:", ifelse(length(added_covs) > 0,
                                           paste(added_covs, collapse = "; "), "Ninguna"), "\n\n")
 
-    cat("--- ÍNDICES DE AJUSTE FINALES ---\n")
+    cat("--- \u00CDNDICES DE AJUSTE FINALES ---\n")
     cat("RMSEA:", fmt_num(final_indices$rmsea),
         ifelse(final_targets$rmsea_ok, "(OK)", "(NO CUMPLE)"), "\n")
     cat("CFI:  ", fmt_num(final_indices$cfi),

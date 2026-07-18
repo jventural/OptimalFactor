@@ -1,10 +1,10 @@
 print_conceptual_analysis <- function(resultado, width = 80, show_stats = FALSE) {
   ca <- resultado$conceptual_analysis
   lang <- resultado$config_used$ai_config$language
-  is_spanish <- tolower(lang) == "spanish" || tolower(lang) == "español"
+  is_spanish <- tolower(lang) == "spanish" || tolower(lang) == "espa\u00F1ol"
 
   if (is.null(ca)) {
-    msg <- if (is_spanish) "No hay análisis conceptual disponible.\n"
+    msg <- if (is_spanish) "No hay an\u00E1lisis conceptual disponible.\n"
     else "No conceptual analysis available.\n"
     cat(msg)
     return(invisible(NULL))
@@ -13,14 +13,14 @@ print_conceptual_analysis <- function(resultado, width = 80, show_stats = FALSE)
   # Función auxiliar para formatear el análisis narrativo con secciones
   format_narrative_analysis <- function(item_name, item_def, analysis_text, item_stats = NULL, is_removed = TRUE) {
     cat("\n")
-    cat("📊 ", item_name, " - \"", item_def, "\"\n", sep = "")
-    cat(paste0(rep("─", 70), collapse = ""), "\n\n")
+    cat("\U0001F4CA ", item_name, " - \"", item_def, "\"\n", sep = "")
+    cat(paste0(rep("\u2500", 70), collapse = ""), "\n\n")
 
     # Verificar si el análisis parece estar truncado
     is_truncated <- FALSE
     truncation_indicators <- c(
-      !grepl("[.!?]$", trimws(analysis_text)),  # No termina con puntuación
-      nchar(analysis_text) < 300,  # Muy corto para análisis detallado
+      !grepl("[.!?]$", trimws(analysis_text)),  # No termina con puntuaci\u00F3n
+      nchar(analysis_text) < 300,  # Muy corto para an\u00E1lisis detallado
       grepl("(HTTP \\d{3}|error|Error|failed)", analysis_text),  # Mensajes de error
       grepl("\\b\\w+$", analysis_text) && !grepl("\\.$", analysis_text)  # Palabra cortada al final
     )
@@ -32,16 +32,16 @@ print_conceptual_analysis <- function(resultado, width = 80, show_stats = FALSE)
     # Mostrar advertencia si está truncado
     if (is_truncated) {
       if (is_spanish) {
-        cat("⚠️  NOTA: Este análisis parece estar incompleto o truncado.\n\n")
+        cat("\u26A0\uFE0F  NOTA: Este an\u00E1lisis parece estar incompleto o truncado.\n\n")
       } else {
-        cat("⚠️  NOTE: This analysis appears to be incomplete or truncated.\n\n")
+        cat("\u26A0\uFE0F  NOTE: This analysis appears to be incomplete or truncated.\n\n")
       }
     }
 
     # Mostrar estadísticas si están disponibles y se solicitan
     if (show_stats && !is.null(item_stats)) {
       if (is_spanish) {
-        cat("INFORMACIÓN TÉCNICA: ")
+        cat("INFORMACI\u00D3N T\u00C9CNICA: ")
       } else {
         cat("TECHNICAL INFORMATION: ")
       }
@@ -53,7 +53,7 @@ print_conceptual_analysis <- function(resultado, width = 80, show_stats = FALSE)
       }
       if (!is.null(item_stats$h2) && !is.na(item_stats$h2)) {
         if (stats_shown) cat(", ")
-        cat(sprintf("h²=%.3f", item_stats$h2))
+        cat(sprintf("h\u00B2=%.3f", item_stats$h2))
         stats_shown <- TRUE
       }
       if (!is.null(item_stats$rmsea_at_removal) && !is.na(item_stats$rmsea_at_removal)) {
@@ -71,11 +71,11 @@ print_conceptual_analysis <- function(resultado, width = 80, show_stats = FALSE)
     # Si hay un error de API, mostrar mensaje especial
     if (grepl("(HTTP \\d{3}|GPT error|Server error|Rate limit|Connection error)", analysis_text)) {
       if (is_spanish) {
-        cat("❌ ERROR EN ANÁLISIS:\n")
+        cat("\u274C ERROR EN AN\u00C1LISIS:\n")
         cat(analysis_text, "\n\n")
-        cat("Sugerencia: Intente ejecutar nuevamente el análisis para este ítem.\n")
+        cat("Sugerencia: Intente ejecutar nuevamente el an\u00E1lisis para este \u00EDtem.\n")
       } else {
-        cat("❌ ANALYSIS ERROR:\n")
+        cat("\u274C ANALYSIS ERROR:\n")
         cat(analysis_text, "\n\n")
         cat("Suggestion: Try running the analysis again for this item.\n")
       }
@@ -87,26 +87,26 @@ print_conceptual_analysis <- function(resultado, width = 80, show_stats = FALSE)
 
     # Patrones para identificar secciones en español e inglés
     psych_patterns <- c(
-      "problemas psicométricos", "psychometric problems",
-      "fortalezas psicométricas", "psychometric strengths",
-      "desde el punto de vista psicométrico", "from a psychometric",
-      "el análisis psicométrico", "psychometric analysis",
+      "problemas psicom\u00E9tricos", "psychometric problems",
+      "fortalezas psicom\u00E9tricas", "psychometric strengths",
+      "desde el punto de vista psicom\u00E9trico", "from a psychometric",
+      "el an\u00E1lisis psicom\u00E9trico", "psychometric analysis",
       "en primer lugar", "first"
     )
 
     concept_patterns <- c(
-      "desalineación conceptual", "conceptual misalignment",
-      "alineación conceptual", "conceptual alignment",
-      "desde una perspectiva teórica", "from a theoretical",
-      "esta problemática teórica", "this theoretical",
+      "desalineaci\u00F3n conceptual", "conceptual misalignment",
+      "alineaci\u00F3n conceptual", "conceptual alignment",
+      "desde una perspectiva te\u00F3rica", "from a theoretical",
+      "esta problem\u00E1tica te\u00F3rica", "this theoretical",
       "conceptualmente", "conceptually",
       "en segundo lugar", "second"
     )
 
     benefit_patterns <- c(
       "beneficio", "benefit", "impacto", "impact",
-      "la eliminación", "the removal", "la exclusión", "the exclusion",
-      "la retención", "retention", "contribución", "contribution",
+      "la eliminaci\u00F3n", "the removal", "la exclusi\u00F3n", "the exclusion",
+      "la retenci\u00F3n", "retention", "contribuci\u00F3n", "contribution",
       "resulta en", "results in", "contribuye", "contributes",
       "en consecuencia", "consequently", "por consiguiente", "therefore",
       "finalmente", "finally"
@@ -205,21 +205,21 @@ print_conceptual_analysis <- function(resultado, width = 80, show_stats = FALSE)
     if (is_spanish) {
       if (is_removed) {
         # Para ítems ELIMINADOS
-        cat("PROBLEMAS PSICOMÉTRICOS:\n")
+        cat("PROBLEMAS PSICOM\u00C9TRICOS:\n")
         if (nchar(sections$psych) > 0) {
           wrapped_text <- strwrap(trimws(sections$psych), width = width)
           cat(wrapped_text, sep = "\n")
           cat("\n\n")
         }
 
-        cat("DESALINEACIÓN CONCEPTUAL:\n")
+        cat("DESALINEACI\u00D3N CONCEPTUAL:\n")
         if (nchar(sections$concept) > 0) {
           wrapped_text <- strwrap(trimws(sections$concept), width = width)
           cat(wrapped_text, sep = "\n")
           cat("\n\n")
         }
 
-        cat("BENEFICIO DE ELIMINACIÓN:\n")
+        cat("BENEFICIO DE ELIMINACI\u00D3N:\n")
         if (nchar(sections$benefit) > 0) {
           wrapped_text <- strwrap(trimws(sections$benefit), width = width)
           cat(wrapped_text, sep = "\n")
@@ -227,21 +227,21 @@ print_conceptual_analysis <- function(resultado, width = 80, show_stats = FALSE)
         }
       } else {
         # Para ítems CONSERVADOS
-        cat("FORTALEZAS PSICOMÉTRICAS:\n")
+        cat("FORTALEZAS PSICOM\u00C9TRICAS:\n")
         if (nchar(sections$psych) > 0) {
           wrapped_text <- strwrap(trimws(sections$psych), width = width)
           cat(wrapped_text, sep = "\n")
           cat("\n\n")
         }
 
-        cat("ALINEACIÓN CONCEPTUAL:\n")
+        cat("ALINEACI\u00D3N CONCEPTUAL:\n")
         if (nchar(sections$concept) > 0) {
           wrapped_text <- strwrap(trimws(sections$concept), width = width)
           cat(wrapped_text, sep = "\n")
           cat("\n\n")
         }
 
-        cat("BENEFICIO DE RETENCIÓN:\n")
+        cat("BENEFICIO DE RETENCI\u00D3N:\n")
         if (nchar(sections$benefit) > 0) {
           wrapped_text <- strwrap(trimws(sections$benefit), width = width)
           cat(wrapped_text, sep = "\n")
@@ -300,10 +300,10 @@ print_conceptual_analysis <- function(resultado, width = 80, show_stats = FALSE)
 
   # Ítems eliminados
   if (!is.null(ca$removed) && length(ca$removed) > 0) {
-    header <- "\n═════════════════════════════════════════════\n"
+    header <- "\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n"
     cat(header)
 
-    title <- if (is_spanish) "ANÁLISIS CONCEPTUAL DE ÍTEMS ELIMINADOS"
+    title <- if (is_spanish) "AN\u00C1LISIS CONCEPTUAL DE \u00CDTEMS ELIMINADOS"
     else "CONCEPTUAL ANALYSIS OF REMOVED ITEMS"
     cat(title, "\n")
     cat(header)
@@ -311,7 +311,7 @@ print_conceptual_analysis <- function(resultado, width = 80, show_stats = FALSE)
     for (it in names(ca$removed)) {
       # Obtener definición del ítem
       item_def <- resultado$config_used$ai_config$item_definitions[[it]]
-      if (is.null(item_def)) item_def <- "Sin definición"
+      if (is.null(item_def)) item_def <- "Sin definici\u00F3n"
 
       # Obtener estadísticas si están disponibles
       item_stats <- NULL
@@ -322,17 +322,17 @@ print_conceptual_analysis <- function(resultado, width = 80, show_stats = FALSE)
       format_narrative_analysis(it, item_def, ca$removed[[it]], item_stats, is_removed = TRUE)
     }
   } else {
-    msg <- if (is_spanish) "\nNo hay análisis conceptual de ítems eliminados.\n"
+    msg <- if (is_spanish) "\nNo hay an\u00E1lisis conceptual de \u00EDtems eliminados.\n"
     else "\nNo conceptual analysis of removed items.\n"
     cat(msg)
   }
 
   # Ítems conservados
   if (!is.null(ca$kept) && length(ca$kept) > 0) {
-    header <- "\n═════════════════════════════════════════════\n"
+    header <- "\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n"
     cat(header)
 
-    title <- if (is_spanish) "ANÁLISIS CONCEPTUAL DE ÍTEMS CONSERVADOS"
+    title <- if (is_spanish) "AN\u00C1LISIS CONCEPTUAL DE \u00CDTEMS CONSERVADOS"
     else "CONCEPTUAL ANALYSIS OF RETAINED ITEMS"
     cat(title, "\n")
     cat(header)
@@ -340,14 +340,14 @@ print_conceptual_analysis <- function(resultado, width = 80, show_stats = FALSE)
     for (it in names(ca$kept)) {
       # Obtener definición del ítem
       item_def <- resultado$config_used$ai_config$item_definitions[[it]]
-      if (is.null(item_def)) item_def <- "Sin definición"
+      if (is.null(item_def)) item_def <- "Sin definici\u00F3n"
 
       # Nota: Para ítems conservados, las estadísticas vienen del modelo final
       # y no están en item_stats
       format_narrative_analysis(it, item_def, ca$kept[[it]], NULL, is_removed = FALSE)
     }
   } else {
-    msg <- if (is_spanish) "\nNo hay análisis conceptual de ítems conservados.\n"
+    msg <- if (is_spanish) "\nNo hay an\u00E1lisis conceptual de \u00EDtems conservados.\n"
     else "\nNo conceptual analysis of retained items.\n"
     cat(msg)
   }

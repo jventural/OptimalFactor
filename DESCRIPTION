@@ -1,8 +1,8 @@
 Package: OptimalFactor
 Type: Package
 Title: Optimal Factor Analysis with EFA-Boosting Algorithm
-Version: 1.2.1
-Date: 2026-07-09
+Version: 1.2.2
+Date: 2026-07-17
 Authors@R:
     person("Jose", "Ventura-Leon",
            email = "jventuraleon@gmail.com",
@@ -36,9 +36,9 @@ Imports:
     tidyr,
     ggplot2,
     stringr,
+    parallel,
+    stats,
     utils
-Remotes:
-    jventural/PsyMetricTools
 Suggests:
     testthat (>= 3.0.0),
     httr,

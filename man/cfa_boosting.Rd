@@ -14,10 +14,12 @@ cfa_boosting(
   data,
   model,
   n_sample = NULL,
-  thresholds = list(...),
-  model_config = list(...),
-  mod_indices_config = list(...),
-  performance = list(...),
+  thresholds = list(loading = 0.3, min_items_per_factor = 3,
+    rmsea_target = 0.08, cfi_target = 0.95, srmr_target = 0.08),
+  model_config = list(estimator = "WLSMV", ordered = TRUE),
+  mod_indices_config = list(max_covs_to_add = 10, only_within_factor = TRUE,
+    delta = 0.1, power_threshold = 0.75, alpha = 0.05),
+  performance = list(max_iterations = 30, timeout_cfa = 60),
   verbose = TRUE
 )
 }

@@ -51,17 +51,15 @@ Fields of the returned list:
   }
 }
 \examples{
-\donttest{
+\dontrun{
 data(Data_Personality, package = "OptimalFactor")
 # Run CFA boosting first to obtain an object suitable for the reporter.
-res <- cfa_boosting(
-  data        = Data_Personality,
-  name_items  = "P",
-  n_factors   = 3,
-  estimator   = "WLSMV",
-  rotation    = "oblimin",
-  fit_targets = list(cfi = 0.95, tli = 0.95,
-                      rmsea = 0.06, srmr = 0.08))
+model <- '
+F1 =~ PPTQ1 + PPTQ2 + PPTQ3 + PPTQ4 + PPTQ5
+F2 =~ PPTQ6 + PPTQ7 + PPTQ8 + PPTQ9 + PPTQ10
+F3 =~ PPTQ11 + PPTQ12 + PPTQ13 + PPTQ14 + PPTQ15
+'
+res <- cfa_boosting(Data_Personality, model)
 
 # Pretty print to the console (default).
 report_cfa_results(res)

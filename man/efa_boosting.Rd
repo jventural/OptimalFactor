@@ -35,14 +35,29 @@ efa_boosting(
   n_factors = 3,
   n_sample = NULL,
   exclude_items = NULL,
-  thresholds = list(...),
-  model_config = list(...),
-  performance = list(...),
+  thresholds = list(loading = 0.3, min_items_per_factor = 3,
+    heywood_tol = 1e-06, near_heywood = 0.015,
+    min_interfactor_correlation = 0.32),
+  model_config = list(estimator = "WLSMV", rotation = "oblimin"),
+  performance = list(max_candidates_eval = 12, smart_pruning = TRUE,
+    timeout_efa = 30, timeout_optimization = 120, use_timeouts = FALSE,
+    emit_progress = TRUE),
   use_global = FALSE,
-  global_opt = list(...),
-  fit_config = list(...),
+  global_opt = list(max_drop = 2, max_global_combinations = 5000,
+    verbose = TRUE, progress_bar = TRUE),
+  fit_config = list(targets = list(rmsea = 0.08, srmr = 0.06, cfi = 0.95),
+    margins = list(rmsea = 0.03, srmr = 0.03, cfi = 0.03),
+    base_weights = list(rmsea = 0.5, srmr = 0.25, cfi = 0.25),
+    small_df_cut = 5,
+    small_df_weights = list(rmsea = 0.15, srmr = 0.45, cfi = 0.4),
+    wlsmv_boost = list(rmsea = 0.8, srmr = 1.2, cfi = 1.1),
+    use_pclose_if_available = TRUE, pclose_bonus = 0.1),
   use_ai_analysis = FALSE,
-  ai_config = list(...),
+  ai_config = list(api_key = NULL, generate_names = FALSE,
+    only_removed = TRUE, gpt_model = "gpt-3.5-turbo", language = "english",
+    analysis_detail = "detailed", domain_name = "Default Domain",
+    scale_title = "Default Scale Title", construct_definition = "",
+    model_name = "EFA Model", item_definitions = NULL),
   verbose = TRUE,
   ...
 )
@@ -50,28 +65,28 @@ efa_boosting(
 
 \arguments{
 
-\item{\code{data}}{Data frame of item responses.}
+\item{data}{Data frame of item responses.}
 
-\item{\code{name_items}}{
+\item{name_items}{
 Item prefix (e.g., \code{"IT"} produces IT1, IT2, …). Used for auto-detection.
 }
 
-\item{\code{item_range}}{
+\item{item_range}{
 Integer vector \code{c(start, end)}.
 If \code{NULL}, items are auto-detected.
 }
 
-\item{\code{n_factors}}{Number of factors.}
+\item{n_factors}{Number of factors.}
 
-\item{\code{n_sample}}{
+\item{n_sample}{
 Sample size.
 If \code{NULL}, auto-detected as \code{nrow(data)}.
 Used for df × N adaptive weighting of the composite fit index.
 }
 
-\item{\code{exclude_items}}{Items excluded before starting optimization.}
+\item{exclude_items}{Items excluded before starting optimization.}
 
-\item{\code{thresholds}}{
+\item{thresholds}{
 Rules governing structural decisions:
 \itemize{
   \item \code{loading}: Minimum acceptable loading.
@@ -81,7 +96,7 @@ Rules governing structural decisions:
 }
 }
 
-\item{\code{model_config}}{
+\item{model_config}{
 EFA estimation configuration:
 \itemize{
   \item \code{estimator = "WLSMV"}
@@ -89,7 +104,7 @@ EFA estimation configuration:
 }
 }
 
-\item{\code{performance}}{
+\item{performance}{
 Performance and timeout settings:
 \itemize{
   \item \code{max_candidates_eval}: If set, only this many candidates are evaluated in greedy mode.
@@ -99,11 +114,11 @@ Performance and timeout settings:
 }
 }
 
-\item{\code{use_global}}{
+\item{use_global}{
 Enable global subset search (multi-item removal).
 }
 
-\item{\code{global_opt}}{
+\item{global_opt}{
 Configuration for global search:
 \itemize{
   \item \code{max_drop}: Maximum subset size \emph{k}.
@@ -113,7 +128,7 @@ Configuration for global search:
 }
 }
 
-\item{\code{fit_config}}{
+\item{fit_config}{
 Configuration of the adaptive composite fit index:
 \itemize{
   \item \code{targets}: Target values for RMSEA, SRMR, CFI.
@@ -131,11 +146,11 @@ Configuration of the adaptive composite fit index:
 }
 }
 
-\item{\code{use_ai_analysis}}{
+\item{use_ai_analysis}{
 Enable GPT-based conceptual analysis of removed (and optionally retained) items.
 }
 
-\item{\code{ai_config}}{
+\item{ai_config}{
 AI analysis configuration:
 \itemize{
   \item \code{api_key}: OpenAI API key.
@@ -149,10 +164,12 @@ AI analysis configuration:
 }
 }
 
-\item{\code{verbose}}{
+\item{verbose}{
 If TRUE, prints the full diagnostic report, global-search bars, item maps,
 interfactor-correlation warnings, and AI progress bars.
 }
+
+\item{...}{Additional arguments passed to internal estimation routines.}
 
 }
 
@@ -186,7 +203,7 @@ This allows stable decisions even when RMSEA is unreliable (df < 5).
 
 After each iteration and at finalization, factor correlations are checked:
 \itemize{
-  \item If any |φ_{ij}| < \code{min_interfactor_correlation}, a warning is printed.
+  \item If any \eqn{|\phi_{ij}|} < \code{min_interfactor_correlation}, a warning is printed.
 }
 
 \strong{4. Global subset search.}

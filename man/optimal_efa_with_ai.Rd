@@ -138,13 +138,18 @@ A list with components:
     EAF1  = "Graduarme de la universidad me ayudará a recibir una buena oferta de trabajo.",
     EAF2  = "Graduarme de la universidad me ayudará a ganar un buen sueldo.",
     EAF3  = "Graduarme de la universidad me ayudará a obtener el respeto de los demás.",
-    EAF4  = "Graduarme de la universidad me ayudará a hacer un trabajo en el que encuentre satisfacción personal.",
+    EAF4  = paste0("Graduarme de la universidad me ayudará a hacer un trabajo ",
+                   "en el que encuentre satisfacción personal."),
     EAF5  = "Graduarme de la universidad me ayudará a aumentar mi autoestima.",
-    EAF6  = "Graduarme de la universidad me ayudará a tener una carrera que sea valorada por mi familia.",
-    EAF7  = "Graduarme de la universidad me ayudará a hacer un trabajo que pueda \"marcar la diferencia\" en la vida de las personas.",
-    EAF8  = "Graduarme de la universidad me ayudará a trabajar en un campo con grandes oportunidades laborales.",
+    EAF6  = paste0("Graduarme de la universidad me ayudará a tener una carrera ",
+                   "que sea valorada por mi familia."),
+    EAF7  = paste0("Graduarme de la universidad me ayudará a hacer un trabajo ",
+                   "que pueda \"marcar la diferencia\" en la vida de las personas."),
+    EAF8  = paste0("Graduarme de la universidad me ayudará a trabajar en un ",
+                   "campo con grandes oportunidades laborales."),
     EAF9  = "Graduarme de la universidad me ayudará a hacer un trabajo apasionante.",
-    EAF10 = "Graduarme de la universidad me ayudará a tener el tipo y la cantidad de contacto social necesario con otras personas."
+    EAF10 = paste0("Graduarme de la universidad me ayudará a tener el tipo y la ",
+                   "cantidad de contacto social necesario con otras personas.")
   )
 
   # Ejecutar EFA optimizada con asistencia de IA

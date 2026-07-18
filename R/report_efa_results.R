@@ -97,10 +97,10 @@ report_efa_results <- function(res, show_plot = TRUE, print = TRUE) {
 .format_efa_report <- function(rpt, show_plot = TRUE) {
   max_bars <- 20L
   out <- character(0)
-  hr  <- paste(rep("─", 65), collapse = "")
+  hr  <- paste(rep("\u2500", 65), collapse = "")
 
   out <- c(out, "", hr,
-           "ANÁLISIS FACTORIAL EXPLORATORIO - REPORTE DE OPTIMIZACIÓN",
+           "AN\u00C1LISIS FACTORIAL EXPLORATORIO - REPORTE DE OPTIMIZACI\u00D3N",
            hr, "")
 
   out <- c(out, "RESUMEN DEL PROCESO", "")
@@ -120,7 +120,7 @@ report_efa_results <- function(res, show_plot = TRUE, print = TRUE) {
     print(summary_df, row.names = FALSE, right = FALSE)))
 
   if (isTRUE(show_plot)) {
-    out <- c(out, "", "", "EVOLUCIÓN DEL RMSEA", "")
+    out <- c(out, "", "", "EVOLUCI\u00D3N DEL RMSEA", "")
     rmsea_all <- c(s$rmsea_init, rpt$steps_log$rmsea)
     rmsea_min_ref <- 0.05; rmsea_max_ref <- 0.13
     for (i in seq_along(rmsea_all)) {
@@ -129,13 +129,13 @@ report_efa_results <- function(res, show_plot = TRUE, print = TRUE) {
       bars <- round(max(0, min(bars, max_bars)))
       out <- c(out, sprintf("  Paso %2d [%.3f] %s",
                              i - 1, val,
-                             if (bars > 0) paste(rep("█", bars), collapse = "") else ""))
+                             if (bars > 0) paste(rep("\u2588", bars), collapse = "") else ""))
     }
-    out <- c(out, "                    └─────┴─────┴─────┴─────┘",
+    out <- c(out, "                    \u2514\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2518",
                   "                     0.05  0.08  0.10  0.13")
 
     if ("srmr" %in% names(rpt$steps_log)) {
-      out <- c(out, "", "", "EVOLUCIÓN DEL SRMR", "")
+      out <- c(out, "", "", "EVOLUCI\u00D3N DEL SRMR", "")
       srmr_init <- rpt$steps_log$srmr[1]
       srmr_all  <- as.numeric(c(srmr_init, rpt$steps_log$srmr))
       srmr_min_ref <- 0.03; srmr_max_ref <- 0.10
@@ -145,14 +145,14 @@ report_efa_results <- function(res, show_plot = TRUE, print = TRUE) {
         bars <- round(max(0, min(bars, max_bars)))
         out <- c(out, sprintf("  Paso %2d [%.3f] %s",
                                i - 1, val,
-                               if (bars > 0) paste(rep("█", bars), collapse = "") else ""))
+                               if (bars > 0) paste(rep("\u2588", bars), collapse = "") else ""))
       }
-      out <- c(out, "                    └─────┴─────┴─────┴─────┘",
+      out <- c(out, "                    \u2514\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2518",
                     "                     0.03  0.05  0.08  0.10")
     }
 
     if ("cfi" %in% names(rpt$steps_log)) {
-      out <- c(out, "", "", "EVOLUCIÓN DEL CFI", "")
+      out <- c(out, "", "", "EVOLUCI\u00D3N DEL CFI", "")
       cfi_init <- rpt$steps_log$cfi[1]
       cfi_all  <- as.numeric(c(cfi_init, rpt$steps_log$cfi))
       cfi_min_ref <- 0.70; cfi_max_ref <- 1.00
@@ -162,14 +162,14 @@ report_efa_results <- function(res, show_plot = TRUE, print = TRUE) {
         bars <- round(max(0, min(bars, max_bars)))
         out <- c(out, sprintf("  Paso %2d [%.3f] %s",
                                i - 1, val,
-                               if (bars > 0) paste(rep("█", bars), collapse = "") else ""))
+                               if (bars > 0) paste(rep("\u2588", bars), collapse = "") else ""))
       }
-      out <- c(out, "                    └─────┴─────┴─────┴─────┴─────┘",
+      out <- c(out, "                    \u2514\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2518",
                     "                     0.70  0.80  0.90  0.95  1.00")
     }
   }
 
-  out <- c(out, "", "", "DETALLE DE ELIMINACIÓN DE ÍTEMS", "")
+  out <- c(out, "", "", "DETALLE DE ELIMINACI\u00D3N DE \u00CDTEMS", "")
   el_df <- rpt$steps_log
   num_cols <- intersect(c("rmsea", "srmr", "cfi"), names(el_df))
   if (length(num_cols) > 0) {
@@ -186,7 +186,7 @@ report_efa_results <- function(res, show_plot = TRUE, print = TRUE) {
   out <- c(out, utils::capture.output(print(rpt$final_structure, n = Inf)))
 
   if (!is.null(rpt$fit_indices)) {
-    out <- c(out, "", "", "ÍNDICES DE AJUSTE DEL MODELO FINAL", "")
+    out <- c(out, "", "", "\u00CDNDICES DE AJUSTE DEL MODELO FINAL", "")
     fi <- rpt$fit_indices
     fit_df <- data.frame(
       Indice = c("Chi-cuadrado escalado", "gl", "RMSEA", "CFI", "TLI", "SRMR"),

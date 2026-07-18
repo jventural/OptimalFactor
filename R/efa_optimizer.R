@@ -40,8 +40,8 @@ efa_optimizer <- function(data,
     if (total == 0) return("No items")
     percent <- current / total
     filled  <- floor(percent * width)
-    bar <- paste0("[", paste0(rep("█", filled), collapse = ""),
-                  paste0(rep("░", width - filled), collapse = ""), "]")
+    bar <- paste0("[", paste0(rep("\u2588", filled), collapse = ""),
+                  paste0(rep("\u2591", width - filled), collapse = ""), "]")
     sprintf("%s %d/%d (%.1f%%)", bar, current, total, percent * 100)
   }
 
@@ -76,7 +76,7 @@ efa_optimizer <- function(data,
   if (verbose) {
     cat("\nSTARTING EFA OPTIMIZATION\n")
     cat("Initial items:", n_items, "| Factors:", n_factors,
-        "| RMSEA target: ≤", thresholds$rmsea, "\n")
+        "| RMSEA target: \u2264", thresholds$rmsea, "\n")
   }
 
   # AI configuration
@@ -91,8 +91,11 @@ efa_optimizer <- function(data,
   )
   ai_config <- modifyList(default_ai, ai_config)
 
-  if (use_ai_analysis && !requireNamespace("httr", quietly = TRUE)) install.packages("httr")
-  if (use_ai_analysis && !requireNamespace("jsonlite", quietly = TRUE)) install.packages("jsonlite")
+  if (use_ai_analysis && (!requireNamespace("httr", quietly = TRUE) ||
+                          !requireNamespace("jsonlite", quietly = TRUE))) {
+    stop("Packages 'httr' and 'jsonlite' are required for AI analysis. ",
+         "Install them with: install.packages(c('httr', 'jsonlite'))")
+  }
 
   # ────────────────────────────────────────────────────────────────────────────
   # SECCIÓN MEJORADA DE ANÁLISIS CON GPT (incluye razón y RMSEA, y timeline)
@@ -125,9 +128,9 @@ efa_optimizer <- function(data,
 
     technical_info <- ""
     if (!is.null(item_stats)) {
-      if (tolower(ai_config$language) %in% c("spanish","español")) {
+      if (tolower(ai_config$language) %in% c("spanish","espa\u00F1ol")) {
         base_txt <- sprintf(
-          "Información técnica: Carga primaria=%s; h²=%s; Razón=%s; RMSEA en ese paso=%s.",
+          "Informaci\u00F3n t\u00E9cnica: Carga primaria=%s; h\u00B2=%s; Raz\u00F3n=%s; RMSEA en ese paso=%s.",
           fmt_num(item_stats$loading),
           fmt_num(item_stats$h2),
           r_reason,
@@ -135,14 +138,14 @@ efa_optimizer <- function(data,
         )
         ambi_txt <- ""
         if (!is.null(item_stats$second_loading) || !is.null(item_stats$delta_loading)) {
-          ambi_txt <- sprintf(" Ambigüedad: segunda carga=%s; Δ=|λ1|-|λ2|=%s.",
+          ambi_txt <- sprintf(" Ambig\u00FCedad: segunda carga=%s; \u0394=|\u03BB1|-|\u03BB2|=%s.",
                               fmt_num(item_stats$second_loading),
                               fmt_num(item_stats$delta_loading))
         }
         technical_info <- paste0(base_txt, ambi_txt)
       } else {
         base_txt <- sprintf(
-          "Technical information: Primary loading=%s; h²=%s; Reason=%s; RMSEA at that step=%s.",
+          "Technical information: Primary loading=%s; h\u00B2=%s; Reason=%s; RMSEA at that step=%s.",
           fmt_num(item_stats$loading),
           fmt_num(item_stats$h2),
           r_reason,
@@ -150,7 +153,7 @@ efa_optimizer <- function(data,
         )
         ambi_txt <- ""
         if (!is.null(item_stats$second_loading) || !is.null(item_stats$delta_loading)) {
-          ambi_txt <- sprintf(" Ambiguity: second loading=%s; Δ=|λ1|-|λ2|=%s.",
+          ambi_txt <- sprintf(" Ambiguity: second loading=%s; \u0394=|\u03BB1|-|\u03BB2|=%s.",
                               fmt_num(item_stats$second_loading),
                               fmt_num(item_stats$delta_loading))
         }
@@ -158,20 +161,20 @@ efa_optimizer <- function(data,
       }
     }
 
-    if (tolower(ai_config$language) %in% c("spanish","español")) {
+    if (tolower(ai_config$language) %in% c("spanish","espa\u00F1ol")) {
       if (act == "exclude") {
         prompt <- sprintf(
-          "Como experto en psicometría, proporciona un análisis detallado de por qué el ítem '%s' (\"%s\") fue correctamente eliminado de una escala que mide '%s'. %s
+          "Como experto en psicometr\u00EDa, proporciona un an\u00E1lisis detallado de por qu\u00E9 el \u00EDtem '%s' (\"%s\") fue correctamente eliminado de una escala que mide '%s'. %s
 
 Contexto breve del modelo:
 %s
 
-Estructura tu análisis en tres aspectos integrados:
-1) Problemas psicométricos identificados: comienza explícitamente indicando la Razón registrada por el algoritmo: '%s' y el RMSEA al momento de la eliminación: %s; enlaza esto con la evidencia (cargas factoriales, comunalidades, cargas cruzadas, posibles dependencias locales) y explica cómo estos factores justifican la salida del ítem.
-2) Desalineación conceptual con el constructo central (si aplica) o redundancia con otros ítems.
-3) Impacto positivo de su eliminación en la validez y coherencia de la escala (mejoras en ajuste, claridad factorial, parsimonia).
+Estructura tu an\u00E1lisis en tres aspectos integrados:
+1) Problemas psicom\u00E9tricos identificados: comienza expl\u00EDcitamente indicando la Raz\u00F3n registrada por el algoritmo: '%s' y el RMSEA al momento de la eliminaci\u00F3n: %s; enlaza esto con la evidencia (cargas factoriales, comunalidades, cargas cruzadas, posibles dependencias locales) y explica c\u00F3mo estos factores justifican la salida del \u00EDtem.
+2) Desalineaci\u00F3n conceptual con el constructo central (si aplica) o redundancia con otros \u00EDtems.
+3) Impacto positivo de su eliminaci\u00F3n en la validez y coherencia de la escala (mejoras en ajuste, claridad factorial, parsimonia).
 
-Proporciona un análisis técnico pero fluido, conectando los tres aspectos de forma narrativa (%s palabras).
+Proporciona un an\u00E1lisis t\u00E9cnico pero fluido, conectando los tres aspectos de forma narrativa (%s palabras).
 
 IMPORTANTE: NO uses formato markdown (sin asteriscos, sin negritas). Escribe en texto plano continuo.",
           item, definition, ai_config$construct_definition, technical_info,
@@ -179,20 +182,20 @@ IMPORTANTE: NO uses formato markdown (sin asteriscos, sin negritas). Escribe en 
           r_reason, r_rmsea_txt,
           word_limit
         )
-        system_msg <- "Eres un experto en psicometría y desarrollo de escalas. Proporciona análisis técnicos detallados en español, usando terminología psicométrica precisa. NO uses formato markdown, solo texto plano."
+        system_msg <- "Eres un experto en psicometr\u00EDa y desarrollo de escalas. Proporciona an\u00E1lisis t\u00E9cnicos detallados en espa\u00F1ol, usando terminolog\u00EDa psicom\u00E9trica precisa. NO uses formato markdown, solo texto plano."
       } else {
         prompt <- sprintf(
-          "Como experto en psicometría, justifica detalladamente por qué el ítem '%s' (\"%s\") debe mantenerse en una escala que mide '%s'. %s
+          "Como experto en psicometr\u00EDa, justifica detalladamente por qu\u00E9 el \u00EDtem '%s' (\"%s\") debe mantenerse en una escala que mide '%s'. %s
 
 Contexto breve del modelo:
 %s
 
-Estructura tu análisis en tres aspectos integrados:
-1) Fortalezas psicométricas del ítem (cargas, comunalidades, especificidad factorial). Si corresponde, incluye el registro del algoritmo: Razón='%s'; RMSEA en ese momento: %s.
-2) Alineación conceptual con el constructo central.
-3) Contribución única a la validez de la escala (discriminación, cobertura de contenido, no redundancia).
+Estructura tu an\u00E1lisis en tres aspectos integrados:
+1) Fortalezas psicom\u00E9tricas del \u00EDtem (cargas, comunalidades, especificidad factorial). Si corresponde, incluye el registro del algoritmo: Raz\u00F3n='%s'; RMSEA en ese momento: %s.
+2) Alineaci\u00F3n conceptual con el constructo central.
+3) Contribuci\u00F3n \u00FAnica a la validez de la escala (discriminaci\u00F3n, cobertura de contenido, no redundancia).
 
-Proporciona un análisis técnico pero fluido (%s palabras).
+Proporciona un an\u00E1lisis t\u00E9cnico pero fluido (%s palabras).
 
 IMPORTANTE: NO uses formato markdown (sin asteriscos, sin negritas). Escribe en texto plano continuo.",
           item, definition, ai_config$construct_definition, technical_info,
@@ -200,7 +203,7 @@ IMPORTANTE: NO uses formato markdown (sin asteriscos, sin negritas). Escribe en 
           r_reason, r_rmsea_txt,
           word_limit
         )
-        system_msg <- "Eres un experto en psicometría y desarrollo de escalas. Proporciona análisis técnicos detallados en español. NO uses formato markdown, solo texto plano."
+        system_msg <- "Eres un experto en psicometr\u00EDa y desarrollo de escalas. Proporciona an\u00E1lisis t\u00E9cnicos detallados en espa\u00F1ol. NO uses formato markdown, solo texto plano."
       }
     } else {
       if (act == "exclude") {
@@ -284,7 +287,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
           if (attempt < max_attempts) {
             wait_time <- 2^attempt
             if (verbose) {
-              msg <- if (tolower(ai_config$language) %in% c("spanish","español")) {
+              msg <- if (tolower(ai_config$language) %in% c("spanish","espa\u00F1ol")) {
                 sprintf("   Servidor ocupado (HTTP %d). Reintentando en %d segundos...\n", status, wait_time)
               } else {
                 sprintf("   Server busy (HTTP %d). Retrying in %d seconds...\n", status, wait_time)
@@ -299,8 +302,8 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
           if (attempt < max_attempts) {
             wait_time <- 10 * attempt
             if (verbose) {
-              msg <- if (tolower(ai_config$language) %in% c("spanish","español")) {
-                sprintf("   Límite de velocidad alcanzado. Esperando %d segundos...\n", wait_time)
+              msg <- if (tolower(ai_config$language) %in% c("spanish","espa\u00F1ol")) {
+                sprintf("   L\u00EDmite de velocidad alcanzado. Esperando %d segundos...\n", wait_time)
               } else {
                 sprintf("   Rate limit reached. Waiting %d seconds...\n", wait_time)
               }
@@ -317,8 +320,8 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         if (attempt < max_attempts) {
           wait_time <- 2^attempt
           if (verbose) {
-            msg <- if (tolower(ai_config$language) %in% c("spanish","español")) {
-              sprintf("   Error de conexión. Reintentando en %d segundos...\n", wait_time)
+            msg <- if (tolower(ai_config$language) %in% c("spanish","espa\u00F1ol")) {
+              sprintf("   Error de conexi\u00F3n. Reintentando en %d segundos...\n", wait_time)
             } else {
               sprintf("   Connection error. Retrying in %d seconds...\n", wait_time)
             }
@@ -355,7 +358,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     its <- df$Items
 
     # Comunalidades y unicidades con Φ
-    h2  <- rowSums((L %*% phi) * L)  # diag(L Φ L')
+    h2  <- rowSums((L %*% phi) * L)  # diag(L \u03A6 L')
     psi <- 1 - h2
 
     heywood_flag      <- (psi < -thresholds$heywood_tol) |
@@ -382,7 +385,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         ok[i] <- FALSE; reasons[i] <- "No loading";    scores[i] <- max(li)
       } else {
         s <- sort(li, TRUE)
-        ok[i] <- FALSE; reasons[i] <- "Cross-loading"; scores[i] <- s[1] - s[2]  # menor = peor ambigüedad
+        ok[i] <- FALSE; reasons[i] <- "Cross-loading"; scores[i] <- s[1] - s[2]  # menor = peor ambig\u00FCedad
       }
     }
 
@@ -494,7 +497,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         step = step_counter, removed_item = worst, reason = "Heywood", rmsea = curr_rmsea,
         stringsAsFactors = FALSE
       ))
-      if (verbose) cat("Removed", worst, "due to Heywood case (ψ=", sprintf("%.4f", min(ev$psi)), ")\n")
+      if (verbose) cat("Removed", worst, "due to Heywood case (\u03C8=", sprintf("%.4f", min(ev$psi)), ")\n")
       next
     }
 
@@ -509,7 +512,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         step = step_counter, removed_item = worst, reason = "Near-Heywood", rmsea = curr_rmsea,
         stringsAsFactors = FALSE
       ))
-      if (verbose) cat("Removed", worst, "due to Near-Heywood case (ψ≈0)\n")
+      if (verbose) cat("Removed", worst, "due to Near-Heywood case (\u03C8\u22480)\n")
       next
     }
 
@@ -595,7 +598,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
             step = step_counter, removed_item = best, reason = "RMSEA improvement", rmsea = best_val,
             stringsAsFactors = FALSE
           ))
-          if (verbose) cat("Removed", best, "→ RMSEA improved to:", sprintf("%.3f", best_val), "\n")
+          if (verbose) cat("Removed", best, "\u2192 RMSEA improved to:", sprintf("%.3f", best_val), "\n")
           next
         }
       }
@@ -661,7 +664,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
   # ────────────────────────────────────────────────────────────────────────────
   timeline_str <- NULL
   if (nrow(steps_log) > 0) {
-    header <- "DETALLE DE ELIMINACIÓN DE ÍTEMS\n step removed_item  reason                     rmsea"
+    header <- "DETALLE DE ELIMINACI\u00D3N DE \u00CDTEMS\n step removed_item  reason                     rmsea"
     lines <- sprintf("%3d %-12s %-24s %s",
                      steps_log$step,
                      steps_log$removed_item,
@@ -677,15 +680,15 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
   if (use_ai_analysis && length(items) > 0 && !is.null(ai_config$api_key) &&
       !is.null(ai_config$item_definitions)) {
 
-    is_spanish <- tolower(ai_config$language) %in% c("spanish","español")
+    is_spanish <- tolower(ai_config$language) %in% c("spanish","espa\u00F1ol")
 
     if (verbose) {
       if (is_spanish) {
-        cat("\n═══ Análisis Conceptual con IA ═══\n")
+        cat("\n\u2550\u2550\u2550 An\u00E1lisis Conceptual con IA \u2550\u2550\u2550\n")
         cat("Modelo:", ai_config$gpt_model, "\n")
         cat("Nivel de detalle:", ai_config$analysis_detail, "\n")
       } else {
-        cat("\n═══ AI Conceptual Analysis ═══\n")
+        cat("\n\u2550\u2550\u2550 AI Conceptual Analysis \u2550\u2550\u2550\n")
         cat("Model:", ai_config$gpt_model, "\n")
         cat("Detail level:", ai_config$analysis_detail, "\n")
       }
@@ -703,7 +706,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         it <- removed_items[i]
         if (verbose) {
           progress <- create_progress_bar(i - 1, length(removed_items), width = 20)
-          label <- if (is_spanish) "Analizando ítems eliminados:" else "Analyzing removed items:"
+          label <- if (is_spanish) "Analizando \u00EDtems eliminados:" else "Analyzing removed items:"
           cat("\r", label, progress, sep = " ")
           flush.console()
         }
@@ -722,7 +725,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
       }
       if (verbose) {
         progress <- create_progress_bar(length(removed_items), length(removed_items), width = 20)
-        label <- if (is_spanish) "Analizando ítems eliminados:" else "Analyzing removed items:"
+        label <- if (is_spanish) "Analizando \u00EDtems eliminados:" else "Analyzing removed items:"
         cat("\r", label, progress, "\n", sep = " ")
       }
     }
@@ -736,7 +739,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
           it <- kept[i]
           if (verbose) {
             progress <- create_progress_bar(i - 1, length(kept), width = 20)
-            label <- if (is_spanish) "Analizando ítems conservados:" else "Analyzing retained items:"
+            label <- if (is_spanish) "Analizando \u00EDtems conservados:" else "Analyzing retained items:"
             cat("\r", label, progress, sep = " ")
             flush.console()
           }
@@ -778,7 +781,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         }
         if (verbose) {
           progress <- create_progress_bar(length(kept), length(kept), width = 20)
-          label <- if (is_spanish) "Analizando ítems conservados:" else "Analyzing retained items:"
+          label <- if (is_spanish) "Analizando \u00EDtems conservados:" else "Analyzing retained items:"
           cat("\r", label, progress, "\n", sep = " ")
         }
       }
@@ -792,7 +795,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     )
 
     if (verbose) {
-      complete_msg <- if (is_spanish) "✅ Análisis conceptual completado\n" else "✅ Conceptual analysis completed\n"
+      complete_msg <- if (is_spanish) "\u2705 An\u00E1lisis conceptual completado\n" else "\u2705 Conceptual analysis completed\n"
       cat(complete_msg)
     }
   }

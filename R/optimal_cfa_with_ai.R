@@ -11,16 +11,17 @@ optimal_cfa_with_ai <- function(initial_model,
                                  api_key              = NULL,
                                  item_definitions     = NULL,
                                  domain_name          = "Dominio por Defecto",
-                                 scale_title          = "Título de la Escala por Defecto",
+                                 scale_title          = "T\u00EDtulo de la Escala por Defecto",
                                  construct_definition = "",
                                  model_name           = "Modelo CFA",
                                  gpt_model            = "gpt-3.5-turbo",
                                  factor_definitions   = NULL,
                                  ...) {
-  library(lavaan)
-  library(semTools)
-  library(httr)
-  library(jsonlite)
+  if (analyze_removed && (!requireNamespace("httr", quietly = TRUE) ||
+                          !requireNamespace("jsonlite", quietly = TRUE))) {
+    stop("Packages 'httr' and 'jsonlite' are required for AI analysis. ",
+         "Install them with: install.packages(c('httr', 'jsonlite'))")
+  }
 
   # — Helpers para modelo multidimensional —
   split_model <- function(model_str) {
@@ -52,38 +53,38 @@ optimal_cfa_with_ai <- function(initial_model,
       resp <- tryCatch({
         httr::POST(
           .openai_chat_url(),
-          add_headers(Authorization = paste("Bearer", api_key),
+          httr::add_headers(Authorization = paste("Bearer", api_key),
                       `Content-Type` = "application/json"),
-          timeout(160),
-          body = toJSON(list(
+          httr::timeout(160),
+          body = jsonlite::toJSON(list(
             model       = gpt_model,
             messages    = list(
-              list(role="system", content="Eres un experto en psicometría y análisis factorial."),
+              list(role="system", content="Eres un experto en psicometr\u00EDa y an\u00E1lisis factorial."),
               list(role="user",   content=prompt)
             ),
             temperature = 0.5
           ), auto_unbox = TRUE)
         )
       }, error = function(e) NULL)
-      if (!is.null(resp) && status_code(resp)==200) break
+      if (!is.null(resp) && httr::status_code(resp)==200) break
       if (verbose) cat("Intento", attempt, "fallido; reintentando...\n")
       attempt <- attempt + 1; Sys.sleep(1)
     }
     resp
   }
   analyze_item_with_gpt <- function(item, item_def, factor_def, action) {
-    if (is.null(item_def) || item_def=="") return("No se proporcionó definición del ítem.")
-    desc <- if (action=="exclusion") "Justifica concisamente la exclusión" else "Explica brevemente por qué se conserva"
+    if (is.null(item_def) || item_def=="") return("No se proporcion\u00F3 definici\u00F3n del \u00EDtem.")
+    desc <- if (action=="exclusion") "Justifica concisamente la exclusi\u00F3n" else "Explica brevemente por qu\u00E9 se conserva"
     prompt <- paste0(
-      "Eres un experto en psicometría y análisis factorial. ", desc,
-      " del ítem '", item, "' cuyo contenido es: \"", item_def, "\". ",
+      "Eres un experto en psicometr\u00EDa y an\u00E1lisis factorial. ", desc,
+      " del \u00EDtem '", item, "' cuyo contenido es: \"", item_def, "\". ",
       "Constructo: '", construct_definition, "'. Escala: '", scale_title, "'. ",
       "Modelo CFA: '", model_name, "'. ",
-      if (!is.null(factor_def)) paste0("Definición del factor: \"", factor_def, "\".") else ""
+      if (!is.null(factor_def)) paste0("Definici\u00F3n del factor: \"", factor_def, "\".") else ""
     )
     resp <- call_openai_api(prompt)
-    if (is.null(resp)) return("Error en análisis GPT.")
-    content <- content(resp)
+    if (is.null(resp)) return("Error en an\u00E1lisis GPT.")
+    content <- httr::content(resp)
     tryCatch(content$choices[[1]]$message$content,
              error = function(e) "Error al extraer respuesta de GPT.")
   }
@@ -124,13 +125,13 @@ optimal_cfa_with_ai <- function(initial_model,
     # obtener índices de modificación
     mi_raw <- lavaan::modificationIndices(fit)
     if (!is.data.frame(mi_raw)) {
-      if (verbose) cat("No se obtuvieron índices de modificación válidos; deteniendo refinamiento.\n")
+      if (verbose) cat("No se obtuvieron \u00EDndices de modificaci\u00F3n v\u00E1lidos; deteniendo refinamiento.\n")
       alternative_fit <- fit
       break
     }
-    mi_filt <- subset(mi_raw, mi > mi_threshold)
+    mi_filt <- mi_raw[mi_raw$mi > mi_threshold, , drop = FALSE]
     if (nrow(mi_filt) == 0) {
-      if (verbose) cat("No hay índices MI >", mi_threshold, "; deteniendo.\n")
+      if (verbose) cat("No hay \u00EDndices MI >", mi_threshold, "; deteniendo.\n")
       alternative_fit <- fit
       break
     }
@@ -171,7 +172,7 @@ optimal_cfa_with_ai <- function(initial_model,
   # — Análisis conceptual con IA —
   conceptual_analysis <- NULL
   if (analyze_removed && !is.null(api_key) && !is.null(item_definitions)) {
-    if (verbose) cat("Iniciando análisis conceptual con IA...\n")
+    if (verbose) cat("Iniciando an\u00E1lisis conceptual con IA...\n")
     # ítems eliminados
     analysis_removed <- setNames(vector("list", length(removed_items)), removed_items)
     for (it in removed_items) {
@@ -201,7 +202,7 @@ optimal_cfa_with_ai <- function(initial_model,
         analysis_kept[[it]] <- analyze_item_with_gpt(it,
                                                      item_definitions[[it]],
                                                      fac_def,
-                                                     "conservación")
+                                                     "conservaci\u00F3n")
       }
     }
     conceptual_analysis <- list(removed = analysis_removed, kept = analysis_kept)

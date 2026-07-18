@@ -9,7 +9,7 @@ export_conceptual_analysis <- function(resultado, file = "conceptual_analysis.tx
 
   sink(con, type = "output")
   print_conceptual_analysis(resultado, width = 100, show_stats = TRUE)
-  sink(type = "output")  # cierra el desvío
-  cat("Análisis exportado a:", normalizePath(file, winslash = "/"), "\n")
+  sink(type = "output")  # cierra el desv\u00EDo
+  cat("An\u00E1lisis exportado a:", normalizePath(file, winslash = "/"), "\n")
   invisible(file)
 }

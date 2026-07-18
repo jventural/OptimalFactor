@@ -4,5 +4,5 @@ imprimir_items_eliminados <- function(removed_items) {
   } else {
     "Ninguno"
   }
-  cat("Ítems eliminados: ", mensaje, "\n", sep = "")
+  cat("\u00CDtems eliminados: ", mensaje, "\n", sep = "")
 }

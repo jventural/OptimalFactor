@@ -1,6 +1,5 @@
 \name{specification_search}
 \alias{specification_search}
-\alias{print.specification_search}
 \title{Heuristic Specification Search for CFA Models (deprecated)}
 
 \description{
@@ -49,8 +48,6 @@ specification_search(
   n_cores = 1,
   verbose = TRUE
 )
-
-\method{print}{specification_search}(x, top = 10, \dots)
 }
 
 \arguments{
@@ -84,9 +81,6 @@ models within each greedy iteration (they are independent). Default 1
 \code{fork} is unavailable); results are identical to the sequential run,
 only faster. A practical choice is \code{parallel::detectCores() - 1}.}
 \item{verbose}{Print progress and the MacCallum warning.}
-\item{x}{An object returned by \code{specification_search}.}
-\item{top}{Number of rows displayed by the print method.}
-\item{\dots}{Ignored.}
 }
 
 \details{

@@ -46,38 +46,38 @@ efa_optimizer(
 }
 
 \arguments{
-\item{\code{data}}{A \code{data.frame} containing observed variables.}
-\item{\code{name_items}}{Common item prefix (e.g., \code{"DP"} or \code{"PPTQ"}).}
-\item{\code{item_range}}{Integer vector of length 2 with the first/last item indices; if \code{NULL}, items are discovered by the prefix followed by a trailing integer.}
-\item{\code{n_factors}}{Number of factors to extract.}
-\item{\code{exclude_items}}{Character vector of items to exclude at the start.}
-\item{\code{thresholds}}{List of decision thresholds:
+\item{data}{A \code{data.frame} containing observed variables.}
+\item{name_items}{Common item prefix (e.g., \code{"DP"} or \code{"PPTQ"}).}
+\item{item_range}{Integer vector of length 2 with the first/last item indices; if \code{NULL}, items are discovered by the prefix followed by a trailing integer.}
+\item{n_factors}{Number of factors to extract.}
+\item{exclude_items}{Character vector of items to exclude at the start.}
+\item{thresholds}{List of decision thresholds:
 \describe{
-  \item{\code{rmsea}}{Maximum acceptable scaled RMSEA.}
-  \item{\code{loading}}{Minimum salient absolute loading.}
-  \item{\code{min_items_per_factor}}{Minimum items retained per factor (based on primary loading).}
-  \item{\code{heywood_tol}}{Tolerance for detecting negative uniqueness (\eqn{\psi < -}\code{heywood\_tol}) or impossible loadings.}
-  \item{\code{near_heywood}}{Band around zero uniqueness treated as near-Heywood.}
+  \item{rmsea}{Maximum acceptable scaled RMSEA.}
+  \item{loading}{Minimum salient absolute loading.}
+  \item{min_items_per_factor}{Minimum items retained per factor (based on primary loading).}
+  \item{heywood_tol}{Tolerance for detecting negative uniqueness (\eqn{\psi < -}\code{heywood\_tol}) or impossible loadings.}
+  \item{near_heywood}{Band around zero uniqueness treated as near-Heywood.}
 }}
-\item{\code{model_config}}{List of EFA fitting options:
+\item{model_config}{List of EFA fitting options:
 \describe{
-  \item{\code{estimator}}{Estimator (e.g., \code{"WLSMV"}).}
-  \item{\code{rotation}}{Rotation method (e.g., \code{"oblimin"}).}
+  \item{estimator}{Estimator (e.g., \code{"WLSMV"}).}
+  \item{rotation}{Rotation method (e.g., \code{"oblimin"}).}
 }}
-\item{\code{use_ai_analysis}}{Logical; if \code{TRUE}, requests LLM justifications without affecting the optimization path.}
-\item{\code{ai_config}}{List with LLM settings:
+\item{use_ai_analysis}{Logical; if \code{TRUE}, requests LLM justifications without affecting the optimization path.}
+\item{ai_config}{List with LLM settings:
 \describe{
-  \item{\code{api_key}}{API key (character).}
-  \item{\code{generate_names}}{If \code{TRUE}, may also request short factor names (if implemented).}
-  \item{\code{only_removed}}{If \code{TRUE}, justify only removed items; otherwise also justify retained items.}
-  \item{\code{gpt_model}}{LLM model identifier.}
-  \item{\code{language}}{Language for justifications; supports at least \code{"english"} and \code{"spanish"}.}
-  \item{\code{analysis_detail}}{Verbosity level for the LLM answer; one of \code{"brief"}, \code{"standard"}, \code{"detailed"}.}
+  \item{api_key}{API key (character).}
+  \item{generate_names}{If \code{TRUE}, may also request short factor names (if implemented).}
+  \item{only_removed}{If \code{TRUE}, justify only removed items; otherwise also justify retained items.}
+  \item{gpt_model}{LLM model identifier.}
+  \item{language}{Language for justifications; supports at least \code{"english"} and \code{"spanish"}.}
+  \item{analysis_detail}{Verbosity level for the LLM answer; one of \code{"brief"}, \code{"standard"}, \code{"detailed"}.}
   \item{\code{domain_name}, \code{scale_title}, \code{construct_definition}, \code{model_name}}{Context strings injected into prompts.}
-  \item{\code{item_definitions}}{Named list mapping item IDs to plain-language item stems/descriptions used by the LLM.}
+  \item{item_definitions}{Named list mapping item IDs to plain-language item stems/descriptions used by the LLM.}
 }}
-\item{\code{verbose}}{Logical; if \code{TRUE}, prints progress, current structure, counts per factor, and a progress bar during LLM analysis.}
-\item{\code{\dots}}{Additional arguments forwarded to \code{PsyMetricTools::EFA_modern()}.}
+\item{verbose}{Logical; if \code{TRUE}, prints progress, current structure, counts per factor, and a progress bar during LLM analysis.}
+\item{\dots}{Additional arguments forwarded to \code{PsyMetricTools::EFA_modern()}.}
 }
 
 \details{
@@ -113,25 +113,25 @@ If LLM is used, \pkg{httr} and \pkg{jsonlite} are required; the function attempt
 \value{
 A list with:
 \describe{
-  \item{\code{final_structure}}{Data frame with the final, thresholded loadings and item labels.}
-  \item{\code{removed_items}}{Character vector of removed items, in order.}
-  \item{\code{steps_log}}{Data frame with \code{step}, \code{removed_item}, \code{reason}, \code{rmsea} (value at that step).}
-  \item{\code{iterations}}{Number of iterations executed.}
-  \item{\code{final_rmsea}}{Scaled RMSEA at termination.}
-  \item{\code{bondades_original}}{Fit indices returned by \code{EFA_modern}.}
-  \item{\code{specifications}}{Model specifications returned by \code{EFA_modern}.}
-  \item{\code{inter_factor_correlation}}{Estimated \eqn{\Phi} (identity if unavailable or \code{n_factors == 1}).}
-  \item{\code{last_h2}}{Vector of communalities from the last iteration.}
-  \item{\code{last_psi}}{Vector of uniquenesses from the last iteration.}
-  \item{\code{last_flags}}{List with logical vectors \code{heywood} and \code{near} for the last iteration.}
-  \item{\code{conceptual_analysis}}{If LLM used, a list with:
+  \item{final_structure}{Data frame with the final, thresholded loadings and item labels.}
+  \item{removed_items}{Character vector of removed items, in order.}
+  \item{steps_log}{Data frame with \code{step}, \code{removed_item}, \code{reason}, \code{rmsea} (value at that step).}
+  \item{iterations}{Number of iterations executed.}
+  \item{final_rmsea}{Scaled RMSEA at termination.}
+  \item{bondades_original}{Fit indices returned by \code{EFA_modern}.}
+  \item{specifications}{Model specifications returned by \code{EFA_modern}.}
+  \item{inter_factor_correlation}{Estimated \eqn{\Phi} (identity if unavailable or \code{n_factors == 1}).}
+  \item{last_h2}{Vector of communalities from the last iteration.}
+  \item{last_psi}{Vector of uniquenesses from the last iteration.}
+  \item{last_flags}{List with logical vectors \code{heywood} and \code{near} for the last iteration.}
+  \item{conceptual_analysis}{If LLM used, a list with:
     \describe{
-      \item{\code{removed}}{Named list of justifications for removed items (or \code{NULL}).}
-      \item{\code{kept}}{Named list of justifications for retained items if \code{only_removed = FALSE} (or \code{NULL}).}
-      \item{\code{item_stats}}{Named list of per-item statistics passed to the LLM (primary loading, \eqn{h^2}, removal reason, RMSEA at removal).}
+      \item{removed}{Named list of justifications for removed items (or \code{NULL}).}
+      \item{kept}{Named list of justifications for retained items if \code{only_removed = FALSE} (or \code{NULL}).}
+      \item{item_stats}{Named list of per-item statistics passed to the LLM (primary loading, \eqn{h^2}, removal reason, RMSEA at removal).}
     }
   }
-  \item{\code{config_used}}{Echo of \code{thresholds}, \code{model_config}, \code{use_ai_analysis}, and \code{ai_config} (including \code{language} and \code{analysis_detail}).}
+  \item{config_used}{Echo of \code{thresholds}, \code{model_config}, \code{use_ai_analysis}, and \code{ai_config} (including \code{language} and \code{analysis_detail}).}
 }
 }
 

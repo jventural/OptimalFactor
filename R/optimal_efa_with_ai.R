@@ -16,16 +16,16 @@ optimal_efa_with_ai <- function(data,
                                 api_key = NULL,
                                 item_definitions = NULL,
                                 domain_name = "Dominio por Defecto",
-                                scale_title = "Título de la Escala por Defecto",
+                                scale_title = "T\u00EDtulo de la Escala por Defecto",
                                 construct_definition = "",
                                 model_name = "Modelo EFA",
                                 gpt_model = "gpt-3.5-turbo",
                                 generate_factor_names = FALSE,
                                 ...) {
-  # 1. Instalar/cargar PsyMetricTools si falta
+  # 1. Verificar disponibilidad de PsyMetricTools
   if (!requireNamespace("PsyMetricTools", quietly = TRUE)) {
-    if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
-    devtools::install_github("jventural/PsyMetricTools", force = TRUE)
+    stop("The 'PsyMetricTools' package is required. Install it with: ",
+         "remotes::install_github('jventural/PsyMetricTools')")
   }
 
   # 2. Helpers OpenAI
@@ -43,7 +43,7 @@ optimal_efa_with_ai <- function(data,
           body = jsonlite::toJSON(list(
             model = gpt_model,
             messages = list(
-              list(role = "system", content = "Eres un experto en psicometría y análisis factorial."),
+              list(role = "system", content = "Eres un experto en psicometr\u00EDa y an\u00E1lisis factorial."),
               list(role = "user", content = prompt)
             ),
             temperature = 0.5
@@ -60,13 +60,13 @@ optimal_efa_with_ai <- function(data,
   analyze_item_with_gpt <- function(item, definition, context, action = c("exclude","keep")) {
     act <- match.arg(action)
     if (is.null(definition) || definition == "") {
-      return(if (act == "exclude") "No se proporcionó definición para exclusión."
-             else "No se proporcionó definición para conservación.")
+      return(if (act == "exclude") "No se proporcion\u00F3 definici\u00F3n para exclusi\u00F3n."
+             else "No se proporcion\u00F3 definici\u00F3n para conservaci\u00F3n.")
     }
-    verb <- if (act == "exclude") "exclusión" else "conservación"
+    verb <- if (act == "exclude") "exclusi\u00F3n" else "conservaci\u00F3n"
     prompt <- paste0(
-      "Eres un experto en psicometría. Justifica concisamente la ",
-      verb, " del ítem '", item, "' (\"", definition, "\") ",
+      "Eres un experto en psicometr\u00EDa. Justifica concisamente la ",
+      verb, " del \u00EDtem '", item, "' (\"", definition, "\") ",
       "en el contexto del constructo '", construct_definition,
       "' y la escala '", scale_title, "'. ", context,
       " (Modelo EFA: '", model_name, "')."
@@ -127,10 +127,10 @@ optimal_efa_with_ai <- function(data,
   repeat {
     candidates <- setdiff(items, c(exclude_items, removed_items))
     if (length(candidates) < n_factors * min_items_per_factor) {
-      if (verbose) cat("No quedan suficientes ítems.\n"); break
+      if (verbose) cat("No quedan suficientes \u00EDtems.\n"); break
     }
     if (step_counter >= max_steps) {
-      if (verbose) cat("Máximo de pasos alcanzado.\n"); break
+      if (verbose) cat("M\u00E1ximo de pasos alcanzado.\n"); break
     }
 
     conv <- TRUE
@@ -143,24 +143,24 @@ optimal_efa_with_ai <- function(data,
         ...
       )
     }, error = function(e) {
-      if (verbose) cat("No convergió:", e$message, "\n")
+      if (verbose) cat("No convergi\u00F3:", e$message, "\n")
       conv <<- FALSE; NULL
     })
     if (!conv) break
     mod <- tmp
 
     curr_rmsea <- mod$Bondades_Original$rmsea.scaled[n_factors]
-    if (verbose) cat("Iteración", step_counter, "- RMSEA:", round(curr_rmsea, 4), "\n")
+    if (verbose) cat("Iteraci\u00F3n", step_counter, "- RMSEA:", round(curr_rmsea, 4), "\n")
 
     ev <- evaluate_structure(mod$result_df)
-    if (verbose) cat("Ítems/factor:", paste(ev$counts, collapse = " | "), "\n")
+    if (verbose) cat("\u00CDtems/factor:", paste(ev$counts, collapse = " | "), "\n")
 
     # reevaluamos con detalle de cross‐loadings
     ev <- evaluate_structure(mod$result_df)
     if (!is.na(curr_rmsea) &&
         curr_rmsea <= threshold_rmsea &&
         all(ev$ok)) {
-      if (verbose) cat("RMSEA bajo umbral y sin ítems cross‐loading; refinamiento finalizado.\n")
+      if (verbose) cat("RMSEA bajo umbral y sin \u00EDtems cross\u2010loading; refinamiento finalizado.\n")
       break
     }
 
@@ -193,7 +193,7 @@ optimal_efa_with_ai <- function(data,
             rmsea = best_val,
             stringsAsFactors = FALSE
           ))
-          if (verbose) cat("Removido", best, "→ RMSEA:", round(best_val, 4), "\n")
+          if (verbose) cat("Removido", best, "\u2192 RMSEA:", round(best_val, 4), "\n")
           next
         }
       }
@@ -202,7 +202,7 @@ optimal_efa_with_ai <- function(data,
 
     ev <- evaluate_structure(mod$result_df)
     if (all(ev$ok)) {
-      if (verbose) cat("Estructura OK pero no cumple mínimos; deteniendo.\n")
+      if (verbose) cat("Estructura OK pero no cumple m\u00EDnimos; deteniendo.\n")
       break
     }
     prob_idx <- which(!ev$ok)
@@ -271,11 +271,11 @@ optimal_efa_with_ai <- function(data,
       }), collapse = " ; "
     )
     prompt_names <- paste0(
-      "Eres un experto en psicometría. Basándote en esta estructura EFA, ",
-      "propón nombres breves (1-2 palabras) para cada factor en formato R, ",
+      "Eres un experto en psicometr\u00EDa. Bas\u00E1ndote en esta estructura EFA, ",
+      "prop\u00F3n nombres breves (1-2 palabras) para cada factor en formato R, ",
       "por ejemplo list(f1='Nombre1',f2='Nombre2',...). ",
-      "Los ítems y sus definiciones por factor son: ", ctx_names, ".",
-      "Además, considera el dominio '", domain_name, "'."
+      "Los \u00EDtems y sus definiciones por factor son: ", ctx_names, ".",
+      "Adem\u00E1s, considera el dominio '", domain_name, "'."
     )
     resp_n <- call_openai_api(prompt_names)
     cont_n <- httr::content(resp_n)$choices[[1]]$message$content

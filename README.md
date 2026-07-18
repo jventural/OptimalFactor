@@ -24,6 +24,8 @@ You can install the latest version of OptimalFactor from GitHub:
 if (!require("devtools")) {
   install.packages("devtools")
 }
+# PsyMetricTools (required dependency, not yet on CRAN):
+devtools::install_github("jventural/PsyMetricTools")
 devtools::install_github("jventural/OptimalFactor")
 ```
 
