@@ -118,8 +118,16 @@ efa_boosting <- function(data,
   thresholds <- modifyList(default_thresholds, thresholds)
   default_perf <- list(max_candidates_eval=12, smart_pruning=TRUE,
                         timeout_efa=30, timeout_optimization=120, use_timeouts=FALSE,
-                        emit_progress=TRUE)
+                        emit_progress=TRUE,
+                        # Al evaluar un candidato solo se lee la solucion de
+                        # n_factors, de modo que ajustar tambien las de 1..k-1 es
+                        # trabajo descartado. FALSE restaura el comportamiento
+                        # previo a 1.3.0 (util para verificar equivalencia).
+                        fit_target_only=TRUE)
   performance <- modifyList(default_perf, performance)
+  # Solo se aplica a la evaluacion de candidatos, nunca al modelo vigente: ese
+  # ultimo se devuelve al usuario con su tabla de bondades completa.
+  only_tgt <- isTRUE(performance$fit_target_only)
   default_model <- list(estimator="WLSMV", rotation="oblimin")
   model_config <- modifyList(default_model, model_config)
   default_global <- list(max_drop=2, max_global_combinations=5000, verbose=TRUE, progress_bar=TRUE)
@@ -712,14 +720,14 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
               .of_efa_modern(
                 data=data, n_factors=n_factors, n_items=n_items, name_items=name_items,
                 estimator=model_config$estimator, rotation=model_config$rotation,
-                apply_threshold=FALSE, exclude_items=c(base_excluded, subset_excl), ...
+                apply_threshold=FALSE, exclude_items=c(base_excluded, subset_excl), only_target=only_tgt, ...
               )
             }, timeout=performance$timeout_efa, onTimeout="error")
           } else {
             .of_efa_modern(
               data=data, n_factors=n_factors, n_items=n_items, name_items=name_items,
               estimator=model_config$estimator, rotation=model_config$rotation,
-              apply_threshold=FALSE, exclude_items=c(base_excluded, subset_excl), ...
+              apply_threshold=FALSE, exclude_items=c(base_excluded, subset_excl), only_target=only_tgt, ...
             )
           }
         }, error=function(e) NULL)
@@ -1012,14 +1020,14 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
                 .of_efa_modern(
                   data=data, n_factors=n_factors, n_items=n_items, name_items=name_items,
                   estimator=model_config$estimator, rotation=model_config$rotation,
-                  apply_threshold=FALSE, exclude_items=c(exclude_items, removed_items, it), ...
+                  apply_threshold=FALSE, exclude_items=c(exclude_items, removed_items, it), only_target=only_tgt, ...
                 )
               }, timeout=performance$timeout_efa, onTimeout="error")
             } else {
               .of_efa_modern(
                 data=data, n_factors=n_factors, n_items=n_items, name_items=name_items,
                 estimator=model_config$estimator, rotation=model_config$rotation,
-                apply_threshold=FALSE, exclude_items=c(exclude_items, removed_items, it), ...
+                apply_threshold=FALSE, exclude_items=c(exclude_items, removed_items, it), only_target=only_tgt, ...
               )
             }
           }, error=function(e) NULL)

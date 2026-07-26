@@ -21,6 +21,7 @@ simulate_recovery(
   seed = 2026,
   verbose = TRUE,
   n_cores = 1,
+  timeout = 120,
   ...
 )
 
@@ -65,6 +66,12 @@ condition. Default 1 (sequential). A crossed design is hundreds of
 minutes and hours; \code{parallel::detectCores() - 1} is a practical
 choice. The datasets are always generated sequentially from \code{seed},
 so results do not depend on the number of cores.}
+
+\item{timeout}{Seconds allowed per replication. Default 120; \code{NULL}
+removes the cap. A single pathological dataset can otherwise grind for many
+minutes and stall the condition it belongs to. A capped replication is
+recorded with \code{stop_reason = "timeout"}. Needs the \code{R.utils}
+package.}
 
 \item{...}{Ignored.}
 

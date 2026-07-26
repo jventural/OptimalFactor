@@ -57,6 +57,11 @@
 #'   minutes and hours; \code{parallel::detectCores() - 1} is a practical
 #'   choice. The datasets are always generated sequentially from \code{seed},
 #'   so results do not depend on the number of cores.
+#' @param timeout Seconds allowed per replication. Default 120; \code{NULL}
+#'   removes the cap. A single pathological dataset can otherwise grind for many
+#'   minutes and stall the condition it belongs to. A capped replication is
+#'   recorded with \code{stop_reason = "timeout"}. Needs the \code{R.utils}
+#'   package.
 #' @param ... Further arguments passed to \code{\link{efa_boosting}}, e.g.
 #'   \code{thresholds = list(min_omega = 0.70)}.
 #'
@@ -85,7 +90,7 @@ simulate_recovery <- function(n = 500, loading = 0.65, items_per_factor = 5,
                               n_low = 1, low_loading = 0.20,
                               n_categories = 5, skew = c("symmetric", "skewed"),
                               n_reps = 100, seed = 2026, verbose = TRUE,
-                              n_cores = 1, ...) {
+                              n_cores = 1, timeout = 120, ...) {
   skew <- match.arg(skew)
   cl <- match.call()
   conditions <- expand.grid(n = n, loading = loading,
@@ -97,9 +102,8 @@ simulate_recovery <- function(n = 500, loading = 0.65, items_per_factor = 5,
   use_par <- n_cores > 1 && requireNamespace("parallel", quietly = TRUE)
   clu <- NULL
   if (use_par) {
-    clu <- parallel::makePSOCKcluster(min(n_cores, parallel::detectCores()))
+    clu <- .of_start_cluster(n_cores, n_tasks = n_reps, verbose = verbose)
     on.exit(parallel::stopCluster(clu), add = TRUE)
-    parallel::clusterEvalQ(clu, requireNamespace("OptimalFactor", quietly = TRUE))
   }
   dots <- list(...)
 
@@ -113,27 +117,22 @@ simulate_recovery <- function(n = 500, loading = 0.65, items_per_factor = 5,
                                 n_low = n_low, low_loading = low_loading)
     pop_last <- pop
     if (verbose)
-      cat(sprintf("Condition %d/%d: N=%d, lambda=%.2f, items/factor=%d (%d items total)\n",
-                  ci, nrow(conditions), cnd$n, cnd$loading, cnd$items_per_factor,
-                  nrow(pop$lambda)))
+      .of_say("Condition %d/%d: N=%d, lambda=%.2f, items/factor=%d (%d items total)",
+              ci, nrow(conditions), cnd$n, cnd$loading, cnd$items_per_factor,
+              nrow(pop$lambda))
 
     # The datasets are drawn sequentially so the design is reproducible from
     # 'seed' regardless of how many cores fit them afterwards.
     datasets <- lapply(seq_len(n_reps), function(r)
       .of_simulate_ordinal(pop$sigma, cnd$n, n_categories, skew,
                            colnames_prefix = "IT"))
-    fit_one <- .of_make_fit_worker(n_factors, dots, remote = use_par)
+    fit_one <- .of_make_fit_worker(n_factors, dots, remote = use_par,
+                                   timeout = timeout)
 
-    if (use_par) {
-      fits <- parallel::parLapply(clu, datasets, fit_one)
+    fits <- if (use_par) {
+      .of_cluster_lapply(clu, datasets, fit_one, verbose = verbose)
     } else {
-      fits <- vector("list", n_reps)
-      for (r in seq_len(n_reps)) {
-        # fits[[r]] <- NULL would delete the slot instead of filling it, and a
-        # failed replication returns exactly NULL.
-        fits[r] <- list(fit_one(datasets[[r]]))
-        if (verbose && r %% 10 == 0) cat(sprintf("\r  replication %d/%d", r, n_reps))
-      }
+      .of_serial_lapply(datasets, fit_one, verbose = verbose)
     }
 
     for (r in seq_len(n_reps)) {
@@ -156,7 +155,6 @@ simulate_recovery <- function(n = 500, loading = 0.65, items_per_factor = 5,
       }
       reps[[length(reps) + 1]] <- row
     }
-    if (verbose) cat("\r  done                    \n")
   }
 
   replications <- do.call(rbind, reps)
@@ -184,8 +182,9 @@ simulate_recovery <- function(n = 500, loading = 0.65, items_per_factor = 5,
 
 # Fitting closure with a deliberately small environment: only the arguments the
 # fit needs travel to the cluster, not the datasets held by the calling frame.
-.of_make_fit_worker <- function(n_factors, dots, remote = FALSE) {
-  force(n_factors); force(dots); force(remote)
+.of_make_fit_worker <- function(n_factors, dots, remote = FALSE, timeout = NULL) {
+  force(n_factors); force(remote)
+  args <- .of_fit_args(dots, timeout)
   function(dat) {
     # A PSOCK worker has to address the package by name, but in-process the
     # namespace resolves lexically. The distinction matters: under
@@ -195,8 +194,7 @@ simulate_recovery <- function(n = 500, loading = 0.65, items_per_factor = 5,
     suppressWarnings(tryCatch(
       do.call(FUN,
               c(list(data = dat, name_items = "IT", n_factors = n_factors,
-                     verbose = FALSE,
-                     performance = list(emit_progress = FALSE)), dots)),
+                     verbose = FALSE), args)),
       error = function(e) NULL))
   }
 }
@@ -342,11 +340,22 @@ plot.simulate_recovery <- function(x, metric = c("recovery_rate", "sensitivity",
   if (!requireNamespace("ggplot2", quietly = TRUE))
     stop("Package 'ggplot2' is needed to plot a recovery simulation.")
 
-  d <- x$summary
+  .of_recovery_plot(x$summary, metric, reference, x$n_reps,
+                    sprintf("EFA-Boosting recovery (%d replications per condition)",
+                            x$n_reps))
+}
+
+# The drawing itself, shared by the exploratory and confirmatory simulations:
+# the same crossed design, so the same figure.
+.of_recovery_plot <- function(d, metric, reference, n_reps, title) {
+  if (!requireNamespace("ggplot2", quietly = TRUE))
+    stop("Package 'ggplot2' is needed to plot a recovery simulation.")
   if (!metric %in% names(d)) stop("Metric '", metric, "' is not in the summary.")
+
   d$value   <- d[[metric]]
   d$loading <- factor(d$loading)
-  is_rate   <- metric != "mean_retained"
+  # Counts are not proportions: they get no 0-1 axis and no reference line.
+  is_rate   <- !metric %in% c("mean_retained", "mean_covs_added")
 
   p <- ggplot2::ggplot(d, ggplot2::aes(x = n, y = value,
                                        colour = loading, group = loading))
@@ -357,9 +366,7 @@ plot.simulate_recovery <- function(x, metric = c("recovery_rate", "sensitivity",
     ggplot2::geom_line(linewidth = 0.8) +
     ggplot2::geom_point(size = 2.2) +
     ggplot2::labs(x = "Sample size", y = gsub("_", " ", metric),
-                  colour = "Loading",
-                  title = sprintf("EFA-Boosting recovery (%d replications per condition)",
-                                  x$n_reps)) +
+                  colour = "Loading", title = title) +
     ggplot2::theme_minimal(base_size = 12) +
     ggplot2::theme(panel.grid.minor = ggplot2::element_blank())
   if (is_rate) p <- p + ggplot2::scale_y_continuous(limits = c(0, 1))

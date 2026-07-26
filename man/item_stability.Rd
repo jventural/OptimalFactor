@@ -10,11 +10,12 @@ item_stability(
   name_items,
   n_factors = 3,
   R = 100,
-  method = c("bootstrap", "subsample"),
+  method = c("subsample", "bootstrap"),
   subsample_frac = 0.8,
   reference = NULL,
   seed = 2026,
   n_cores = 1,
+  timeout = 120,
   verbose = TRUE,
   ...
 )
@@ -31,8 +32,22 @@ item_stability(
 \item{R}{Number of resamples. Default 100. Runtime is roughly \code{R} times
 the cost of a single \code{efa_boosting()} call, so start small.}
 
-\item{method}{Resampling scheme: \code{"bootstrap"} (default) or
-\code{"subsample"}.}
+\item{method}{Resampling scheme: \code{"subsample"} (default) or
+  \code{"bootstrap"}.
+
+  Subsampling without replacement is the default because it is what the
+  stability selection literature uses (Meinshausen & Buhlmann, 2010) and
+  because resampling with replacement damages ordinal data specifically:
+  duplicated cases distort the polychoric correlations and thresholds the
+  estimator depends on. On a sample of 100 a bootstrap draw can leave 63
+  distinct cases, and the near singular matrix that follows sends WLSMV into
+  fits that run for minutes. Measured on \code{Data_Personality} with
+  \code{R = 40} over 8 cores: 5m46s with 3 replications hitting the timeout
+  under bootstrap, against 2m31s with none under subsampling.
+
+  The cost is that each replication sees \code{subsample_frac} of the data,
+  so the instability reported is mildly conservative: it errs towards calling
+  a decision unstable, never towards endorsing one.}
 
 \item{subsample_frac}{Fraction of rows drawn when \code{method =
 "subsample"}. Default 0.8.}
@@ -46,6 +61,14 @@ internally.}
 \item{n_cores}{Number of parallel workers. Default 1 (sequential). Values
 above 1 use a PSOCK cluster and require the package to be installed, not
 merely loaded with \code{pkgload::load_all()}.}
+
+\item{timeout}{Seconds allowed per replication. Default 120; \code{NULL}
+removes the cap. Resampling puts the pipeline on datasets nobody would
+analyse by hand: a bootstrap draw of \code{N = 100} can repeat rows until
+only 63 remain distinct, and a WLSMV fit on such a sample can grind for
+many minutes while every other replication waits. A capped replication
+returns the best model reached so far, with \code{stop_reason = "timeout"},
+and is counted in the printed summary. Needs the \code{R.utils} package.}
 
 \item{verbose}{Print a progress line per replication. Default \code{TRUE}.}
 

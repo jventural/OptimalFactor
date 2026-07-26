@@ -96,13 +96,28 @@
 # Drop-in replacement for PsyMetricTools::EFA_modern().
 .of_efa_modern <- function(n_factors, n_items, name_items, data,
                            apply_threshold = FALSE, estimator = "WLSMV",
-                           rotation = "oblimin", exclude_items = NULL, ...) {
+                           rotation = "oblimin", exclude_items = NULL,
+                           only_target = FALSE, ...) {
   modelos <- .of_generate_models(n_factors = n_factors, n_items = n_items,
                                  name_items = name_items,
                                  exclude_items = exclude_items)
-  Specifications <- .of_specification_models(modelos, data = data,
-                                             estimator = estimator,
-                                             rotation = rotation, ...)
+
+  if (only_target) {
+    # Candidate evaluation reads the n_factors solution and nothing else, so the
+    # 1..n_factors-1 models are fitted and thrown away. Skipping them leaves the
+    # returned object with the same shape: the unused slots stay empty and the
+    # fit table keeps one row per number of factors, with NA where no model was
+    # fitted, so Bondades_Original[[index]][n_factors] still resolves.
+    fitted_target <- .of_specification_models(modelos[n_factors], data = data,
+                                              estimator = estimator,
+                                              rotation = rotation, ...)
+    Specifications <- vector("list", n_factors)
+    Specifications[[n_factors]] <- fitted_target[[1L]]
+  } else {
+    Specifications <- .of_specification_models(modelos, data = data,
+                                               estimator = estimator,
+                                               rotation = rotation, ...)
+  }
   list(
     Bondades_Original = .of_extract_fit_measures(Specifications),
     Specifications    = Specifications,

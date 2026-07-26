@@ -34,8 +34,22 @@
 #' @param n_factors Number of factors to extract. Default 3.
 #' @param R Number of resamples. Default 100. Runtime is roughly \code{R} times
 #'   the cost of a single \code{efa_boosting()} call, so start small.
-#' @param method Resampling scheme: \code{"bootstrap"} (default) or
-#'   \code{"subsample"}.
+#' @param method Resampling scheme: \code{"subsample"} (default) or
+#'   \code{"bootstrap"}.
+#'
+#'   Subsampling without replacement is the default because it is what the
+#'   stability selection literature uses (Meinshausen & Buhlmann, 2010) and
+#'   because resampling with replacement damages ordinal data specifically:
+#'   duplicated cases distort the polychoric correlations and thresholds the
+#'   estimator depends on. On a sample of 100 a bootstrap draw can leave 63
+#'   distinct cases, and the near singular matrix that follows sends WLSMV into
+#'   fits that run for minutes. Measured on \code{Data_Personality} with
+#'   \code{R = 40} over 8 cores: 5m46s with 3 replications hitting the timeout
+#'   under bootstrap, against 2m31s with none under subsampling.
+#'
+#'   The cost is that each replication sees \code{subsample_frac} of the data,
+#'   so the instability reported is mildly conservative: it errs towards calling
+#'   a decision unstable, never towards endorsing one.
 #' @param subsample_frac Fraction of rows drawn when \code{method =
 #'   "subsample"}. Default 0.8.
 #' @param reference Optional \code{efa_boosting()} result on the full sample,
@@ -45,6 +59,13 @@
 #' @param n_cores Number of parallel workers. Default 1 (sequential). Values
 #'   above 1 use a PSOCK cluster and require the package to be installed, not
 #'   merely loaded with \code{pkgload::load_all()}.
+#' @param timeout Seconds allowed per replication. Default 120; \code{NULL}
+#'   removes the cap. Resampling puts the pipeline on datasets nobody would
+#'   analyse by hand: a bootstrap draw of \code{N = 100} can repeat rows until
+#'   only 63 remain distinct, and a WLSMV fit on such a sample can grind for
+#'   many minutes while every other replication waits. A capped replication
+#'   returns the best model reached so far, with \code{stop_reason = "timeout"},
+#'   and is counted in the printed summary. Needs the \code{R.utils} package.
 #' @param verbose Print a progress line per replication. Default \code{TRUE}.
 #' @param ... Further arguments passed to \code{\link{efa_boosting}}, e.g.
 #'   \code{thresholds = list(min_omega = 0.80)} or \code{use_global = TRUE}.
@@ -76,9 +97,10 @@
 #'   \code{\link{simulate_recovery}}
 #' @export
 item_stability <- function(data, name_items, n_factors = 3, R = 100,
-                           method = c("bootstrap", "subsample"),
+                           method = c("subsample", "bootstrap"),
                            subsample_frac = 0.8, reference = NULL,
-                           seed = 2026, n_cores = 1, verbose = TRUE, ...) {
+                           seed = 2026, n_cores = 1, timeout = 120,
+                           verbose = TRUE, ...) {
   method <- match.arg(method)
   cl <- match.call()
   N <- nrow(data)
@@ -86,18 +108,15 @@ item_stability <- function(data, name_items, n_factors = 3, R = 100,
 
   # Only genuine errors kill a replication: lavaan routinely warns about
   # non-positive-definite matrices with ordinal data and those runs are usable.
-  run_one <- function(idx) {
-    suppressWarnings(tryCatch(
-      efa_boosting(data = data[idx, , drop = FALSE], name_items = name_items,
-                   n_factors = n_factors, verbose = FALSE,
-                   performance = list(emit_progress = FALSE), ...),
-      error = function(e) NULL))
-  }
+  dots    <- list(...)
+  use_par <- n_cores > 1 && requireNamespace("parallel", quietly = TRUE)
+  run_one <- .of_make_resample_worker(data, name_items, n_factors, dots,
+                                      remote = FALSE, timeout = timeout)
 
   # Reference solution on the complete sample: defines the factor labels every
   # replication is aligned to.
   if (is.null(reference)) {
-    if (verbose) cat("Fitting the reference solution on the full sample...\n")
+    if (verbose) .of_say("Fitting the reference solution on the full sample...")
     reference <- run_one(seq_len(N))
   }
   if (is.null(reference)) stop("The reference EFA-Boosting run failed; check the data and arguments.")
@@ -113,31 +132,28 @@ item_stability <- function(data, name_items, n_factors = 3, R = 100,
   draws  <- lapply(seq_len(R), function(r)
     sample.int(N, n_draw, replace = (method == "bootstrap")))
 
-  if (n_cores > 1 && requireNamespace("parallel", quietly = TRUE)) {
-    clu <- parallel::makePSOCKcluster(min(n_cores, parallel::detectCores()))
+  if (use_par) {
+    clu <- .of_start_cluster(n_cores, n_tasks = R, verbose = verbose)
     on.exit(parallel::stopCluster(clu), add = TRUE)
-    parallel::clusterEvalQ(clu, requireNamespace("OptimalFactor", quietly = TRUE))
-    dots <- list(...)
-    parallel::clusterExport(clu, varlist = c("data", "name_items", "n_factors", "dots"),
-                            envir = environment())
-    fits <- parallel::parLapply(clu, draws, function(idx) {
-      suppressWarnings(tryCatch(
-        do.call(OptimalFactor::efa_boosting,
-                c(list(data = data[idx, , drop = FALSE], name_items = name_items,
-                       n_factors = n_factors, verbose = FALSE,
-                       performance = list(emit_progress = FALSE)), dots)),
-        error = function(e) NULL))
-    })
+    if (verbose)
+      .of_say("Fitting %d resamples on %d cores...", R, length(clu))
+    fits <- .of_cluster_lapply(
+      clu, draws,
+      .of_make_resample_worker(data, name_items, n_factors, dots, remote = TRUE,
+                               timeout = timeout),
+      verbose = verbose)
   } else {
-    fits <- vector("list", R)
-    for (r in seq_len(R)) {
-      # fits[[r]] <- NULL would drop the slot rather than fill it, and a failed
-      # replication returns exactly NULL, so the counter below never saw one.
-      fits[r] <- list(run_one(draws[[r]]))
-      if (verbose) cat(sprintf("\r  replication %d/%d (%d failed)", r, R,
-                               sum(vapply(fits[seq_len(r)], is.null, logical(1)))))
-    }
-    if (verbose) cat("\n")
+    if (verbose) .of_say("Fitting %d resamples sequentially...", R)
+    fits <- .of_serial_lapply(draws, run_one, verbose = verbose)
+  }
+  n_timeout <- sum(vapply(fits, function(f)
+    !is.null(f) && identical(as.character(f$stop_reason), "timeout"), logical(1)))
+  if (verbose) {
+    .of_say("  %d of %d resamples converged.",
+            sum(!vapply(fits, is.null, logical(1))), R)
+    if (n_timeout)
+      .of_say("  %d hit the %g s cap and report the model reached so far.",
+              n_timeout, timeout)
   }
 
   ok    <- !vapply(fits, is.null, logical(1))
@@ -193,10 +209,29 @@ item_stability <- function(data, name_items, n_factors = 3, R = 100,
     R            = R,
     n_valid      = n_ok,
     n_failed     = R - n_ok,
+    n_timeout    = n_timeout,
+    timeout      = timeout,
     call         = cl
   )
   class(out) <- "item_stability"
   out
+}
+
+# Fitting closure for one resample. The data travels inside the closure, which
+# is cheap for the sample sizes psychometrics works with; see .of_make_fit_worker
+# for why the package is addressed by name only when the call runs on a worker.
+.of_make_resample_worker <- function(data, name_items, n_factors, dots,
+                                     remote = FALSE, timeout = NULL) {
+  force(data); force(name_items); force(n_factors); force(remote)
+  args <- .of_fit_args(dots, timeout)
+  function(idx) {
+    FUN <- if (remote) OptimalFactor::efa_boosting else efa_boosting
+    suppressWarnings(tryCatch(
+      do.call(FUN, c(list(data = data[idx, , drop = FALSE],
+                          name_items = name_items, n_factors = n_factors,
+                          verbose = FALSE), args)),
+      error = function(e) NULL))
+  }
 }
 
 # Item -> primary factor map from a final_structure data frame.

@@ -65,6 +65,8 @@ reference:
   - item_stability
   - simulate_recovery
   - plot.simulate_recovery
+  - simulate_cfa_recovery
+  - plot.simulate_cfa_recovery
 
 - title: Results Display
   desc: Functions for displaying and exporting results

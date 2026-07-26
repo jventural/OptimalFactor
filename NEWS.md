@@ -24,7 +24,13 @@
   capitalization-on-chance objection (MacCallum, Roznowski & Necowitz, 1992):
   an item dropped in 97 of 100 resamples is a defensible decision, one
   dropped in 55 is not. Ships with a `print` method that flags decisions
-  taken in 25–75 % of resamples as unstable.
+  taken in 25–75 % of resamples as unstable. Resampling defaults to
+  `method = "subsample"`: drawing with replacement duplicates cases, which
+  distorts the polychoric correlations ordinal estimation relies on, and on a
+  sample of 100 leaves as few as 63 distinct cases, enough to send a WLSMV fit
+  grinding for minutes. Measured on `Data_Personality` with `R = 40` over 8
+  cores, bootstrap took 5m46s with 3 replications hitting the cap against
+  2m31s with none under subsampling.
 
 * **`simulate_recovery()`**: Monte Carlo evidence on when the pipeline
   recovers a known structure. Simulates ordinal data from a population model
@@ -37,6 +43,76 @@
   `print` and `plot` methods. `plot()` draws the recovery curve against sample
   size, one line per population loading and one panel per number of items per
   factor, which is the figure a validation paper reports.
+
+* **`simulate_cfa_recovery()`**: the confirmatory counterpart, running the same
+  population model through `cfa_boosting()`. The question is not the same one:
+  the structure is imposed rather than discovered, so the assignment cannot be
+  wrong and what is measured is the item selection. Reports `exact_rate` (the
+  removed set equals the contaminated set item for item), sensitivity,
+  specificity and `mean_covs_added`, the residual covariances introduced where
+  the population has none, which turns the MacCallum et al. (1992) objection
+  into a number.
+
+## Progress, timeouts and parallel robustness
+
+Resampling exposed three things that made these functions unusable in practice
+rather than merely slow.
+
+* **Progress is now reported while a cluster works.** The parallel branch used
+  to print nothing at all, which is indistinguishable from a hung session.
+  Both simulations and `item_stability()` now print a bar with elapsed time and
+  an estimate of what is left, announce the cluster starting up, and say in
+  advance whether the bar will advance per round or jump at the end. Status
+  lines go through `flush.console()`, without which the R console holds them
+  until the computation ends.
+* **`timeout` (default 120 s per replication)** in `item_stability()`,
+  `simulate_recovery()` and `simulate_cfa_recovery()`. A bootstrap draw of
+  N = 100 can leave 63 distinct cases, and a WLSMV fit on the near singular
+  matrix that follows runs for minutes: measured, one such replication passed
+  180 s without finishing, while the same one capped returns in 69 s. One
+  replication like that stalls an entire run. Capped replications are counted
+  and reported rather than hidden.
+* **Workers never outnumber tasks**, and the master's `.libPaths()` is pushed
+  to them before loading the package, so a session that added a library at
+  runtime (RStudio project libraries, `renv`) does not produce workers that
+  cannot find OptimalFactor. That failure previously surfaced as an opaque
+  `checkForRemoteErrors()` message, because the guard tested for an error while
+  `requireNamespace(quietly = TRUE)` merely returns `FALSE`.
+
+## Performance
+
+* **`performance$fit_target_only`** (default `TRUE`) in `efa_boosting()`.
+  Evaluating a candidate reads only the `n_factors` solution, yet the engine
+  fitted the 1..k-1 solutions as well and discarded them. Verified identical on
+  `Data_Personality` and `Data_Expectativas` (structure, removed items, stop
+  reason, RMSEA, omega and the fit table), with 38 % fewer lavaan fits and a
+  1.43x speedup where the greedy loop evaluates candidates. `FALSE` restores
+  the previous behaviour.
+* Cluster work is dispatched with `parLapplyLB`: replication times are heavy
+  tailed, so load balancing matters more than it would with uniform tasks.
+
+## Bug fixes
+
+* `fits[[r]] <- NULL` deleted the slot instead of filling it, and a failed
+  replication returns exactly `NULL`. Any condition where a replication failed
+  aborted with a subscript error; the same idiom in `item_stability()` kept its
+  progress counter permanently at "0 failed".
+* The fitting workers addressed `OptimalFactor::efa_boosting` even when running
+  in process, which fails under `devtools::load_all()` because nothing is
+  exported yet. The error was swallowed and every replication was recorded as a
+  silent non-convergence, a result that looked like evidence.
+* The skewed response thresholds were not cumulative proportions, so the skew
+  came out reversed with about 70 % of responses in the top category.
+* Passing `performance` through `...` to the resampling functions raised
+  "formal argument matched by multiple actual arguments" instead of overriding
+  the defaults. It is now merged.
+
+## Tests
+
+* The package ships `tests/testthat` for the first time: 170 checks over the
+  population model, the ordinal simulation, factor alignment, recovery scoring
+  for both pipelines, the progress helpers and the timeout translation, with
+  regression tests for each of the fixes above.
 
 ## Reliability floor
 

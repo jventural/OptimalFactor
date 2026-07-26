@@ -1,7 +1,4 @@
 test_that("the failure counter reports the resamples that actually failed", {
-  # Regression test. `fits[[r]] <- NULL` removes the slot instead of filling it,
-  # so the NULLs vanished before they could be counted and the progress line
-  # always claimed "(0 failed)" no matter how many resamples had died.
   perfect <- data.frame(Items = paste0("IT", 1:6),
                         f1 = c(.7, .7, .7, 0, 0, 0),
                         f2 = c(0, 0, 0, .7, .7, .7))
@@ -21,7 +18,7 @@ test_that("the failure counter reports the resamples that actually failed", {
     st <- item_stability(dat, name_items = "IT", n_factors = 2, R = 3,
                          verbose = TRUE)
   )
-  expect_true(any(grepl("2 failed", out)))
+  expect_true(any(grepl("1 of 3 resamples converged", out)))
   expect_equal(st$n_valid, 1L)
   expect_equal(st$n_failed, 2L)
 })
