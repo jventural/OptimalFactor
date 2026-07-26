@@ -35,7 +35,12 @@ efa_boosting <- function(data,
                            use_timeouts = FALSE,
                            # Si TRUE, emite message() por cada candidato evaluado para
                            # que Shiny/consola muestren progreso en tiempo real.
-                           emit_progress = TRUE
+                           emit_progress = TRUE,
+                           # Al evaluar un candidato solo se lee la solucion de
+                           # n_factors, de modo que ajustar tambien las de 1..k-1
+                           # es trabajo descartado. FALSE restaura el
+                           # comportamiento previo a 1.3.0.
+                           fit_target_only = TRUE
                          ),
                          # ACTIVADOR EXPLÍCITO: GLOBAL vs GREEDY
                          use_global = FALSE,  # FALSE = solo greedy; TRUE = activa b\u00FAsqueda global (con barra)

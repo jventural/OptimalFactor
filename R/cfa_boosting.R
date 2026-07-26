@@ -7,7 +7,13 @@ cfa_boosting <- function(data,
                            min_items_per_factor = 3,
                            rmsea_target = 0.08,
                            cfi_target = 0.95,
-                           srmr_target = 0.08
+                           srmr_target = 0.08,
+                           # Admisibilidad, no ajuste: un item por debajo del
+                           # piso o que carga en un factor ajeno se elimina
+                           # aunque los targets ya se cumplan.
+                           enforce_loading = TRUE,
+                           cross_loading = 0.30,
+                           enforce_simple_structure = TRUE
                          ),
                          # Configuración de modelo
                          model_config = list(

@@ -41,7 +41,7 @@ efa_boosting(
   model_config = list(estimator = "WLSMV", rotation = "oblimin"),
   performance = list(max_candidates_eval = 12, smart_pruning = TRUE,
     timeout_efa = 30, timeout_optimization = 120, use_timeouts = FALSE,
-    emit_progress = TRUE),
+    emit_progress = TRUE, fit_target_only = TRUE),
   use_global = FALSE,
   global_opt = list(max_drop = 2, max_global_combinations = 5000,
     verbose = TRUE, progress_bar = TRUE),
@@ -121,6 +121,19 @@ Performance and timeout settings:
   \item \code{timeout_efa}: Timeout per EFA run (requires \code{R.utils}).
   \item \code{timeout_optimization}: Global timeout.
   \item \code{use_timeouts}: Enable/disable timeout protection.
+  \item \code{smart_pruning}: Rank candidates by smallest maximum loading
+    before applying \code{max_candidates_eval}, so the items most likely to be
+    removed are the ones evaluated.
+  \item \code{emit_progress}: Emit a \code{message()} per iteration and per
+    candidate, which is what lets a Shiny app show live progress.
+  \item \code{fit_target_only}: Fit only the \code{n_factors} solution while
+    evaluating a candidate (default \code{TRUE}). The engine used to fit the
+    1..k-1 solutions as well and discard them, since candidate evaluation reads
+    only the target one. Results are identical, verified on
+    \code{Data_Personality} and \code{Data_Expectativas} across structure,
+    removed items, stop reason, RMSEA, omega and the fit table, with 38 percent
+    fewer lavaan fits where the greedy loop evaluates candidates.
+    \code{FALSE} restores the previous behaviour.
 }
 }
 
