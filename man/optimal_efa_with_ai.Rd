@@ -7,7 +7,7 @@ model‐fit criteria (scaled RMSEA) and item‐loading quality, and—when reque
 integrates AI-generated conceptual analyses and factor naming.  At each iteration it:
 \enumerate{
   \item Estimates the specified EFA model on the current set of items.
-  \item Computes the scaled RMSEA and checks whether it is ≤ \code{threshold_rmsea}
+  \item Computes the scaled RMSEA and checks whether it is <= \code{threshold_rmsea}
         and every factor retains at least \code{min_items_per_factor} items.
   \item If fit or structure criteria are not met, identifies and removes the item
         whose exclusion yields the greatest RMSEA improvement or that exhibits
@@ -84,12 +84,12 @@ optimal_efa_with_ai(
   \item{model_name}{Character. Label for the EFA model in AI prompts.}
   \item{gpt_model}{Character. Name of the ChatGPT model to use (e.g., \code{"gpt-3.5-turbo"}).}
   \item{generate_factor_names}{Logical. If \code{TRUE}, triggers factor naming via AI.}
-  \item{\dots}{Additional arguments passed to \code{\link[PsyMetricTools]{EFA_modern}}.}
+  \item{\dots}{Additional arguments passed to the package's internal EFA engine.}
 }
 \details{
 The function proceeds as follows:
 \enumerate{
-  \item Installs and loads \code{PsyMetricTools} if not already available.
+  \item Fits the exploratory models with the package's internal EFA engine.
   \item Determines the initial set of items from \code{items} or from \code{name_items}
         and \code{n_items}.
   \item Enters an iterative loop:
@@ -97,7 +97,7 @@ The function proceeds as follows:
       \item Estimates the EFA model with the current items.
       \item Computes the scaled RMSEA.
       \item Evaluates the factor‐loading structure for cross‐loadings or lack of loadings.
-      \item If RMSEA ≤ \code{threshold_rmsea} and each factor has ≥
+      \item If RMSEA <= \code{threshold_rmsea} and each factor has >=
             \code{min_items_per_factor}, stops.
       \item Otherwise, removes the item whose exclusion most improves RMSEA or that
             has the worst structural issue.
@@ -118,9 +118,9 @@ A list with components:
 \item{iterations}{Integer. Total number of iterations performed.}
 \item{final_rmsea}{Numeric. Final scaled RMSEA after the last iteration.}
 \item{bondades_original}{Original fit indices and other model information from
-                         \code{\link[PsyMetricTools]{EFA_modern}}.}
+                         the package's internal EFA engine.}
 \item{specifications}{Model specifications returned by
-                      \code{\link[PsyMetricTools]{EFA_modern}}.}
+                      the package's internal EFA engine.}
 \item{conceptual_analysis}{A list with elements \code{removed} and \code{kept},
                            each a named list of AI-generated texts per item,
                            or \code{NULL} if \code{analyze_removed = FALSE}.}

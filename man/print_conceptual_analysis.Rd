@@ -49,7 +49,7 @@ If known API error patterns are present (e.g., ``HTTP 503'', ``Rate limit'', ``C
 Headings and status messages are printed in Spanish when \code{resultado$config_used$ai_config$language} is \code{"spanish"} (or \code{"español"}); otherwise, English is used.
 
 \strong{Unicode.}
-The console output includes simple Unicode characters (e.g., box rules, emojis like \verb{📊}, \verb{⚠️}, \verb{❌}).
+The console output includes simple Unicode characters (e.g., box rules, emojis like \verb{a bar chart symbol}, \verb{a warning sign}, \verb{a cross mark}).
 If your console does not support UTF-8, some symbols may render as placeholders.
 }
 

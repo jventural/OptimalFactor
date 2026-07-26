@@ -24,7 +24,7 @@ The function prints to the console in the following order:
   \item “Factor Structure” showing the final loadings/data frame.
   \item “Step Log” displaying the data frame of each removal step.
   \item “Final Fit Indices” printing the \code{bondades_original} object
-    as returned by \code{PsyMetricTools::EFA_modern}.
+    as returned by the package's internal EFA engine.
 }
 }
 \value{

@@ -11,6 +11,7 @@ redundancy_short_form(
   groups = NULL,
   min_per_group = 3,
   threshold = 0.15,
+  min_omega = NULL,
   estimator = "WLSMV",
   ordered = TRUE
 )
@@ -32,15 +33,24 @@ items per group during pruning. Default \code{NULL} (no constraint).}
 \item{threshold}{Residual-correlation stopping threshold when \code{k = NULL}.
 Default 0.15.}
 
+\item{min_omega}{Reliability floor. When set (e.g. \code{0.80}), an item is
+only dropped if the resulting form keeps McDonald's omega at or above this
+value, so the short form cannot buy fit at the cost of internal
+consistency. A scale that already sits below the floor is not frozen: for
+it the effective bar is its current omega, so removals that do not reduce
+reliability are still allowed. \code{NULL} (default) disables the check.}
+
 \item{estimator}{Estimator passed to \code{lavaan::cfa}. Default \code{"WLSMV"}.}
 
 \item{ordered}{Logical; treat items as ordered. Default \code{TRUE}.}
 }
 \value{
 A list with \code{items} (retained items), \code{trajectory} (data
-  frame with n_items, cfi, tli, rmsea, srmr and the item dropped at each step),
-  \code{fit} (final one-factor \code{lavaan} object), \code{loadings}
-  (standardized) and \code{omega} (McDonald's omega of the final form).
+  frame with n_items, cfi, tli, rmsea, srmr, omega and the item dropped at
+  each step), \code{fit} (final one-factor \code{lavaan} object),
+  \code{loadings} (standardized), \code{omega} (McDonald's omega of the final
+  form) and \code{stop_reason} (\code{"target_k"}, \code{"threshold"},
+  \code{"min_items"}, \code{"min_per_group"} or \code{"min_omega"}).
 }
 \description{
 Builds a short form of an (essentially) unidimensional scale by iteratively

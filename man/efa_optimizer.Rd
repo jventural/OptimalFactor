@@ -77,13 +77,13 @@ efa_optimizer(
   \item{item_definitions}{Named list mapping item IDs to plain-language item stems/descriptions used by the LLM.}
 }}
 \item{verbose}{Logical; if \code{TRUE}, prints progress, current structure, counts per factor, and a progress bar during LLM analysis.}
-\item{\dots}{Additional arguments forwarded to \code{PsyMetricTools::EFA_modern()}.}
+\item{\dots}{Additional arguments forwarded to the package's internal EFA engine.}
 }
 
 \details{
 \strong{Iteration logic.}
 \enumerate{
-\item Fit an EFA using \code{PsyMetricTools::EFA_modern} on the current item set (oblique rotation by default).
+\item Fit an EFA using the package's internal EFA engine on the current item set (oblique rotation by default).
 \item Extract the loading matrix \eqn{L} and the factor correlation matrix \eqn{\Phi} (identity if unavailable).
 \item Derive communalities \eqn{h^2 = \mathrm{diag}(L \Phi L')} and uniquenesses \eqn{\psi = 1 - h^2}. Flag:
   \itemize{
@@ -180,5 +180,5 @@ res$final_rmsea
 }
 
 \seealso{
-\code{PsyMetricTools::EFA_modern}
+the package's internal EFA engine
 }

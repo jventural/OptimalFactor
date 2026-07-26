@@ -61,7 +61,7 @@ Each block includes an ASCII axis guide:
   \item CFI: ticks at 0.70, 0.80, 0.90, 0.95, 1.00.
 }
 
-Bars are drawn using \verb{█} and capped at a configurable length (default: 20 characters).
+Bars are drawn using \verb{a full block} and capped at a configurable length (default: 20 characters).
 
 \strong{Item removal log.}
 The stepwise elimination table mirrors \code{steps_log}, formatting available fit indices (RMSEA, SRMR, CFI) to three decimals.
@@ -83,7 +83,7 @@ Extracts the last row of \code{bondades_original} and prints:
 These labels are intended for rapid screening and should be interpreted in context.
 
 \strong{Unicode.}
-The report uses UTF-8 box characters (\verb{█}) and accented text. If your console lacks UTF-8 support, glyphs may degrade.
+The report uses UTF-8 box characters (\verb{a full block}) and accented text. If your console lacks UTF-8 support, glyphs may degrade.
 }
 
 \value{

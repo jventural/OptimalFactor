@@ -451,7 +451,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
 
     converged <- TRUE
     tmp <- tryCatch({
-      PsyMetricTools::EFA_modern(
+      .of_efa_modern(
         data = data, n_factors = n_factors, n_items = n_items,
         name_items = name_items, estimator = model_config$estimator,
         rotation = model_config$rotation, apply_threshold = FALSE,
@@ -570,7 +570,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     if (decision == "rmsea") {
       # RMSEA optimization exigiendo estructura OK en el modelo resultante
       cand_stats <- lapply(candidates, function(it) {
-        m2 <- tryCatch(PsyMetricTools::EFA_modern(
+        m2 <- tryCatch(.of_efa_modern(
           data = data, n_factors = n_factors, n_items = n_items, name_items = name_items,
           estimator = model_config$estimator, rotation = model_config$rotation,
           apply_threshold = FALSE, exclude_items = c(exclude_items, removed_items, it), ...

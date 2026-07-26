@@ -26,7 +26,7 @@ Because \code{print_conceptual_analysis} is bilingual, headings will appear in S
 Text is wrapped at 100 characters per line and per-item technical statistics are always included (primary loading, \eqn{h^2}, RMSEA at removal, and removal reason) when available.
 
 \strong{Encoding and Unicode.}
-Output is forced to UTF-8. Unicode symbols used by \code{print_conceptual_analysis} (e.g., \verb{📊}, \verb{⚠️}, \verb{❌}) will be preserved; ensure your editor is set to UTF-8 to avoid mojibake.
+Output is forced to UTF-8. Unicode symbols used by \code{print_conceptual_analysis} (e.g., \verb{a bar chart symbol}, \verb{a warning sign}, \verb{a cross mark}) will be preserved; ensure your editor is set to UTF-8 to avoid mojibake.
 
 \strong{Side effects and limitations.}
 The function uses \code{sink(file, encoding = "UTF-8")} followed by \code{sink()} to restore the console.

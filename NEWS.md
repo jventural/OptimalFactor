@@ -1,3 +1,61 @@
+# OptimalFactor 1.3.0
+
+## Breaking-free change: no more PsyMetricTools dependency
+
+* **The package no longer depends on `PsyMetricTools`.** Every exploratory
+  model was fitted through `PsyMetricTools::EFA_modern()`, a package that is
+  not on CRAN, which blocked OptimalFactor's own submission. The engine
+  (model syntax → lavaan fit → fit measures → standardized pattern matrix)
+  is now internal (`R/efa_modern_internal.R`) and calls `lavaan::cfa()` with
+  exactly the same arguments (`mimic = "Mplus"`, `ordered = TRUE`), so
+  results are reproduced: on `Data_Personality` the largest loading
+  difference against the old engine is 1.6e-05, which is smaller than the
+  1.9e-05 that lavaan itself produces between two identical runs. The
+  internal version drops the `purrr` and `magrittr` usage of the original
+  and returns a plain `data.frame` instead of a tibble.
+
+## New functions
+
+* **`item_stability()`**: runs the whole `efa_boosting()` pipeline over
+  bootstrap or subsample resamples and reports, per item, the retention and
+  removal rates plus the stability of its factor assignment. Factor labels
+  are aligned to a full-sample reference before agreement is computed, since
+  rotation names factors arbitrarily. This is the empirical answer to the
+  capitalization-on-chance objection (MacCallum, Roznowski & Necowitz, 1992):
+  an item dropped in 97 of 100 resamples is a defensible decision, one
+  dropped in 55 is not. Ships with a `print` method that flags decisions
+  taken in 25–75 % of resamples as unstable.
+
+* **`simulate_recovery()`**: Monte Carlo evidence on when the pipeline
+  recovers a known structure. Simulates ordinal data from a population model
+  with good, cross-loading and weak items, crosses conditions over sample
+  size, loading size and items per factor, and reports recovery rate,
+  sensitivity (contaminated items removed) and specificity (good items
+  kept). Replications are fitted in parallel through `n_cores`, which is what
+  makes a crossed design feasible; the datasets are always drawn sequentially
+  from `seed`, so results do not depend on how many cores ran them. Ships
+  `print` and `plot` methods. `plot()` draws the recovery curve against sample
+  size, one line per population loading and one panel per number of items per
+  factor, which is the figure a validation paper reports.
+
+## Reliability floor
+
+* **`thresholds$min_omega`** in `efa_boosting()` and **`min_omega`** in
+  `redundancy_short_form()`: an item is removed only if every factor keeps
+  McDonald's omega at or above the floor. It is deliberately a constraint and
+  not a term in the loss — reliability is not interpretable in the
+  ill-fitting intermediate models the loss visits, so omega vetoes individual
+  removals instead of trading against the fit indices. A factor already below
+  the floor is not frozen: its effective bar becomes its current omega, so
+  removals that do not reduce reliability remain available. Heywood cases are
+  exempt, because an inadmissible solution must be fixed regardless.
+  `NULL` (default) reproduces the previous behaviour exactly.
+* New stop reason `min_omega_protected`.
+* `efa_boosting()` now always returns `omega_final` (omega per factor) and
+  `omega_check`, whether or not the floor is active.
+* `redundancy_short_form()` gained an `omega` column in its trajectory plus
+  `stop_reason` and `omega_blocked` fields.
+
 # OptimalFactor 1.2.2
 
 ## CRAN readiness

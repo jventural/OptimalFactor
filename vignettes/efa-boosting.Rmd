@@ -23,7 +23,7 @@ The EFA-Boosting algorithm is an iterative optimization procedure designed to fi
 
 ### Step 1: Initial Model Fit
 
-The algorithm starts by fitting an initial EFA model with all items using the `EFA_modern()` function from PsyMetricTools.
+The algorithm starts by fitting an initial EFA model with all items using the package's internal EFA engine, which fits the `efa()` block syntax of lavaan with the requested estimator and rotation.
 
 ### Step 2: Problem Detection
 

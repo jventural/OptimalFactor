@@ -5,7 +5,7 @@
 Automatically refines a user‐specified Confirmatory Factor Analysis (CFA) model by iteratively evaluating fit and modification indices. At each step, the function:
 
 1. Fits the CFA model and computes the scaled RMSEA.
-2. If RMSEA ≤ \code{rmsea_threshold}, stops.
+2. If RMSEA <= \code{rmsea_threshold}, stops.
 3. Otherwise, identifies all modification indices (MI) > \code{mi_threshold}.
 4. Selects the largest MI and compares the standardized loadings for the two involved items; removes the item with the smaller loading.
 5. Records the modification, RMSEA and MI, updates the model syntax by dropping the removed item, and repeats until RMSEA is acceptable, no MI exceed threshold, or \code{max_steps} is reached.
@@ -65,7 +65,7 @@ The function proceeds through these phases:
   \item \strong{Iterative refinement (up to \code{max_steps}):}
     \enumerate{
       \item Fit the current CFA model.
-      \item Compute scaled RMSEA; if ≤ \code{rmsea_threshold}, stop.
+      \item Compute scaled RMSEA; if <= \code{rmsea_threshold}, stop.
       \item Extract all MI > \code{mi_threshold}; if none, stop.
       \item Select the single largest MI, compare the two involved items’ standardized loadings, and remove the item with the lower loading.
       \item Update the model syntax by dropping that item and log the step.

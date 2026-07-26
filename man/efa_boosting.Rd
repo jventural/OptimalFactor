@@ -37,7 +37,7 @@ efa_boosting(
   exclude_items = NULL,
   thresholds = list(loading = 0.3, min_items_per_factor = 3,
     heywood_tol = 1e-06, near_heywood = 0.015,
-    min_interfactor_correlation = 0.32),
+    min_interfactor_correlation = 0.32, min_omega = NULL),
   model_config = list(estimator = "WLSMV", rotation = "oblimin"),
   performance = list(max_candidates_eval = 12, smart_pruning = TRUE,
     timeout_efa = 30, timeout_optimization = 120, use_timeouts = FALSE,
@@ -93,6 +93,16 @@ Rules governing structural decisions:
   \item \code{min_items_per_factor}: Structural protection rule.
   \item \code{heywood_tol}, \code{near_heywood}: Detection thresholds.
   \item \code{min_interfactor_correlation}: Minimum acceptable factor correlation.
+  \item \code{min_omega}: Reliability floor. When set (e.g. \code{0.80}), an item is
+    removed only if every factor keeps McDonald's omega at or above this value, so
+    the algorithm cannot buy fit at the cost of internal consistency. Omega is a
+    guard rail here, never a term in the loss: reliability is only interpretable
+    once the model fits, so it vetoes individual removals instead of competing with
+    the fit indices. A factor that already sits below the floor is not frozen —
+    its effective bar becomes its current omega, so removals that do not reduce
+    reliability are still allowed. Heywood cases are exempt, since an inadmissible
+    solution must be fixed regardless. \code{NULL} (default) disables the check and
+    reproduces the behaviour of versions prior to 1.3.0 exactly.
 }
 }
 
@@ -179,8 +189,8 @@ interfactor-correlation warnings, and AI progress bars.
 
 The algorithm follows a strict hierarchical rule system:
 \itemize{
-  \item Remove Heywood items (ψ < –tol or |loading| > 1).
-  \item Remove near-Heywood items (ψ ≈ 0).
+  \item Remove Heywood items (\eqn{\psi} < –tol or |loading| > 1).
+  \item Remove near-Heywood items (\eqn{\psi} ~ 0).
   \item Resolve cross-loadings by removing items with smallest ambiguity gap.
   \item Enforce minimum items per factor.
   \item If structure is acceptable but RMSEA > target: remove the weakest-loading item.
@@ -194,7 +204,7 @@ Weights for RMSEA / SRMR / CFI adapt dynamically according to:
   \item degrees of freedom (df),
   \item sample size (N),
   \item estimator (WLSMV boosters),
-  \item p-close ≥ .05 (bonus).
+  \item p-close >= .05 (bonus).
 }
 
 This allows stable decisions even when RMSEA is unreliable (df < 5).
@@ -221,7 +231,7 @@ If enabled:
 If \code{use_ai_analysis = TRUE}:
 \itemize{
   \item removed items receive a narrative justification using
-        loadings, ambiguity gaps, h², ψ, RMSEA-at-removal, and algorithmic reason,
+        loadings, ambiguity gaps, h², \eqn{\psi}, RMSEA-at-removal, and algorithmic reason,
   \item retained items can also be evaluated,
   \item exponential-backoff retry logic ensures robustness,
   \item a detailed elimination timeline is integrated into the prompt.
@@ -246,8 +256,18 @@ A list containing:
   \item \code{iterations}: Number of optimization iterations.
   \item \code{final_rmsea}: Final RMSEA.
   \item \code{bondades_original}: Fit indices from the final model.
-  \item \code{inter_factor_correlation}: Final φ matrix.
+  \item \code{stop_reason}: Why the loop ended (\code{"all_criteria_met"},
+    \code{"min_items_per_factor_protected"}, \code{"min_omega_protected"},
+    \code{"fit_target_reached"}, \code{"max_iterations"}, \code{"not_enough_items"},
+    \code{"timeout"}, \code{"efa_convergence_failed"},
+    \code{"fit_zero_no_structural_problem"}).
+  \item \code{inter_factor_correlation}: Final phi matrix.
   \item \code{interfactor_check}: Information about violations.
+  \item \code{omega_final}: McDonald's omega per factor in the final solution,
+    computed from the primary loadings of the pattern matrix. Always reported,
+    whether or not the floor is active.
+  \item \code{omega_check}: The floor in force, whether it was met, and
+    \code{blocked_items} (items the floor kept from being removed).
   \item \code{last_h2}, \code{last_psi}: Final communalities and uniquenesses.
   \item \code{last_flags}: Heywood and near-Heywood indicators.
   \item \code{conceptual_analysis}: GPT-based narrative analyses.

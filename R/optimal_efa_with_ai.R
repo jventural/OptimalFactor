@@ -22,12 +22,6 @@ optimal_efa_with_ai <- function(data,
                                 gpt_model = "gpt-3.5-turbo",
                                 generate_factor_names = FALSE,
                                 ...) {
-  # 1. Verificar disponibilidad de PsyMetricTools
-  if (!requireNamespace("PsyMetricTools", quietly = TRUE)) {
-    stop("The 'PsyMetricTools' package is required. Install it with: ",
-         "remotes::install_github('jventural/PsyMetricTools')")
-  }
-
   # 2. Helpers OpenAI
   call_openai_api <- function(prompt) {
     resp <- NULL; at <- 1
@@ -135,7 +129,7 @@ optimal_efa_with_ai <- function(data,
 
     conv <- TRUE
     tmp <- tryCatch({
-      PsyMetricTools::EFA_modern(
+      .of_efa_modern(
         data = data, n_factors = n_factors, n_items = n_items,
         name_items = name_items, estimator = estimator,
         rotation = rotation, apply_threshold = FALSE,
@@ -170,7 +164,7 @@ optimal_efa_with_ai <- function(data,
     if (decision == "rmsea") {
       cand_rmsea <- sapply(candidates, function(it) {
         tryCatch({
-          m2 <- PsyMetricTools::EFA_modern(
+          m2 <- .of_efa_modern(
             data = data, n_factors = n_factors, n_items = n_items,
             name_items = name_items, estimator = estimator,
             rotation = rotation, apply_threshold = FALSE,

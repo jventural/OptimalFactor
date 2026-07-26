@@ -24,8 +24,6 @@ You can install the latest version of OptimalFactor from GitHub:
 if (!require("devtools")) {
   install.packages("devtools")
 }
-# PsyMetricTools (required dependency, not yet on CRAN):
-devtools::install_github("jventural/PsyMetricTools")
 devtools::install_github("jventural/OptimalFactor")
 ```
 
@@ -54,9 +52,59 @@ result <- efa_boosting(
 | `cross_validate_cfa()` | Split-half cross-validation of a factor model |
 | `bifactor_indices()` | Bifactor statistical indices |
 | `redundancy_short_form()` | Redundancy-guided short form of a unidimensional scale |
+| `item_stability()` | Resampling stability of the EFA-boosting item selection |
+| `simulate_recovery()` | Monte Carlo recovery of a known factor structure |
 | `report_efa_results()` | Structured + console report of an EFA-boosting run |
 | `report_cfa_results()` | Structured + console report of a CFA-boosting run |
 | `print_conceptual_analysis()` | Display AI-generated item analyses |
+
+### Is the item selection stable, or is it chance?
+
+Data-driven item purification invites the classic objection of capitalization
+on chance (MacCallum, Roznowski & Necowitz, 1992). `item_stability()` answers
+it empirically: it re-runs the whole pipeline over resamples and reports how
+often each item survives and how stable its factor assignment is.
+
+```r
+st <- item_stability(your_data, "item", n_factors = 3, R = 100)
+st              # retention rates, factor agreement, unstable decisions
+```
+
+An item dropped in 97 of 100 resamples is a defensible removal; one dropped in
+55 is a coin flip. The printed summary flags every decision taken in 25–75 % of
+resamples as unstable.
+
+### When does the pipeline recover the true structure?
+
+`simulate_recovery()` simulates ordinal data from a population model with good,
+cross-loading and weak items, runs the pipeline on each replication and crosses
+conditions over sample size, loading size and items per factor.
+
+```r
+sim <- simulate_recovery(n = c(200, 500, 1000), loading = c(0.50, 0.70),
+                         n_reps = 200)
+sim$summary     # recovery rate, sensitivity, specificity per condition
+```
+
+Sensitivity (contaminated items removed) and specificity (good items kept) must
+be read together: an algorithm that removes everything scores a perfect
+sensitivity and a dismal specificity.
+
+### Reliability floor
+
+Removing items to improve fit tends to cost internal consistency. Setting
+`min_omega` makes that trade-off explicit: an item is removed only if every
+factor keeps McDonald's omega at or above the floor.
+
+```r
+efa_boosting(your_data, "item", n_factors = 3,
+             thresholds = list(min_omega = 0.80))
+```
+
+The floor is a constraint, not a term in the loss — reliability is not
+interpretable in the ill-fitting intermediate models the loss visits, so omega
+vetoes individual removals instead of trading against the fit indices. Omega per
+factor (`omega_final`) is now reported in every run, floor or no floor.
 
 ### Theory-Guided Specification Search (CFA)
 

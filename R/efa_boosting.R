@@ -10,7 +10,11 @@ efa_boosting <- function(data,
                            min_items_per_factor = 3,
                            heywood_tol = 1e-6,
                            near_heywood = 0.015,
-                           min_interfactor_correlation = 0.32
+                           min_interfactor_correlation = 0.32,
+                           # Piso de fiabilidad: ninguna eliminación puede dejar a un
+                           # factor con omega por debajo de este valor. NULL = desactivado
+                           # (comportamiento previo a 1.3.0).
+                           min_omega = NULL
                          ),
                          # Configuración de modelo
                          model_config = list(
@@ -109,7 +113,8 @@ efa_boosting <- function(data,
   }
 
   # Mezclar defaults
-  default_thresholds <- list(loading=0.30, min_items_per_factor=3, heywood_tol=1e-6, near_heywood=0.015, min_interfactor_correlation=0.32)
+  default_thresholds <- list(loading=0.30, min_items_per_factor=3, heywood_tol=1e-6, near_heywood=0.015,
+                              min_interfactor_correlation=0.32, min_omega=NULL)
   thresholds <- modifyList(default_thresholds, thresholds)
   default_perf <- list(max_candidates_eval=12, smart_pruning=TRUE,
                         timeout_efa=30, timeout_optimization=120, use_timeouts=FALSE,
@@ -569,6 +574,86 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
          heywood=heywood_flag, near_heywood=near_heywood_flag, primary=primary)
   }
 
+  # ───────── Piso de fiabilidad (omega) ─────────
+  # McDonald's omega calculated from the EFA pattern matrix: each item is
+  # assigned to the factor where it loads highest and omega is computed from
+  # those primary loadings, in absolute value (rotation makes the sign of a
+  # whole factor arbitrary). This is a congeneric approximation that ignores
+  # cross-loadings, so it is used as a *guard rail* — never as part of the
+  # loss — following the principle that reliability is only interpretable once
+  # the model fits.
+  omega_by_factor <- function(df_loadings, nf) {
+    if (is.null(df_loadings) || !nrow(df_loadings)) return(rep(NA_real_, nf))
+    lc <- which(startsWith(names(df_loadings), "f"))
+    L  <- abs(as.matrix(df_loadings[, lc, drop = FALSE]))
+    if (!ncol(L)) return(rep(NA_real_, nf))
+    primary <- vapply(seq_len(nrow(L)), function(i)
+      if (all(is.na(L[i, ]))) NA_integer_ else as.integer(which.max(L[i, ])), integer(1))
+    lam <- vapply(seq_len(nrow(L)), function(i)
+      if (is.na(primary[i])) NA_real_ else L[i, primary[i]], numeric(1))
+    out <- rep(NA_real_, max(nf, ncol(L)))
+    for (k in seq_len(ncol(L))) {
+      l <- lam[!is.na(primary) & primary == k & is.finite(lam)]
+      # Omega needs at least two indicators to be meaningful.
+      if (length(l) < 2) next
+      out[k] <- sum(l)^2 / (sum(l)^2 + sum(1 - l^2))
+    }
+    out[seq_len(nf)]
+  }
+
+  # Does the resulting solution keep every factor at or above the floor?
+  # `df_loadings` is either the projected matrix (current fit minus the
+  # candidate items, no refit) or the matrix of an actual refit.
+  #
+  # The floor forbids *drops* below `min_omega`; it does not freeze a scale that
+  # already sits below it. When a factor starts under the floor, the effective
+  # bar for that factor is its current omega, so removals that leave reliability
+  # untouched or improve it are still allowed.
+  omega_current <- NULL   # omega of the model being examined this iteration
+
+  omega_guard <- function(df_loadings, nf, ref = omega_current) {
+    if (is.null(thresholds$min_omega)) return(list(ok = TRUE, omega = NULL, violated = integer(0)))
+    om   <- omega_by_factor(df_loadings, nf)
+    bar  <- rep(thresholds$min_omega, length(om))
+    if (!is.null(ref) && length(ref) == length(om))
+      bar <- pmin(bar, ifelse(is.na(ref), thresholds$min_omega, ref))
+    bad <- which(!is.na(om) & om < bar - 1e-8)
+    list(ok = length(bad) == 0, omega = om, violated = bad)
+  }
+
+  # Projection: drop rows from the current pattern matrix without refitting.
+  omega_guard_drop <- function(df_loadings, items_out, nf) {
+    if (is.null(thresholds$min_omega)) return(list(ok = TRUE, omega = NULL, violated = integer(0)))
+    keep <- !(df_loadings$Items %in% items_out)
+    omega_guard(df_loadings[keep, , drop = FALSE], nf)
+  }
+
+  omega_blocked <- character(0)  # items the floor kept from being removed
+
+  # Weakest-loading item that can actually be removed: it must respect
+  # min_items_per_factor and, when the floor is active, min_omega. With
+  # `min_omega = NULL` this reproduces the pre-1.3.0 behaviour exactly (only the
+  # single weakest item is considered); with the floor on, an item vetoed by
+  # omega hands over to the next weakest candidate instead of stopping the run.
+  pick_weakest_removable <- function(df_loadings, ev, nf) {
+    lc <- which(startsWith(names(df_loadings), "f"))
+    ml <- apply(abs(as.matrix(df_loadings[, lc, drop = FALSE])), 1, max)
+    for (i in order(ml)) {
+      cand <- df_loadings$Items[i]
+      p <- ev$primary[which(ev$items == cand)]
+      counts2 <- ev$counts
+      if (length(p) == 1L && !is.na(p)) counts2[p] <- counts2[p] - 1
+      if (!all(counts2 >= thresholds$min_items_per_factor))
+        return(list(item = NA_character_, loading = NA_real_, reason = "min_items"))
+      og <- omega_guard_drop(df_loadings, cand, nf)
+      if (isTRUE(og$ok)) return(list(item = cand, loading = ml[i], reason = "ok"))
+      omega_blocked <<- unique(c(omega_blocked, cand))
+      if (verbose) cat("\U0001F6E1 ", cand, " kept: removing it would drop omega of factor ",
+                       paste(og$violated, collapse = "/"), " below ", thresholds$min_omega, "\n", sep = "")
+    }
+    list(item = NA_character_, loading = NA_real_, reason = "min_omega")
+  }
+
   # Captura stats
   capture_item_stats <- function(it, ev, df, rmsea, reason) {
     load_cols <- which(startsWith(names(df), "f"))
@@ -624,14 +709,14 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         m2 <- tryCatch({
           if (use_timeouts) {
             R.utils::withTimeout({
-              PsyMetricTools::EFA_modern(
+              .of_efa_modern(
                 data=data, n_factors=n_factors, n_items=n_items, name_items=name_items,
                 estimator=model_config$estimator, rotation=model_config$rotation,
                 apply_threshold=FALSE, exclude_items=c(base_excluded, subset_excl), ...
               )
             }, timeout=performance$timeout_efa, onTimeout="error")
           } else {
-            PsyMetricTools::EFA_modern(
+            .of_efa_modern(
               data=data, n_factors=n_factors, n_items=n_items, name_items=name_items,
               estimator=model_config$estimator, rotation=model_config$rotation,
               apply_threshold=FALSE, exclude_items=c(base_excluded, subset_excl), ...
@@ -649,6 +734,10 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         ok_min <- all(ev2$counts >= thresholds$min_items_per_factor)
         ok_struct <- all(ev2$ok)
         if (!ok_min || !ok_struct) next
+        if (!isTRUE(omega_guard(m2$result_df, n_factors)$ok)) {
+          omega_blocked <- unique(c(omega_blocked, subset_excl))
+          next
+        }
 
         fit2 <- extract_fit(m2, n_factors)
         loss2 <- composite_loss(fit2, fit_config, model_config$estimator)
@@ -681,6 +770,8 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
   #   "not_enough_items"               — too few candidates left
   #   "timeout"                        — timeout_optimization tripped
   #   "efa_convergence_failed"         — EFA failed to converge
+  #   "min_omega_protected"            — no removal left that keeps every
+  #                                       factor at or above the omega floor
   stop_reason <- "unknown"
 
   repeat {
@@ -707,14 +798,14 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     tmp <- tryCatch({
       if (use_timeouts) {
         R.utils::withTimeout({
-          PsyMetricTools::EFA_modern(
+          .of_efa_modern(
             data=data, n_factors=n_factors, n_items=n_items, name_items=name_items,
             estimator=model_config$estimator, rotation=model_config$rotation,
             apply_threshold=FALSE, exclude_items=c(exclude_items, removed_items), ...
           )
         }, timeout=performance$timeout_efa, onTimeout="error")
       } else {
-        PsyMetricTools::EFA_modern(
+        .of_efa_modern(
           data=data, n_factors=n_factors, n_items=n_items, name_items=name_items,
           estimator=model_config$estimator, rotation=model_config$rotation,
           apply_threshold=FALSE, exclude_items=c(exclude_items, removed_items), ...
@@ -735,6 +826,9 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     df_eval[load_cols2] <- lapply(df_eval[load_cols2], function(x) ifelse(abs(x) < thresholds$loading, 0, round(x, 3)))
     ev <- evaluate_structure(df_eval, phi, thresholds)
     last_ev <- ev
+    # Reference reliability for this iteration: every candidate removal is
+    # judged against the omega of the model currently on the table.
+    omega_current <- omega_by_factor(mod$result_df, n_factors)
 
     if (verbose) {
       cat("\n", paste(rep("\u2500", 70), collapse = ""), "\n", sep = "")
@@ -780,7 +874,15 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
       selected <- NA_character_
       for (i in order_idx) {
         item <- ev$items[i]; p <- ev$primary[i]; counts2 <- ev$counts; if (!is.na(p)) counts2[p] <- counts2[p] - 1
-        if (all(counts2 >= thresholds$min_items_per_factor)) { selected <- item; break }
+        if (!all(counts2 >= thresholds$min_items_per_factor)) next
+        og <- omega_guard_drop(mod$result_df, item, n_factors)
+        if (!og$ok) {
+          omega_blocked <- unique(c(omega_blocked, item))
+          if (verbose) cat("\U0001F6E1 ", item, " kept: removing it would drop omega of factor ",
+                           paste(og$violated, collapse = "/"), " below ", thresholds$min_omega, "\n", sep = "")
+          next
+        }
+        selected <- item; break
       }
       if (!is.na(selected)) {
         item_removal_stats[[selected]] <- capture_item_stats(selected, ev, mod$result_df, curr_rmsea, "Cross-loading (priority)")
@@ -797,25 +899,22 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
           if (verbose) cat("\u26A0 Cross-loadings protected but RMSEA (", fmt_num(curr_rmsea), ") > target (", fit_config$targets$rmsea, "); removing weakest item...\n", sep="")
 
           # Eliminar ítem con menor carga para mejorar RMSEA
-          load_cols <- which(startsWith(names(mod$result_df), "f"))
-          max_loadings <- apply(abs(as.matrix(mod$result_df[, load_cols])), 1, max)
-          weakest_idx <- which.min(max_loadings)
-          worst <- mod$result_df$Items[weakest_idx]
+          pick <- pick_weakest_removable(mod$result_df, ev, n_factors)
 
-          # Verificar que no viole min_items_per_factor
-          p_worst <- ev$primary[which(ev$items == worst)]
-          counts2 <- ev$counts
-          if (!is.na(p_worst)) counts2[p_worst] <- counts2[p_worst] - 1
-
-          if (all(counts2 >= thresholds$min_items_per_factor)) {
+          if (!is.na(pick$item)) {
+            worst <- pick$item
             item_removal_stats[[worst]] <- capture_item_stats(worst, ev, mod$result_df, curr_rmsea, "Weakest loading (RMSEA > target)")
             removed_items <- c(removed_items, worst)
             step_counter <- step_counter + 1
             steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason="Weakest loading (RMSEA > target)",
                                                      rmsea=curr_rmsea, srmr=as.numeric(fit0$srmr), cfi=as.numeric(fit0$cfi),
                                                      stringsAsFactors=FALSE))
-            if (verbose) cat("\u274C Removed", worst, "| Loading:", fmt_num(max_loadings[weakest_idx]), "\n")
+            if (verbose) cat("\u274C Removed", worst, "| Loading:", fmt_num(pick$loading), "\n")
             next
+          }
+          if (identical(pick$reason, "min_omega")) {
+            if (verbose) cat("\n\u26A0 No item can be removed without pushing omega below the floor (", thresholds$min_omega, "); stopping.\n", sep="")
+            stop_reason <- "min_omega_protected"; break
           }
         } else {
           if (verbose) cat("\u26A0 Cross-loadings detected but protected by min_items_per_factor; RMSEA target reached, stopping.\n")
@@ -910,14 +1009,14 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
           m2 <- tryCatch({
             if (use_timeouts) {
               R.utils::withTimeout({
-                PsyMetricTools::EFA_modern(
+                .of_efa_modern(
                   data=data, n_factors=n_factors, n_items=n_items, name_items=name_items,
                   estimator=model_config$estimator, rotation=model_config$rotation,
                   apply_threshold=FALSE, exclude_items=c(exclude_items, removed_items, it), ...
                 )
               }, timeout=performance$timeout_efa, onTimeout="error")
             } else {
-              PsyMetricTools::EFA_modern(
+              .of_efa_modern(
                 data=data, n_factors=n_factors, n_items=n_items, name_items=name_items,
                 estimator=model_config$estimator, rotation=model_config$rotation,
                 apply_threshold=FALSE, exclude_items=c(exclude_items, removed_items, it), ...
@@ -932,6 +1031,15 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
           ev2 <- tryCatch(evaluate_structure(df2, phi2, thresholds), error=function(e) NULL)
           if (is.null(ev2)) next
           if (!all(ev2$counts >= thresholds$min_items_per_factor) || !all(ev2$ok)) next
+          # Reliability floor, checked on the actual refit (exact, not projected).
+          og2 <- omega_guard(m2$result_df, n_factors)
+          if (!isTRUE(og2$ok)) {
+            omega_blocked <- unique(c(omega_blocked, it))
+            if (isTRUE(performance$emit_progress))
+              message(sprintf("    cand '%s' descartado: omega del factor %s caeria por debajo de %.2f",
+                              it, paste(og2$violated, collapse = "/"), thresholds$min_omega))
+            next
+          }
 
           fit2 <- extract_fit(m2, n_factors)
           loss2 <- composite_loss(fit2, fit_config, model_config$estimator)
@@ -989,29 +1097,25 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     if (all(ev$ok) && !rmsea_target_reached) {
       if (verbose) cat("\u26A0 Structure acceptable but RMSEA (", fmt_num(curr_rmsea), ") > target (", fit_config$targets$rmsea, "); removing weakest item to improve fit...\n", sep="")
 
-      # Encontrar el ítem con menor carga primaria
-      load_cols <- which(startsWith(names(mod$result_df), "f"))
-      max_loadings <- apply(abs(as.matrix(mod$result_df[, load_cols])), 1, max)
-      weakest_idx <- which.min(max_loadings)
-      worst <- mod$result_df$Items[weakest_idx]
+      # Encontrar el ítem con menor carga primaria que sea removible
+      pick <- pick_weakest_removable(mod$result_df, ev, n_factors)
       reason <- "Weakest loading (RMSEA > target)"
 
-      # Verificar que no viole min_items_per_factor
-      p_worst <- ev$primary[which(ev$items == worst)]
-      counts2 <- ev$counts
-      if (!is.na(p_worst)) counts2[p_worst] <- counts2[p_worst] - 1
-
-      if (all(counts2 >= thresholds$min_items_per_factor)) {
+      if (!is.na(pick$item)) {
+        worst <- pick$item
         item_removal_stats[[worst]] <- capture_item_stats(worst, ev, mod$result_df, curr_rmsea, reason)
         removed_items <- c(removed_items, worst)
         step_counter <- step_counter + 1
         steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason=reason,
                                                  rmsea=curr_rmsea, srmr=as.numeric(fit0$srmr), cfi=as.numeric(fit0$cfi),
                                                  stringsAsFactors=FALSE))
-        if (verbose) cat("\u274C Removed", worst, "| Loading:", fmt_num(max_loadings[weakest_idx]), "\n")
+        if (verbose) cat("\u274C Removed", worst, "| Loading:", fmt_num(pick$loading), "\n")
         next
+      } else if (identical(pick$reason, "min_omega")) {
+        if (verbose) cat("\n\u26A0 Cannot remove any item without pushing omega below the floor (", thresholds$min_omega, "); stopping.\n", sep="")
+        stop_reason <- "min_omega_protected"; break
       } else {
-        if (verbose) cat("\n\u26A0 Cannot remove weakest item (", worst, ") - would violate min_items_per_factor; stopping.\n", sep="")
+        if (verbose) cat("\n\u26A0 Cannot remove weakest item - would violate min_items_per_factor; stopping.\n", sep="")
         stop_reason <- "min_items_per_factor_protected"; break
       }
     }
@@ -1021,12 +1125,31 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     if (length(prob_idx) == 0) prob_idx <- which(!ev$ok)
 
     if (length(prob_idx) > 0) {
-      worst <- ev$items[ prob_idx[ which.min(ev$scores[prob_idx]) ] ]
-      reason <- ev$reasons[ which(ev$items == worst) ]
+      # Worst offender first; with the omega floor on, an item whose removal
+      # would break a factor's reliability yields to the next offender.
+      # Heywood cases are exempt: an inadmissible solution must be fixed.
+      prob_ord <- prob_idx[order(ev$scores[prob_idx])]
+      worst  <- ev$items[prob_ord[1]]
+      reason <- ev$reasons[which(ev$items == worst)]
+      if (!is.null(thresholds$min_omega)) {
+        for (pi in prob_ord) {
+          cand <- ev$items[pi]; rsn <- ev$reasons[pi]
+          if (rsn %in% c("Heywood", "Near-Heywood")) { worst <- cand; reason <- rsn; break }
+          og <- omega_guard_drop(mod$result_df, cand, n_factors)
+          if (isTRUE(og$ok)) { worst <- cand; reason <- rsn; break }
+          omega_blocked <- unique(c(omega_blocked, cand))
+          if (verbose) cat("\U0001F6E1 ", cand, " kept despite '", rsn, "': omega of factor ",
+                           paste(og$violated, collapse = "/"), " would fall below ",
+                           thresholds$min_omega, "\n", sep = "")
+        }
+      }
       p_worst <- ev$primary[ which(ev$items == worst) ]
       counts2 <- ev$counts; if (!is.na(p_worst)) counts2[p_worst] <- counts2[p_worst] - 1
 
-      if (all(counts2 >= thresholds$min_items_per_factor)) {
+      omega_ok_here <- reason %in% c("Heywood", "Near-Heywood") ||
+        isTRUE(omega_guard_drop(mod$result_df, worst, n_factors)$ok)
+
+      if (all(counts2 >= thresholds$min_items_per_factor) && omega_ok_here) {
         item_removal_stats[[worst]] <- capture_item_stats(worst, ev, mod$result_df, curr_rmsea, reason)
         removed_items <- c(removed_items, worst); step_counter <- step_counter + 1
         steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst, reason=reason,
@@ -1041,25 +1164,21 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
           if (verbose) cat("\n\u26A0 Structural issue (", worst, ") protected but RMSEA (", fmt_num(curr_rmsea), ") > target (", fit_config$targets$rmsea, "); removing weakest item...\n", sep="")
 
           # Eliminar ítem con menor carga para mejorar RMSEA
-          load_cols <- which(startsWith(names(mod$result_df), "f"))
-          max_loadings <- apply(abs(as.matrix(mod$result_df[, load_cols])), 1, max)
-          weakest_idx <- which.min(max_loadings)
-          worst_weak <- mod$result_df$Items[weakest_idx]
+          pick <- pick_weakest_removable(mod$result_df, ev, n_factors)
 
-          # Verificar que no viole min_items_per_factor
-          p_worst_weak <- ev$primary[which(ev$items == worst_weak)]
-          counts3 <- ev$counts
-          if (!is.na(p_worst_weak)) counts3[p_worst_weak] <- counts3[p_worst_weak] - 1
-
-          if (all(counts3 >= thresholds$min_items_per_factor)) {
+          if (!is.na(pick$item)) {
+            worst_weak <- pick$item
             item_removal_stats[[worst_weak]] <- capture_item_stats(worst_weak, ev, mod$result_df, curr_rmsea, "Weakest loading (RMSEA > target)")
             removed_items <- c(removed_items, worst_weak)
             step_counter <- step_counter + 1
             steps_log <- rbind(steps_log, data.frame(step=step_counter, removed_item=worst_weak, reason="Weakest loading (RMSEA > target)",
                                                      rmsea=curr_rmsea, srmr=as.numeric(fit0$srmr), cfi=as.numeric(fit0$cfi),
                                                      stringsAsFactors=FALSE))
-            if (verbose) cat("\u274C Removed", worst_weak, "| Loading:", fmt_num(max_loadings[weakest_idx]), "\n")
+            if (verbose) cat("\u274C Removed", worst_weak, "| Loading:", fmt_num(pick$loading), "\n")
             next
+          } else if (identical(pick$reason, "min_omega")) {
+            if (verbose) cat("\n\u26A0 Cannot remove any more items without pushing omega below the floor (", thresholds$min_omega, "). Final RMSEA:", fmt_num(curr_rmsea), "\n", sep="")
+            stop_reason <- "min_omega_protected"; break
           } else {
             if (verbose) cat("\n\u26A0 Cannot remove any more items - min_items_per_factor reached. Final RMSEA:", fmt_num(curr_rmsea), "\n", sep="")
             stop_reason <- "min_items_per_factor_protected"; break
@@ -1230,6 +1349,10 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
   phi_final <- if (!is.null(mod$InterFactor)) as.matrix(mod$InterFactor) else diag(n_factors)
   corr_check_final <- check_interfactor_correlations(phi_final, thresholds$min_interfactor_correlation)
 
+  # Fiabilidad final por factor (siempre se reporta, haya o no piso activo)
+  omega_final <- round(omega_by_factor(mod$result_df, n_factors), 3)
+  names(omega_final) <- paste0("f", seq_len(n_factors))
+
   if (verbose) {
     cat("\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n")
     cat("\u2551                  OPTIMIZATION COMPLETED                        \u2551\n")
@@ -1250,6 +1373,18 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
       cat("\n\u2713 Criterio de correlaci\u00F3n inter-factorial cumplido (todas >= ", thresholds$min_interfactor_correlation, ")\n", sep="")
     }
 
+    cat("\nOmega por factor: ",
+        paste(names(omega_final), fmt_num(omega_final), sep = "=", collapse = " | "), "\n", sep = "")
+    if (!is.null(thresholds$min_omega)) {
+      if (all(is.na(omega_final) | omega_final >= thresholds$min_omega)) {
+        cat("\u2713 Piso de fiabilidad respetado (todas >= ", thresholds$min_omega, ")\n", sep="")
+      } else {
+        cat("\u26A0\uFE0F  ADVERTENCIA: alg\u00FAn factor qued\u00F3 por debajo del piso de fiabilidad (", thresholds$min_omega, ")\n", sep="")
+      }
+      if (length(omega_blocked))
+        cat("    \u00CDtems conservados por el piso de omega: ", paste(omega_blocked, collapse = ", "), "\n", sep="")
+    }
+
     cat("\n\u2705 Analysis finished successfully.\n\n")
   }
 
@@ -1268,6 +1403,13 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
       min_value = corr_check_final$min_value,
       violations = corr_check_final$violated,
       threshold = thresholds$min_interfactor_correlation
+    ),
+    omega_final       = omega_final,
+    omega_check       = list(
+      floor        = thresholds$min_omega,
+      criteria_met = if (is.null(thresholds$min_omega)) NA
+                     else all(is.na(omega_final) | omega_final >= thresholds$min_omega),
+      blocked_items = omega_blocked
     ),
     last_h2           = if (!is.null(last_ev)) last_ev$h2  else NULL,
     last_psi          = if (!is.null(last_ev)) last_ev$psi else NULL,

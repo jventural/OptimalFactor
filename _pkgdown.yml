@@ -57,6 +57,15 @@ reference:
   - bifactor_indices
   - print.specification_search
 
+- title: Stability and Validation
+  desc: >
+    Evidence that a data-driven item selection is not capitalizing on chance,
+    and Monte Carlo evidence on when the pipeline recovers a known structure.
+  contents:
+  - item_stability
+  - simulate_recovery
+  - plot.simulate_recovery
+
 - title: Results Display
   desc: Functions for displaying and exporting results
   contents:
