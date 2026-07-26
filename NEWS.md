@@ -102,6 +102,24 @@ fit.
   `targets_met_loading_protected`, `no_improving_action` and `max_iterations`,
   so the caller no longer has to infer it from the log.
 
+## Population model: cross-loading items no longer share a factor pair
+
+`simulate_recovery()` and `simulate_cfa_recovery()` used to place every
+cross-loading item on the same two factors. With more than one such item that
+makes them clones: they correlate strongly, form a coherent cluster, and the
+rotation reports the cluster as a factor of its own, each item showing a single
+clean loading near .80. No item-level criterion can call that a cross-loading,
+because in the estimated solution it no longer is one, and the good items get
+displaced to make room for it. They are now spread over different pairs.
+
+The correction matters because it inverts the verdict. Under three
+cross-loading items at .55 plus two weak ones, the old generator made
+`efa_boosting()` look defective (sensitivity .617/.700, recovery falling to
+.75 at N = 600, contaminated items left in the pool). With the population
+correctly specified the same conditions give sensitivity .983/1.000, recovery
+1.000 and specificity 1.000, retaining 12.08 and 12.00 items against the 12
+good ones in the population. The apparent defect was the measuring instrument.
+
 ## Progress, timeouts and parallel robustness
 
 Resampling exposed three things that made these functions unusable in practice

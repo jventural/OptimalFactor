@@ -15,6 +15,19 @@ test_that("the population model has the announced shape", {
   expect_true(all(rowSums(pop$lambda[good, , drop = FALSE] != 0) == 1))
   expect_equal(sum(pop$lambda[cross, ] != 0), 2L)
 
+  # Several cross-loading items go on DIFFERENT pairs of factors. Sharing a
+  # pair would make them clones of one another: they correlate strongly, form a
+  # coherent cluster, and the rotation reports that cluster as a factor of its
+  # own, each item showing a single clean loading near .80. A simulation built
+  # that way measures the generator instead of the pipeline.
+  many <- .of_population_model(n_factors = 3, items_per_factor = 4,
+                               loading = 0.60, phi = 0.30,
+                               n_cross = 3, cross_loading = 0.55,
+                               n_low = 0, low_loading = 0.20)
+  cr <- names(many$role)[many$role == "cross"]
+  pares <- lapply(cr, function(it) sort(which(many$lambda[it, ] != 0)))
+  expect_length(unique(pares), 3L)
+
   # Only the good items carry a true factor; the contaminated ones do not.
   expect_true(all(!is.na(pop$true_factor[good])))
   expect_true(all(is.na(pop$true_factor[names(pop$role)[pop$role != "good"]])))

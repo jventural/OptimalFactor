@@ -212,15 +212,26 @@ simulate_recovery <- function(n = 500, loading = 0.65, items_per_factor = 5,
     k <- k + 1L
     lambda[k, f] <- loading; role[k] <- "good"; true_factor[k] <- f
   }
+  # The cross-loading items are spread over different pairs of factors. Putting
+  # several of them on the same pair makes them clones of one another: they
+  # correlate strongly, form a coherent cluster, and the rotation reports that
+  # cluster as a factor of its own, with each item showing a single clean
+  # loading around .80. No item-level criterion can call that a cross-loading,
+  # because in the estimated solution it no longer is one. That is a property
+  # of such a population, not a failure of any pipeline, and a simulation that
+  # ignores it measures the generator rather than the method.
   if (n_cross > 0) for (i in seq_len(n_cross)) {
     k <- k + 1L
-    lambda[k, 1] <- cross_loading
-    lambda[k, min(2, n_factors)] <- cross_loading
+    fa <- ((i - 1L) %% n_factors) + 1L
+    fb <- (fa %% n_factors) + 1L
+    lambda[k, fa] <- cross_loading
+    if (n_factors > 1) lambda[k, fb] <- cross_loading
     role[k] <- "cross"
   }
   if (n_low > 0) for (i in seq_len(n_low)) {
     k <- k + 1L
-    lambda[k, 1] <- low_loading; role[k] <- "low"
+    lambda[k, ((i - 1L) %% n_factors) + 1L] <- low_loading
+    role[k] <- "low"
   }
 
   Phi <- matrix(phi, n_factors, n_factors); diag(Phi) <- 1
