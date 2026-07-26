@@ -45,6 +45,48 @@ test_that("the stop reason says why the loop ended", {
   expect_length(fit$removed_items, 0L)
 })
 
+test_that("an item loading on a foreign factor is removed", {
+  skip_on_cran()
+  # The loading floor catches the item that measures nothing. It does not catch
+  # the one that measures two things: a population cross-loading of .40 leaves
+  # the item above the floor on its own factor, and global fit stays clean
+  # because the omitted path is absorbed by the interfactor correlation.
+  pop <- .of_population_model(n_factors = 3, items_per_factor = 4,
+                              loading = 0.60, phi = 0.30,
+                              n_cross = 1, cross_loading = 0.40,
+                              n_low = 0, low_loading = 0.20)
+  set.seed(2026)
+  dat <- .of_simulate_ordinal(pop$sigma, n = 600, n_categories = 5,
+                              skew = "symmetric")
+  syntax <- .of_cfa_syntax(pop)
+  cross <- names(pop$role)[pop$role == "cross"]
+
+  con <- suppressWarnings(cfa_boosting(dat, syntax, verbose = FALSE))
+  sin <- suppressWarnings(cfa_boosting(dat, syntax, verbose = FALSE,
+                                       thresholds = list(enforce_simple_structure = FALSE)))
+
+  expect_true(cross %in% con$removed_items)
+  expect_false(cross %in% sin$removed_items)
+
+  # And it does not become an excuse to prune the good items.
+  good <- names(pop$role)[pop$role == "good"]
+  expect_length(intersect(good, con$removed_items), 0L)
+})
+
+test_that("a clean population survives the simple structure check untouched", {
+  skip_on_cran()
+  # The detection is by modification index, which is exactly the machinery that
+  # capitalizes on chance when used on significance alone. Requiring the
+  # standardized EPC to reach the threshold is what keeps it quiet here.
+  pop <- .of_population_model(3, 4, 0.65, 0.30, 0, 0.40, 0, 0.20)
+  set.seed(21)
+  dat <- .of_simulate_ordinal(pop$sigma, 500, 5, "symmetric")
+
+  fit <- suppressWarnings(cfa_boosting(dat, .of_cfa_syntax(pop), verbose = FALSE))
+  expect_length(fit$removed_items, 0L)
+  expect_equal(fit$stop_reason, "all_targets_met")
+})
+
 test_that("the floor cannot shrink a factor below its minimum", {
   skip_on_cran()
   # Three items per factor is the floor of the floor: even if one of them loads

@@ -104,7 +104,12 @@ cfa_boosting <- function(data,
                               # Un item por debajo de 'loading' se elimina aunque el
                               # ajuste global ya cumpla: es admisibilidad, no ajuste.
                               # FALSE restaura el comportamiento previo a 1.3.0.
-                              enforce_loading = TRUE)
+                              enforce_loading = TRUE,
+                              # Piso para declarar que un item carga tambien en
+                              # otro factor. Se mide sobre el EPC estandarizado
+                              # del indice de modificacion, no sobre el MI solo.
+                              cross_loading = 0.30,
+                              enforce_simple_structure = TRUE)
   thresholds <- modifyList(default_thresholds, thresholds)
 
   default_model_config <- list(estimator = "WLSMV", ordered = TRUE)
@@ -266,6 +271,62 @@ cfa_boosting <- function(data,
     problematic
   }
 
+  # ───────────────── Items que cargan en un factor ajeno ─────────────────
+  # El piso de carga atrapa al item que no mide nada. No atrapa al que mide DOS
+  # cosas: una carga cruzada poblacional de .40 deja al item por encima del piso
+  # en su propio factor, y el ajuste global tampoco la delata, porque una carga
+  # cruzada omitida se absorbe inflando la correlacion entre factores en vez de
+  # empeorar los indices (simulado: seis items cruzando a .60 dejan el RMSEA en
+  # .053 y suben el CFI a .997).
+  #
+  # La deteccion es por indice de modificacion de la carga ausente, pero NO por
+  # significancia sola: se exige ademas que el cambio esperado del parametro
+  # estandarizado alcance el umbral de carga cruzada. Un MI significativo con un
+  # EPC de .05 es una carga cruzada irrelevante, y actuar sobre el seria
+  # justamente la capitalizacion del azar que se quiere evitar.
+  get_cross_loading_items <- function(fit, factors) {
+    c_alpha <- qchisq(1 - mod_indices_config$alpha, df = 1)
+    mi <- tryCatch(modificationIndices(fit, sort. = TRUE, minimum.value = c_alpha),
+                   error = function(e) NULL)
+    if (is.null(mi) || !nrow(mi)) return(NULL)
+
+    mi_load <- mi[mi$op == "=~" & mi$lhs %in% names(factors), , drop = FALSE]
+    if (!nrow(mi_load)) return(NULL)
+
+    # El EPC estandarizado se llama sepc.all; si lavaan no lo devuelve, se cae
+    # al epc crudo antes que inventar una magnitud.
+    epc_col <- if ("sepc.all" %in% names(mi_load)) "sepc.all" else "epc"
+    mi_load$magnitud <- abs(mi_load[[epc_col]])
+    umbral <- thresholds$cross_loading %||% thresholds$loading
+    mi_load <- mi_load[is.finite(mi_load$magnitud) & mi_load$magnitud >= umbral, ,
+                       drop = FALSE]
+    if (!nrow(mi_load)) return(NULL)
+
+    item_to_factor <- list()
+    for (fname in names(factors))
+      for (item in factors[[fname]]) item_to_factor[[item]] <- fname
+
+    # Solo items del modelo, y solo cargas hacia un factor que no es el suyo.
+    keep <- vapply(seq_len(nrow(mi_load)), function(i) {
+      f_propio <- item_to_factor[[mi_load$rhs[i]]]
+      !is.null(f_propio) && f_propio != mi_load$lhs[i]
+    }, logical(1))
+    mi_load <- mi_load[keep, , drop = FALSE]
+    if (!nrow(mi_load)) return(NULL)
+
+    mi_load <- mi_load[order(-mi_load$magnitud), , drop = FALSE]
+    out <- list()
+    for (i in seq_len(nrow(mi_load))) {
+      it <- mi_load$rhs[i]
+      if (!is.null(out[[it]])) next          # se conserva la peor por item
+      out[[it]] <- list(factor = item_to_factor[[it]],
+                        otro_factor = mi_load$lhs[i],
+                        magnitud = mi_load$magnitud[i],
+                        mi = mi_load$mi[i])
+    }
+    out
+  }
+
   # ───────────────── Obtener covarianzas con misespecificación (Saris-Satorra) ─────────────────
   get_best_covariances <- function(fit, factors, existing_covs, only_within = TRUE) {
     # Umbral de significancia del MI (chi2 con df=1)
@@ -424,8 +485,19 @@ cfa_boosting <- function(data,
       length(current_factors[[problematic[[it]]$factor]]) > thresholds$min_items_per_factor,
       logical(1))]
 
-    if (targets_check$all_met && (!isTRUE(thresholds$enforce_loading) || !length(removable))) {
-      stop_reason <- if (targets_check$all_met && length(problematic))
+    # Lo mismo para la estructura simple: el modelo no esta terminado mientras
+    # quede un item que carga en un factor ajeno, cumpla o no los targets.
+    cruz_pendientes <- if (isTRUE(thresholds$enforce_simple_structure)) {
+      cr <- get_cross_loading_items(current_fit, current_factors)
+      names(cr)[vapply(names(cr), function(it)
+        length(current_factors[[cr[[it]]$factor]]) > thresholds$min_items_per_factor,
+        logical(1))]
+    } else character(0)
+
+    pendiente_carga <- isTRUE(thresholds$enforce_loading) && length(removable) > 0
+
+    if (targets_check$all_met && !pendiente_carga && !length(cruz_pendientes)) {
+      stop_reason <- if (length(problematic))
         "targets_met_loading_protected" else "all_targets_met"
       if (verbose) cat("\n*** TODOS LOS TARGETS ALCANZADOS ***\n")
       break
@@ -469,6 +541,50 @@ cfa_boosting <- function(data,
       }
       # Si el modelo sin ese item no converge, se deja pasar y siguen las
       # estrategias guiadas por ajuste.
+    }
+
+    # Items que cargan tambien en un factor ajeno. Mismo razonamiento que el
+    # piso: la estructura simple es un requisito declarado, no algo que se
+    # negocie contra el ajuste, asi que la eliminacion es incondicional.
+    if (isTRUE(thresholds$enforce_simple_structure)) {
+      cruzados <- get_cross_loading_items(current_fit, current_factors)
+      cruz_removibles <- names(cruzados)[vapply(names(cruzados), function(it)
+        length(current_factors[[cruzados[[it]]$factor]]) > thresholds$min_items_per_factor,
+        logical(1))]
+
+      if (length(cruz_removibles)) {
+        peor <- cruz_removibles[which.max(vapply(cruz_removibles,
+          function(it) cruzados[[it]]$magnitud, numeric(1)))]
+        info <- cruzados[[peor]]
+
+        test_factors <- current_factors
+        test_factors[[info$factor]] <- setdiff(test_factors[[info$factor]], peor)
+        test_syntax <- build_model_syntax(test_factors, current_covs)
+        test_fit <- fit_cfa(test_syntax)
+
+        if (!is.null(test_fit) && lavInspect(test_fit, "converged")) {
+          current_factors <- test_factors
+          current_syntax  <- test_syntax
+          current_fit     <- test_fit
+          current_indices <- extract_fit(current_fit)
+          current_loss    <- composite_loss(current_indices)
+          removed_items   <- c(removed_items, peor)
+
+          steps_log <- rbind(steps_log, data.frame(
+            step = iteration, action = "Remove Item (cross-loading)",
+            detail = paste0("Eliminar ", peor, " (", info$factor,
+                            "; carga cruzada en ", info$otro_factor,
+                            ", EPC=", fmt_num(info$magnitud), ")"),
+            rmsea = current_indices$rmsea, cfi = current_indices$cfi,
+            srmr = current_indices$srmr, loss = current_loss,
+            stringsAsFactors = FALSE))
+
+          if (verbose)
+            cat("  -> Eliminado", peor, "por carga cruzada en", info$otro_factor,
+                "(EPC =", fmt_num(info$magnitud), ")\n")
+          next
+        }
+      }
     }
 
     if (verbose) {

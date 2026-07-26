@@ -16,7 +16,8 @@ cfa_boosting(
   n_sample = NULL,
   thresholds = list(loading = 0.3, min_items_per_factor = 3,
     rmsea_target = 0.08, cfi_target = 0.95, srmr_target = 0.08,
-    enforce_loading = TRUE),
+    enforce_loading = TRUE, cross_loading = 0.3,
+    enforce_simple_structure = TRUE),
   model_config = list(estimator = "WLSMV", ordered = TRUE),
   mod_indices_config = list(max_covs_to_add = 10, only_within_factor = TRUE,
     delta = 0.1, power_threshold = 0.75, alpha = 0.05),
@@ -50,6 +51,20 @@ cfa_boosting(
       sat comfortably inside a model with RMSEA = .03. Enforcing the floor can
       leave global fit slightly worse while making the retained set defensible,
       which is the trade this option makes explicit.
+    \item \code{cross_loading}: Standardized magnitude above which an item is
+      declared to load on a foreign factor (default 0.30).
+    \item \code{enforce_simple_structure}: Remove items that load on a factor
+      other than their own (default \code{TRUE}). The loading floor catches the
+      item that measures nothing; this catches the one that measures two
+      things, which the floor cannot see because a cross-loading item still
+      loads acceptably on its own factor, and which global fit does not reveal
+      either: an omitted cross-loading is absorbed by the interfactor
+      correlation, so in simulation six items cross-loading at .60 left RMSEA
+      at .053 and CFI at .997. Detection uses the modification index of the
+      absent loading, but never significance alone: the standardized expected
+      parameter change must also reach \code{cross_loading}, since a
+      significant index with a trivial EPC is precisely the capitalization on
+      chance this is meant to avoid.
   }
 }
 

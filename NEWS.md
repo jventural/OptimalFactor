@@ -85,6 +85,19 @@ fit.
   covariance at all, and ends at RMSEA .091. Slightly worse global fit, a
   defensible retained set, and one less parameter that the population may not
   have.
+* **`thresholds$enforce_simple_structure`** (default `TRUE`) and
+  **`thresholds$cross_loading`** (default 0.30): the floor catches the item
+  that measures nothing, not the one that measures two things. A cross-loading
+  item still loads acceptably on its own factor, so the floor never sees it.
+  Detection is by the modification index of the absent loading, but never by
+  significance alone: the standardized EPC must also reach the threshold, since
+  a significant index with a trivial EPC is the capitalization on chance the
+  whole exercise is meant to avoid. Adding this took the confirmatory
+  simulation from sensitivity .667/.583 to **.958/.958** and exact recovery
+  from .250/.167 to **.917/.917**, with specificity rising to **1.000** at both
+  sample sizes, fewer spurious residual covariances (.17 to .08 and .08 to .00)
+  and better final fit (RMSEA .031 to .013 and .035 to .004). Nothing was
+  traded away for it.
 * **`stop_reason`** is now returned, with values `all_targets_met`,
   `targets_met_loading_protected`, `no_improving_action` and `max_iterations`,
   so the caller no longer has to infer it from the log.
