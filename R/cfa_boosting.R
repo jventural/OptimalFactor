@@ -100,7 +100,11 @@ cfa_boosting <- function(data,
 
   # Mezclar defaults
   default_thresholds <- list(loading = 0.30, min_items_per_factor = 3,
-                              rmsea_target = 0.08, cfi_target = 0.95, srmr_target = 0.08)
+                              rmsea_target = 0.08, cfi_target = 0.95, srmr_target = 0.08,
+                              # Un item por debajo de 'loading' se elimina aunque el
+                              # ajuste global ya cumpla: es admisibilidad, no ajuste.
+                              # FALSE restaura el comportamiento previo a 1.3.0.
+                              enforce_loading = TRUE)
   thresholds <- modifyList(default_thresholds, thresholds)
 
   default_model_config <- list(estimator = "WLSMV", ordered = TRUE)
@@ -356,6 +360,15 @@ cfa_boosting <- function(data,
 
   # Contadores y logs
   iteration <- 0
+  # Por que se detuvo, para que el llamador no tenga que inferirlo del log:
+  #   all_targets_met                targets de ajuste cumplidos y sin items
+  #                                  por debajo del piso de carga
+  #   targets_met_loading_protected  targets cumplidos, pero quedan items bajo
+  #                                  el piso que no se pueden quitar sin violar
+  #                                  min_items_per_factor
+  #   no_improving_action            ninguna accion mejoraba el ajuste
+  #   max_iterations                 se agoto el tope de iteraciones
+  stop_reason <- "max_iterations"
   removed_items <- character(0)
   added_covs <- character(0)
   steps_log <- data.frame(
@@ -401,9 +414,61 @@ cfa_boosting <- function(data,
 
     # Verificar si ya cumple targets
     targets_check <- meets_targets(current_indices)
-    if (targets_check$all_met) {
+
+    # Items por debajo del piso de carga. Se calculan ANTES de decidir si el
+    # modelo esta terminado, porque el ajuste global no los delata: una carga
+    # poblacional de .20 convive con un RMSEA de .03, y hasta la version 1.3.0
+    # el `break` de arriba se ejecutaba primero y este chequeo era inalcanzable.
+    problematic <- get_problematic_items(current_fit, current_factors)
+    removable <- names(problematic)[vapply(names(problematic), function(it)
+      length(current_factors[[problematic[[it]]$factor]]) > thresholds$min_items_per_factor,
+      logical(1))]
+
+    if (targets_check$all_met && (!isTRUE(thresholds$enforce_loading) || !length(removable))) {
+      stop_reason <- if (targets_check$all_met && length(problematic))
+        "targets_met_loading_protected" else "all_targets_met"
       if (verbose) cat("\n*** TODOS LOS TARGETS ALCANZADOS ***\n")
       break
+    }
+
+    # Un item por debajo del piso NO es una cuestion de ajuste sino de
+    # admisibilidad: si el usuario declaro que .30 es el minimo, un item de .20
+    # no pertenece al modelo aunque quitarlo no mejore ningun indice. Por eso se
+    # elimina de forma incondicional, el peor primero y uno por iteracion, ya
+    # que las cargas se recalculan al reajustar.
+    if (isTRUE(thresholds$enforce_loading) && length(removable)) {
+      peor <- removable[which.min(vapply(removable,
+        function(it) abs(problematic[[it]]$loading), numeric(1)))]
+      f_peor <- problematic[[peor]]$factor
+
+      test_factors <- current_factors
+      test_factors[[f_peor]] <- setdiff(test_factors[[f_peor]], peor)
+      test_syntax <- build_model_syntax(test_factors, current_covs)
+      test_fit <- fit_cfa(test_syntax)
+
+      if (!is.null(test_fit) && lavInspect(test_fit, "converged")) {
+        current_factors <- test_factors
+        current_syntax  <- test_syntax
+        current_fit     <- test_fit
+        current_indices <- extract_fit(current_fit)
+        current_loss    <- composite_loss(current_indices)
+        removed_items   <- c(removed_items, peor)
+
+        steps_log <- rbind(steps_log, data.frame(
+          step = iteration, action = "Remove Item (below loading floor)",
+          detail = paste0("Eliminar ", peor, " (", f_peor, ", \u03BB=",
+                          fmt_num(problematic[[peor]]$loading), ")"),
+          rmsea = current_indices$rmsea, cfi = current_indices$cfi,
+          srmr = current_indices$srmr, loss = current_loss,
+          stringsAsFactors = FALSE))
+
+        if (verbose)
+          cat("  -> Eliminado", peor, "por carga", fmt_num(problematic[[peor]]$loading),
+              "< piso", thresholds$loading, "\n")
+        next
+      }
+      # Si el modelo sin ese item no converge, se deja pasar y siguen las
+      # estrategias guiadas por ajuste.
     }
 
     if (verbose) {
@@ -419,8 +484,7 @@ cfa_boosting <- function(data,
     best_detail <- NULL
 
     # ─────────── ESTRATEGIA 1: Eliminar items con carga baja ───────────
-    problematic <- get_problematic_items(current_fit, current_factors)
-
+    # 'problematic' ya se calculo arriba, junto con el chequeo de admisibilidad.
     if (length(problematic) > 0) {
       if (verbose) cat("  Evaluando eliminaci\u00F3n de", length(problematic), "items problem\u00E1ticos...\n")
 
@@ -666,6 +730,7 @@ cfa_boosting <- function(data,
     # ─────────── Aplicar mejor acción ───────────
     if (is.null(best_action)) {
       if (verbose) cat("\n  No se encontraron mejoras posibles. Deteniendo.\n")
+      stop_reason <- "no_improving_action"
       break
     }
 
@@ -799,6 +864,7 @@ cfa_boosting <- function(data,
     targets_met = final_targets,
     removed_items = removed_items,
     added_covariances = added_covs,
+    stop_reason = stop_reason,
     steps_log = steps_log,
     iterations = iteration,
     standardized_loadings = final_loadings,

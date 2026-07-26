@@ -53,6 +53,42 @@
   the population has none, which turns the MacCallum et al. (1992) objection
   into a number.
 
+## `cfa_boosting()` enforces its own loading floor
+
+The confirmatory simulation was built to evaluate the pipeline and immediately
+found a defect in it. The optimisation loop tested the fit targets first and
+broke as soon as they were met, so the low-loading check further down was
+unreachable: an item the user's own `thresholds$loading` declares inadmissible
+survived untouched whenever global fit happened to be acceptable. And global
+fit is acceptable far more often than one would hope. In simulation, a
+population item loading .20 sat inside a model with RMSEA = .03, and adding
+cross-loading items barely moved the index at all: with six items cross-loading
+at .60, RMSEA stayed at .053 while CFI *rose* to .997, because omitted
+cross-loadings are absorbed by the interfactor correlation instead of degrading
+fit.
+
+* **`thresholds$enforce_loading`** (default `TRUE`): an item below the loading
+  floor is now removed regardless of the fit indices, weakest first and one per
+  iteration since the loadings are re-estimated after each refit. This is an
+  admissibility criterion, not a fit optimisation, so the removal is
+  unconditional rather than contingent on improving the loss. Items whose
+  removal would breach `min_items_per_factor` are protected. `FALSE` restores
+  the previous behaviour.
+* Measured on the confirmatory simulation (12 replications, 12 good items at
+  .60 plus one cross-loading and one weak item): sensitivity rose from .167 to
+  .667 at N = 300 and from .208 to .583 at N = 600, with specificity unchanged
+  or better (.965 to .986, .965 to .965). The floor finds the contaminated
+  items without taking good ones along.
+* The trade is real and worth stating. On `Data_Personality` the previous
+  behaviour removed one item and bought its fit with a residual covariance
+  (RMSEA .083); enforcing the floor removes the weak item as well, needs no
+  covariance at all, and ends at RMSEA .091. Slightly worse global fit, a
+  defensible retained set, and one less parameter that the population may not
+  have.
+* **`stop_reason`** is now returned, with values `all_targets_met`,
+  `targets_met_loading_protected`, `no_improving_action` and `max_iterations`,
+  so the caller no longer has to infer it from the log.
+
 ## Progress, timeouts and parallel robustness
 
 Resampling exposed three things that made these functions unusable in practice

@@ -15,7 +15,8 @@ cfa_boosting(
   model,
   n_sample = NULL,
   thresholds = list(loading = 0.3, min_items_per_factor = 3,
-    rmsea_target = 0.08, cfi_target = 0.95, srmr_target = 0.08),
+    rmsea_target = 0.08, cfi_target = 0.95, srmr_target = 0.08,
+    enforce_loading = TRUE),
   model_config = list(estimator = "WLSMV", ordered = TRUE),
   mod_indices_config = list(max_covs_to_add = 10, only_within_factor = TRUE,
     delta = 0.1, power_threshold = 0.75, alpha = 0.05),
@@ -38,6 +39,17 @@ cfa_boosting(
     \item \code{rmsea_target}: Target RMSEA value (default 0.08)
     \item \code{cfi_target}: Target CFI value (default 0.95)
     \item \code{srmr_target}: Target SRMR value (default 0.08)
+    \item \code{enforce_loading}: Treat \code{loading} as an admissibility
+      floor rather than a hint (default \code{TRUE}). An item whose
+      standardized loading falls below it is removed even when the fit targets
+      are already met, unless removing it would breach
+      \code{min_items_per_factor}. \code{FALSE} restores the behaviour of
+      versions up to 1.3.0, where the loop stopped as soon as the fit targets
+      were satisfied and the loadings were never inspected. Global fit does not
+      reveal a weak item: in simulation an item loading .20 in the population
+      sat comfortably inside a model with RMSEA = .03. Enforcing the floor can
+      leave global fit slightly worse while making the retained set defensible,
+      which is the trade this option makes explicit.
   }
 }
 
