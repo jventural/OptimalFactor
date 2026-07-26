@@ -56,6 +56,41 @@ test_that("a mixture of failed and successful replications is summarised correct
   expect_equal(sim$summary$mean_retained, 6)
 })
 
+test_that("the number of factors fitted is crossed and reaches efa_boosting", {
+  visto <- integer(0)
+  perfect <- data.frame(Items = paste0("IT", 1:6),
+                        f1 = c(.7, .7, .7, 0, 0, 0),
+                        f2 = c(0, 0, 0, .7, .7, .7))
+  local_mocked_bindings(efa_boosting = function(n_factors, ...) {
+    visto <<- c(visto, n_factors)
+    list(final_structure = perfect, final_rmsea = 0.01, stop_reason = "canned")
+  })
+
+  sim <- simulate_recovery(n = 150, n_factors = 3, items_per_factor = 3,
+                           n_factors_fitted = c(2, 3, 4), n_reps = 2,
+                           verbose = FALSE)
+
+  expect_equal(sort(unique(visto)), c(2L, 3L, 4L))
+  expect_equal(nrow(sim$summary), 3L)
+  expect_equal(sim$summary$n_factors_fitted, c(2, 3, 4))
+  expect_true("n_factors_fitted" %in% names(sim$replications))
+  # The population keeps its own dimensionality whatever is fitted.
+  expect_equal(sim$population$n_factors, 3L)
+})
+
+test_that("omitting n_factors_fitted fits the true number of factors", {
+  visto <- integer(0)
+  local_mocked_bindings(efa_boosting = function(n_factors, ...) {
+    visto <<- c(visto, n_factors)
+    NULL
+  })
+  sim <- simulate_recovery(n = 150, n_factors = 2, items_per_factor = 3,
+                           n_reps = 2, verbose = FALSE)
+
+  expect_true(all(visto == 2L))
+  expect_equal(unique(sim$summary$n_factors_fitted), 2)
+})
+
 test_that("the in-process worker really fits", {
   skip_on_cran()
   # Regression test. The worker called OptimalFactor::efa_boosting even when

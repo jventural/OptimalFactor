@@ -102,6 +102,35 @@ fit.
   `targets_met_loading_protected`, `no_improving_action` and `max_iterations`,
   so the caller no longer has to infer it from the log.
 
+## Misspecified dimensionality: `n_factors_fitted`
+
+Every condition in a recovery design hands the pipeline the true number of
+factors, and in practice nobody knows it. `simulate_recovery()` gains
+`n_factors_fitted`, crossed like the other conditions, so the population keeps
+its own dimensionality while the algorithm is told something else.
+
+The answer is asymmetric, and the asymmetry is the practical finding. Against a
+three-factor population with 12 good items, one cross-loading item and one weak
+one (12 replications):
+
+| fitted | recovery | sensitivity | specificity | retained |
+|-------:|---------:|------------:|------------:|---------:|
+| 2      | .000     | .750 / .542 | **.729 / .653** | 9.25 / 8.75 |
+| 3      | 1.000    | .875        | 1.000       | 12.25    |
+| 4      | .667 / .556 | **.000** | .986 / 1.000 | 13.83 / 14.00 |
+
+Extracting too few factors is destructive: specificity collapses to .65-.73, so
+between three and four good items are discarded to force the data into a
+structure that cannot hold them. Extracting too many makes the pipeline inert
+instead: sensitivity falls to zero, no contaminated item is removed at all, and
+18 of 24 replications stop at `min_items_per_factor_protected`, because with
+four factors and fourteen items almost any removal breaches the minimum. The
+scale survives untouched, which is the harmless failure.
+
+The practical reading: when the dimensionality is uncertain, erring towards
+more factors leaves the algorithm conservative, while erring towards fewer
+leaves it removing good items.
+
 ## Population model: cross-loading items no longer share a factor pair
 
 `simulate_recovery()` and `simulate_cfa_recovery()` used to place every

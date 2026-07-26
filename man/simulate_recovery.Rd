@@ -22,6 +22,7 @@ simulate_recovery(
   verbose = TRUE,
   n_cores = 1,
   timeout = 120,
+  n_factors_fitted = NULL,
   ...
 )
 
@@ -72,6 +73,16 @@ removes the cap. A single pathological dataset can otherwise grind for many
 minutes and stall the condition it belongs to. A capped replication is
 recorded with \code{stop_reason = "timeout"}. Needs the \code{R.utils}
 package.}
+
+\item{n_factors_fitted}{Number of factors the pipeline is told to extract.
+Default \code{NULL}, meaning the true \code{n_factors}. Vector values are
+crossed into conditions, which is how the question a reviewer will ask gets
+answered: every other condition here hands the algorithm the true number of
+factors, and in practice nobody knows it. Fitting fewer factors than the
+population has cannot recover the structure by definition, so
+\code{recovery_rate} goes to zero and the informative columns become
+\code{sensitivity} and \code{specificity}: what the pipeline does to the
+items when the dimensionality is wrong.}
 
 \item{...}{Ignored.}
 

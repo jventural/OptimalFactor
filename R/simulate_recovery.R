@@ -57,6 +57,15 @@
 #'   minutes and hours; \code{parallel::detectCores() - 1} is a practical
 #'   choice. The datasets are always generated sequentially from \code{seed},
 #'   so results do not depend on the number of cores.
+#' @param n_factors_fitted Number of factors the pipeline is told to extract.
+#'   Default \code{NULL}, meaning the true \code{n_factors}. Vector values are
+#'   crossed into conditions, which is how the question a reviewer will ask gets
+#'   answered: every other condition here hands the algorithm the true number of
+#'   factors, and in practice nobody knows it. Fitting fewer factors than the
+#'   population has cannot recover the structure by definition, so
+#'   \code{recovery_rate} goes to zero and the informative columns become
+#'   \code{sensitivity} and \code{specificity}: what the pipeline does to the
+#'   items when the dimensionality is wrong.
 #' @param timeout Seconds allowed per replication. Default 120; \code{NULL}
 #'   removes the cap. A single pathological dataset can otherwise grind for many
 #'   minutes and stall the condition it belongs to. A capped replication is
@@ -90,11 +99,14 @@ simulate_recovery <- function(n = 500, loading = 0.65, items_per_factor = 5,
                               n_low = 1, low_loading = 0.20,
                               n_categories = 5, skew = c("symmetric", "skewed"),
                               n_reps = 100, seed = 2026, verbose = TRUE,
-                              n_cores = 1, timeout = 120, ...) {
+                              n_cores = 1, timeout = 120,
+                              n_factors_fitted = NULL, ...) {
   skew <- match.arg(skew)
   cl <- match.call()
+  if (is.null(n_factors_fitted)) n_factors_fitted <- n_factors
   conditions <- expand.grid(n = n, loading = loading,
                             items_per_factor = items_per_factor,
+                            n_factors_fitted = n_factors_fitted,
                             stringsAsFactors = FALSE)
   set.seed(seed)
 
@@ -117,16 +129,19 @@ simulate_recovery <- function(n = 500, loading = 0.65, items_per_factor = 5,
                                 n_low = n_low, low_loading = low_loading)
     pop_last <- pop
     if (verbose)
-      .of_say("Condition %d/%d: N=%d, lambda=%.2f, items/factor=%d (%d items total)",
+      .of_say("Condition %d/%d: N=%d, lambda=%.2f, items/factor=%d (%d items total)%s",
               ci, nrow(conditions), cnd$n, cnd$loading, cnd$items_per_factor,
-              nrow(pop$lambda))
+              nrow(pop$lambda),
+              if (cnd$n_factors_fitted != n_factors)
+                sprintf(" | fitting %d factors against %d in the population",
+                        cnd$n_factors_fitted, n_factors) else "")
 
     # The datasets are drawn sequentially so the design is reproducible from
     # 'seed' regardless of how many cores fit them afterwards.
     datasets <- lapply(seq_len(n_reps), function(r)
       .of_simulate_ordinal(pop$sigma, cnd$n, n_categories, skew,
                            colnames_prefix = "IT"))
-    fit_one <- .of_make_fit_worker(n_factors, dots, remote = use_par,
+    fit_one <- .of_make_fit_worker(cnd$n_factors_fitted, dots, remote = use_par,
                                    timeout = timeout)
 
     fits <- if (use_par) {
@@ -139,6 +154,7 @@ simulate_recovery <- function(n = 500, loading = 0.65, items_per_factor = 5,
       fit <- fits[[r]]
       row <- data.frame(condition = ci, n = cnd$n, loading = cnd$loading,
                         items_per_factor = cnd$items_per_factor,
+                        n_factors_fitted = cnd$n_factors_fitted,
                         rep = r, converged = !is.null(fit),
                         recovered = NA, sensitivity = NA_real_,
                         specificity = NA_real_, n_retained = NA_integer_,
@@ -162,7 +178,7 @@ simulate_recovery <- function(n = 500, loading = 0.65, items_per_factor = 5,
     ok <- d[d$converged, , drop = FALSE]
     data.frame(
       n = d$n[1], loading = d$loading[1], items_per_factor = d$items_per_factor[1],
-      n_reps = nrow(d),
+      n_factors_fitted = d$n_factors_fitted[1], n_reps = nrow(d),
       convergence_rate = round(mean(d$converged), 3),
       recovery_rate    = if (nrow(ok)) round(mean(ok$recovered, na.rm = TRUE), 3) else NA_real_,
       sensitivity      = if (nrow(ok)) round(mean(ok$sensitivity, na.rm = TRUE), 3) else NA_real_,
