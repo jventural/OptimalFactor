@@ -12,12 +12,12 @@ returns `invisible(NULL)`.
 ## Usage
 
 ``` r
-report_efa_results(res, show_plot = TRUE)
+report_efa_results(res, show_plot = TRUE, print = TRUE)
 ```
 
 ## Arguments
 
-- `res`:
+- res:
 
   A result list as returned by
   [`efa_boosting`](https://jventural.github.io/OptimalFactor/reference/efa_boosting.md),
@@ -43,10 +43,16 @@ report_efa_results(res, show_plot = TRUE)
   - `$interfactor_check`: optional list describing correlation-threshold
     checks.
 
-- `show_plot`:
+- show_plot:
 
   Logical; if `TRUE`, prints three ASCII evolution bars (RMSEA, SRMR,
   CFI).
+
+- print:
+
+  Logical; if `TRUE` (default), the formatted report is printed to the
+  console. If `FALSE`, the structured report object is returned without
+  printing.
 
 ## Details
 
@@ -87,8 +93,8 @@ Each block includes an ASCII axis guide:
 
 - CFI: ticks at 0.70, 0.80, 0.90, 0.95, 1.00.
 
-Bars are drawn using `█` and capped at a configurable length (default:
-20 characters).
+Bars are drawn using `a full block` and capped at a configurable length
+(default: 20 characters).
 
 **Item removal log.** The stepwise elimination table mirrors
 `steps_log`, formatting available fit indices (RMSEA, SRMR, CFI) to
@@ -115,8 +121,8 @@ three decimals.
 These labels are intended for rapid screening and should be interpreted
 in context.
 
-**Unicode.** The report uses UTF-8 box characters (`█`) and accented
-text. If your console lacks UTF-8 support, glyphs may degrade.
+**Unicode.** The report uses UTF-8 box characters (`a full block`) and
+accented text. If your console lacks UTF-8 support, glyphs may degrade.
 
 ## Value
 

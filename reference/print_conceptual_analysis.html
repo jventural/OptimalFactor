@@ -9,7 +9,7 @@ Outputs bilingual (English/Spanish) section headers according to resultado$confi
 
     <a class="navbar-brand me-2" href="../index.html">OptimalFactor</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,13 +54,13 @@ Outputs bilingual (English/Spanish) section headers according to <code>resultado
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-resultado"><code>resultado</code><a class="anchor" aria-label="anchor" href="#arg-resultado"></a></dt>
+<dl><dt id="arg-resultado">resultado<a class="anchor" aria-label="anchor" href="#arg-resultado"></a></dt>
 <dd><p>A result list returned by <code><a href="efa_optimizer.html">efa_optimizer</a></code> containing <code>$conceptual_analysis</code>, <code>$config_used</code>, and (optionally) <code>$conceptual_analysis$item_stats</code>.</p></dd>
 
-<dt id="arg-width"><code>width</code><a class="anchor" aria-label="anchor" href="#arg-width"></a></dt>
+<dt id="arg-width">width<a class="anchor" aria-label="anchor" href="#arg-width"></a></dt>
 <dd><p>Integer console width in characters used to wrap paragraphs (passed to <code>strwrap</code>).</p></dd>
 
-<dt id="arg-show-stats"><code>show_stats</code><a class="anchor" aria-label="anchor" href="#arg-show-stats"></a></dt>
+<dt id="arg-show-stats">show_stats<a class="anchor" aria-label="anchor" href="#arg-show-stats"></a></dt>
 <dd><p>Logical; if <code>TRUE</code>, prints technical statistics (primary loading, \(h^2\), RMSEA at removal, and removal reason) when available for each item.</p></dd>
 
 </dl></div>
@@ -85,7 +85,7 @@ If known API error patterns are present (e.g., “HTTP 503”, “Rate limit”,
 <p><strong>Language and headings.</strong>
 Headings and status messages are printed in Spanish when <code>resultado$config_used$ai_config$language</code> is <code>"spanish"</code> (or <code>"español"</code>); otherwise, English is used.</p>
 <p><strong>Unicode.</strong>
-The console output includes simple Unicode characters (e.g., box rules, emojis like <code>📊</code>, <code>⚠️</code>, <code>❌</code>).
+The console output includes simple Unicode characters (e.g., box rules, emojis like <code>a bar chart symbol</code>, <code>a warning sign</code>, <code>a cross mark</code>).
 If your console does not support UTF-8, some symbols may render as placeholders.</p>
     </div>
     <div class="section level2">

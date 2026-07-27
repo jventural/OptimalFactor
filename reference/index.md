@@ -30,6 +30,26 @@ Functions for Confirmatory Factor Analysis optimization
 - [`print(`*`<specification_search>`*`)`](https://jventural.github.io/OptimalFactor/reference/print.specification_search.md)
   : Print method for specification_search
 
+## Stability and Validation
+
+Evidence that a data-driven item selection is not capitalizing on
+chance, and Monte Carlo evidence on when the pipeline recovers a known
+structure.
+
+- [`item_stability()`](https://jventural.github.io/OptimalFactor/reference/item_stability.md)
+  [`print(`*`<item_stability>`*`)`](https://jventural.github.io/OptimalFactor/reference/item_stability.md)
+  : Resampling Stability of the EFA-Boosting Item Selection
+- [`simulate_recovery()`](https://jventural.github.io/OptimalFactor/reference/simulate_recovery.md)
+  [`print(`*`<simulate_recovery>`*`)`](https://jventural.github.io/OptimalFactor/reference/simulate_recovery.md)
+  : Monte Carlo Recovery of a Known Factor Structure
+- [`plot(`*`<simulate_recovery>`*`)`](https://jventural.github.io/OptimalFactor/reference/plot.simulate_recovery.md)
+  : Plot a Recovery Simulation
+- [`simulate_cfa_recovery()`](https://jventural.github.io/OptimalFactor/reference/simulate_cfa_recovery.md)
+  [`print(`*`<simulate_cfa_recovery>`*`)`](https://jventural.github.io/OptimalFactor/reference/simulate_cfa_recovery.md)
+  : Monte Carlo Recovery of a Known Structure with CFA-Boosting
+- [`plot(`*`<simulate_cfa_recovery>`*`)`](https://jventural.github.io/OptimalFactor/reference/plot.simulate_cfa_recovery.md)
+  : Plot a CFA Recovery Simulation
+
 ## Results Display
 
 Functions for displaying and exporting results
@@ -73,5 +93,4 @@ Kept for backward compatibility. Use specification_search_theory()
 instead, which adds a theory-congruence penalty to the loss.
 
 - [`specification_search()`](https://jventural.github.io/OptimalFactor/reference/specification_search.md)
-  [`print(`*`<specification_search>`*`)`](https://jventural.github.io/OptimalFactor/reference/specification_search.md)
   : Heuristic Specification Search for CFA Models (deprecated)

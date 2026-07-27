@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">OptimalFactor</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -86,91 +86,91 @@
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-data"><code>data</code><a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
+<dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>A <code>data.frame</code> containing observed variables.</p></dd>
 
-<dt id="arg-name-items"><code>name_items</code><a class="anchor" aria-label="anchor" href="#arg-name-items"></a></dt>
+<dt id="arg-name-items">name_items<a class="anchor" aria-label="anchor" href="#arg-name-items"></a></dt>
 <dd><p>Common item prefix (e.g., <code>"DP"</code> or <code>"PPTQ"</code>).</p></dd>
 
-<dt id="arg-item-range"><code>item_range</code><a class="anchor" aria-label="anchor" href="#arg-item-range"></a></dt>
+<dt id="arg-item-range">item_range<a class="anchor" aria-label="anchor" href="#arg-item-range"></a></dt>
 <dd><p>Integer vector of length 2 with the first/last item indices; if <code>NULL</code>, items are discovered by the prefix followed by a trailing integer.</p></dd>
 
-<dt id="arg-n-factors"><code>n_factors</code><a class="anchor" aria-label="anchor" href="#arg-n-factors"></a></dt>
+<dt id="arg-n-factors">n_factors<a class="anchor" aria-label="anchor" href="#arg-n-factors"></a></dt>
 <dd><p>Number of factors to extract.</p></dd>
 
-<dt id="arg-exclude-items"><code>exclude_items</code><a class="anchor" aria-label="anchor" href="#arg-exclude-items"></a></dt>
+<dt id="arg-exclude-items">exclude_items<a class="anchor" aria-label="anchor" href="#arg-exclude-items"></a></dt>
 <dd><p>Character vector of items to exclude at the start.</p></dd>
 
-<dt id="arg-thresholds"><code>thresholds</code><a class="anchor" aria-label="anchor" href="#arg-thresholds"></a></dt>
-<dd><p>List of decision thresholds:</p><dl><dt><code>rmsea</code></dt>
+<dt id="arg-thresholds">thresholds<a class="anchor" aria-label="anchor" href="#arg-thresholds"></a></dt>
+<dd><p>List of decision thresholds:</p><dl><dt>rmsea</dt>
 <dd><p>Maximum acceptable scaled RMSEA.</p></dd>
 
-  <dt><code>loading</code></dt>
+  <dt>loading</dt>
 <dd><p>Minimum salient absolute loading.</p></dd>
 
-  <dt><code>min_items_per_factor</code></dt>
+  <dt>min_items_per_factor</dt>
 <dd><p>Minimum items retained per factor (based on primary loading).</p></dd>
 
-  <dt><code>heywood_tol</code></dt>
+  <dt>heywood_tol</dt>
 <dd><p>Tolerance for detecting negative uniqueness (\(\psi &lt; -\)<code>heywood\_tol</code>) or impossible loadings.</p></dd>
 
-  <dt><code>near_heywood</code></dt>
+  <dt>near_heywood</dt>
 <dd><p>Band around zero uniqueness treated as near-Heywood.</p></dd>
 
 
 </dl></dd>
 
-<dt id="arg-model-config"><code>model_config</code><a class="anchor" aria-label="anchor" href="#arg-model-config"></a></dt>
-<dd><p>List of EFA fitting options:</p><dl><dt><code>estimator</code></dt>
+<dt id="arg-model-config">model_config<a class="anchor" aria-label="anchor" href="#arg-model-config"></a></dt>
+<dd><p>List of EFA fitting options:</p><dl><dt>estimator</dt>
 <dd><p>Estimator (e.g., <code>"WLSMV"</code>).</p></dd>
 
-  <dt><code>rotation</code></dt>
+  <dt>rotation</dt>
 <dd><p>Rotation method (e.g., <code>"oblimin"</code>).</p></dd>
 
 
 </dl></dd>
 
-<dt id="arg-use-ai-analysis"><code>use_ai_analysis</code><a class="anchor" aria-label="anchor" href="#arg-use-ai-analysis"></a></dt>
+<dt id="arg-use-ai-analysis">use_ai_analysis<a class="anchor" aria-label="anchor" href="#arg-use-ai-analysis"></a></dt>
 <dd><p>Logical; if <code>TRUE</code>, requests LLM justifications without affecting the optimization path.</p></dd>
 
-<dt id="arg-ai-config"><code>ai_config</code><a class="anchor" aria-label="anchor" href="#arg-ai-config"></a></dt>
-<dd><p>List with LLM settings:</p><dl><dt><code>api_key</code></dt>
+<dt id="arg-ai-config">ai_config<a class="anchor" aria-label="anchor" href="#arg-ai-config"></a></dt>
+<dd><p>List with LLM settings:</p><dl><dt>api_key</dt>
 <dd><p>API key (character).</p></dd>
 
-  <dt><code>generate_names</code></dt>
+  <dt>generate_names</dt>
 <dd><p>If <code>TRUE</code>, may also request short factor names (if implemented).</p></dd>
 
-  <dt><code>only_removed</code></dt>
+  <dt>only_removed</dt>
 <dd><p>If <code>TRUE</code>, justify only removed items; otherwise also justify retained items.</p></dd>
 
-  <dt><code>gpt_model</code></dt>
+  <dt>gpt_model</dt>
 <dd><p>LLM model identifier.</p></dd>
 
-  <dt><code>language</code></dt>
+  <dt>language</dt>
 <dd><p>Language for justifications; supports at least <code>"english"</code> and <code>"spanish"</code>.</p></dd>
 
-  <dt><code>analysis_detail</code></dt>
+  <dt>analysis_detail</dt>
 <dd><p>Verbosity level for the LLM answer; one of <code>"brief"</code>, <code>"standard"</code>, <code>"detailed"</code>.</p></dd>
 
   <dt><code>domain_name</code>, <code>scale_title</code>, <code>construct_definition</code>, <code>model_name</code></dt>
 <dd><p>Context strings injected into prompts.</p></dd>
 
-  <dt><code>item_definitions</code></dt>
+  <dt>item_definitions</dt>
 <dd><p>Named list mapping item IDs to plain-language item stems/descriptions used by the LLM.</p></dd>
 
 
 </dl></dd>
 
-<dt id="arg-verbose"><code>verbose</code><a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>Logical; if <code>TRUE</code>, prints progress, current structure, counts per factor, and a progress bar during LLM analysis.</p></dd>
 
-<dt id="arg--"><code>...</code><a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional arguments forwarded to <code><a href="https://rdrr.io/pkg/PsyMetricTools/man/EFA_modern.html" class="external-link">PsyMetricTools::EFA_modern()</a></code>.</p></dd>
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>Additional arguments forwarded to the package's internal EFA engine.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p><strong>Iteration logic.</strong></p><ol><li><p>Fit an EFA using <code><a href="https://rdrr.io/pkg/PsyMetricTools/man/EFA_modern.html" class="external-link">PsyMetricTools::EFA_modern</a></code> on the current item set (oblique rotation by default).</p></li>
+    <p><strong>Iteration logic.</strong></p><ol><li><p>Fit an EFA using the package's internal EFA engine on the current item set (oblique rotation by default).</p></li>
 <li><p>Extract the loading matrix \(L\) and the factor correlation matrix \(\Phi\) (identity if unavailable).</p></li>
 <li><p>Derive communalities \(h^2 = \mathrm{diag}(L \Phi L')\) and uniquenesses \(\psi = 1 - h^2\). Flag:</p><ul><li><p>Heywood (\(\psi &lt; -\)<code>heywood\_tol</code> or impossible loadings),</p></li>
 <li><p>near-Heywood (\(\psi\) within <code>[-near\_heywood, near\_heywood]</code>),</p></li>
@@ -191,60 +191,60 @@ If LLM is used, <span class="pkg">httr</span> and <span class="pkg">jsonlite</sp
     </div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list with:</p><dl><dt><code>final_structure</code></dt>
+    <p>A list with:</p><dl><dt>final_structure</dt>
 <dd><p>Data frame with the final, thresholded loadings and item labels.</p></dd>
 
-  <dt><code>removed_items</code></dt>
+  <dt>removed_items</dt>
 <dd><p>Character vector of removed items, in order.</p></dd>
 
-  <dt><code>steps_log</code></dt>
+  <dt>steps_log</dt>
 <dd><p>Data frame with <code>step</code>, <code>removed_item</code>, <code>reason</code>, <code>rmsea</code> (value at that step).</p></dd>
 
-  <dt><code>iterations</code></dt>
+  <dt>iterations</dt>
 <dd><p>Number of iterations executed.</p></dd>
 
-  <dt><code>final_rmsea</code></dt>
+  <dt>final_rmsea</dt>
 <dd><p>Scaled RMSEA at termination.</p></dd>
 
-  <dt><code>bondades_original</code></dt>
+  <dt>bondades_original</dt>
 <dd><p>Fit indices returned by <code>EFA_modern</code>.</p></dd>
 
-  <dt><code>specifications</code></dt>
+  <dt>specifications</dt>
 <dd><p>Model specifications returned by <code>EFA_modern</code>.</p></dd>
 
-  <dt><code>inter_factor_correlation</code></dt>
+  <dt>inter_factor_correlation</dt>
 <dd><p>Estimated \(\Phi\) (identity if unavailable or <code>n_factors == 1</code>).</p></dd>
 
-  <dt><code>last_h2</code></dt>
+  <dt>last_h2</dt>
 <dd><p>Vector of communalities from the last iteration.</p></dd>
 
-  <dt><code>last_psi</code></dt>
+  <dt>last_psi</dt>
 <dd><p>Vector of uniquenesses from the last iteration.</p></dd>
 
-  <dt><code>last_flags</code></dt>
+  <dt>last_flags</dt>
 <dd><p>List with logical vectors <code>heywood</code> and <code>near</code> for the last iteration.</p></dd>
 
-  <dt><code>conceptual_analysis</code></dt>
-<dd><p>If LLM used, a list with:</p><dl><dt><code>removed</code></dt>
+  <dt>conceptual_analysis</dt>
+<dd><p>If LLM used, a list with:</p><dl><dt>removed</dt>
 <dd><p>Named list of justifications for removed items (or <code>NULL</code>).</p></dd>
 
-      <dt><code>kept</code></dt>
+      <dt>kept</dt>
 <dd><p>Named list of justifications for retained items if <code>only_removed = FALSE</code> (or <code>NULL</code>).</p></dd>
 
-      <dt><code>item_stats</code></dt>
+      <dt>item_stats</dt>
 <dd><p>Named list of per-item statistics passed to the LLM (primary loading, \(h^2\), removal reason, RMSEA at removal).</p></dd>
 
 
 </dl><p></p></dd>
 
-  <dt><code>config_used</code></dt>
+  <dt>config_used</dt>
 <dd><p>Echo of <code>thresholds</code>, <code>model_config</code>, <code>use_ai_analysis</code>, and <code>ai_config</code> (including <code>language</code> and <code>analysis_detail</code>).</p></dd>
 
 
 </dl></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="https://rdrr.io/pkg/PsyMetricTools/man/EFA_modern.html" class="external-link">PsyMetricTools::EFA_modern</a></code></p></div>
+    <div class="dont-index"><p>the package's internal EFA engine</p></div>
     </div>
 
     <div class="section level2">

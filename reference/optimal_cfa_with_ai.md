@@ -4,7 +4,7 @@ Automatically refines a user‐specified Confirmatory Factor Analysis
 (CFA) model by iteratively evaluating fit and modification indices. At
 each step, the function:
 
-1\. Fits the CFA model and computes the scaled RMSEA. 2. If RMSEA ≤
+1\. Fits the CFA model and computes the scaled RMSEA. 2. If RMSEA \<=
 `rmsea_threshold`, stops. 3. Otherwise, identifies all modification
 indices (MI) \> `mi_threshold`. 4. Selects the largest MI and compares
 the standardized loadings for the two involved items; removes the item
@@ -134,7 +134,7 @@ The function proceeds through these phases:
 
     1.  Fit the current CFA model.
 
-    2.  Compute scaled RMSEA; if ≤ `rmsea_threshold`, stop.
+    2.  Compute scaled RMSEA; if \<= `rmsea_threshold`, stop.
 
     3.  Extract all MI \> `mi_threshold`; if none, stop.
 

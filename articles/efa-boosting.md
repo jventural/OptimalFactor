@@ -12,7 +12,9 @@ composite score that adjusts based on model complexity and sample size.
 ### Step 1: Initial Model Fit
 
 The algorithm starts by fitting an initial EFA model with all items
-using the `EFA_modern()` function from PsyMetricTools.
+using the package’s internal EFA engine, which fits the
+[`efa()`](https://rdrr.io/pkg/lavaan/man/efa.html) block syntax of
+lavaan with the requested estimator and rotation.
 
 ### Step 2: Problem Detection
 

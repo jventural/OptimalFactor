@@ -53,97 +53,97 @@ efa_optimizer(
 
 ## Arguments
 
-- `data`:
+- data:
 
   A `data.frame` containing observed variables.
 
-- `name_items`:
+- name_items:
 
   Common item prefix (e.g., `"DP"` or `"PPTQ"`).
 
-- `item_range`:
+- item_range:
 
   Integer vector of length 2 with the first/last item indices; if
   `NULL`, items are discovered by the prefix followed by a trailing
   integer.
 
-- `n_factors`:
+- n_factors:
 
   Number of factors to extract.
 
-- `exclude_items`:
+- exclude_items:
 
   Character vector of items to exclude at the start.
 
-- `thresholds`:
+- thresholds:
 
   List of decision thresholds:
 
-  `rmsea`
+  rmsea
 
   :   Maximum acceptable scaled RMSEA.
 
-  `loading`
+  loading
 
   :   Minimum salient absolute loading.
 
-  `min_items_per_factor`
+  min_items_per_factor
 
   :   Minimum items retained per factor (based on primary loading).
 
-  `heywood_tol`
+  heywood_tol
 
   :   Tolerance for detecting negative uniqueness (\\\psi \<
       -\\`heywood\_tol`) or impossible loadings.
 
-  `near_heywood`
+  near_heywood
 
   :   Band around zero uniqueness treated as near-Heywood.
 
-- `model_config`:
+- model_config:
 
   List of EFA fitting options:
 
-  `estimator`
+  estimator
 
   :   Estimator (e.g., `"WLSMV"`).
 
-  `rotation`
+  rotation
 
   :   Rotation method (e.g., `"oblimin"`).
 
-- `use_ai_analysis`:
+- use_ai_analysis:
 
   Logical; if `TRUE`, requests LLM justifications without affecting the
   optimization path.
 
-- `ai_config`:
+- ai_config:
 
   List with LLM settings:
 
-  `api_key`
+  api_key
 
   :   API key (character).
 
-  `generate_names`
+  generate_names
 
   :   If `TRUE`, may also request short factor names (if implemented).
 
-  `only_removed`
+  only_removed
 
   :   If `TRUE`, justify only removed items; otherwise also justify
       retained items.
 
-  `gpt_model`
+  gpt_model
 
   :   LLM model identifier.
 
-  `language`
+  language
 
   :   Language for justifications; supports at least `"english"` and
       `"spanish"`.
 
-  `analysis_detail`
+  analysis_detail
 
   :   Verbosity level for the LLM answer; one of `"brief"`,
       `"standard"`, `"detailed"`.
@@ -152,28 +152,26 @@ efa_optimizer(
 
   :   Context strings injected into prompts.
 
-  `item_definitions`
+  item_definitions
 
   :   Named list mapping item IDs to plain-language item
       stems/descriptions used by the LLM.
 
-- `verbose`:
+- verbose:
 
   Logical; if `TRUE`, prints progress, current structure, counts per
   factor, and a progress bar during LLM analysis.
 
-- `...`:
+- ...:
 
-  Additional arguments forwarded to
-  [`PsyMetricTools::EFA_modern()`](https://rdrr.io/pkg/PsyMetricTools/man/EFA_modern.html).
+  Additional arguments forwarded to the package's internal EFA engine.
 
 ## Details
 
 **Iteration logic.**
 
-1.  Fit an EFA using
-    [`PsyMetricTools::EFA_modern`](https://rdrr.io/pkg/PsyMetricTools/man/EFA_modern.html)
-    on the current item set (oblique rotation by default).
+1.  Fit an EFA using the package's internal EFA engine on the current
+    item set (oblique rotation by default).
 
 2.  Extract the loading matrix \\L\\ and the factor correlation matrix
     \\\Phi\\ (identity if unavailable).
@@ -228,77 +226,77 @@ function attempts to install them if missing.
 
 A list with:
 
-- `final_structure`:
+- final_structure:
 
   Data frame with the final, thresholded loadings and item labels.
 
-- `removed_items`:
+- removed_items:
 
   Character vector of removed items, in order.
 
-- `steps_log`:
+- steps_log:
 
   Data frame with `step`, `removed_item`, `reason`, `rmsea` (value at
   that step).
 
-- `iterations`:
+- iterations:
 
   Number of iterations executed.
 
-- `final_rmsea`:
+- final_rmsea:
 
   Scaled RMSEA at termination.
 
-- `bondades_original`:
+- bondades_original:
 
   Fit indices returned by `EFA_modern`.
 
-- `specifications`:
+- specifications:
 
   Model specifications returned by `EFA_modern`.
 
-- `inter_factor_correlation`:
+- inter_factor_correlation:
 
   Estimated \\\Phi\\ (identity if unavailable or `n_factors == 1`).
 
-- `last_h2`:
+- last_h2:
 
   Vector of communalities from the last iteration.
 
-- `last_psi`:
+- last_psi:
 
   Vector of uniquenesses from the last iteration.
 
-- `last_flags`:
+- last_flags:
 
   List with logical vectors `heywood` and `near` for the last iteration.
 
-- `conceptual_analysis`:
+- conceptual_analysis:
 
   If LLM used, a list with:
 
-  `removed`
+  removed
 
   :   Named list of justifications for removed items (or `NULL`).
 
-  `kept`
+  kept
 
   :   Named list of justifications for retained items if
       `only_removed = FALSE` (or `NULL`).
 
-  `item_stats`
+  item_stats
 
   :   Named list of per-item statistics passed to the LLM (primary
       loading, \\h^2\\, removal reason, RMSEA at removal).
 
-- `config_used`:
+- config_used:
 
   Echo of `thresholds`, `model_config`, `use_ai_analysis`, and
   `ai_config` (including `language` and `analysis_detail`).
 
 ## See also
 
-[`PsyMetricTools::EFA_modern`](https://rdrr.io/pkg/PsyMetricTools/man/EFA_modern.html)
+the package's internal EFA engine
 
 ## Examples
 

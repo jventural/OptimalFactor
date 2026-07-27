@@ -102,34 +102,25 @@ Fields of the returned list:
 ## Examples
 
 ``` r
-# \donttest{
+if (FALSE) { # \dontrun{
 data(Data_Personality, package = "OptimalFactor")
 # Run CFA boosting first to obtain an object suitable for the reporter.
-res <- cfa_boosting(
-  data        = Data_Personality,
-  name_items  = "P",
-  n_factors   = 3,
-  estimator   = "WLSMV",
-  rotation    = "oblimin",
-  fit_targets = list(cfi = 0.95, tli = 0.95,
-                      rmsea = 0.06, srmr = 0.08))
-#> Error in cfa_boosting(data = Data_Personality, name_items = "P", n_factors = 3,     estimator = "WLSMV", rotation = "oblimin", fit_targets = list(cfi = 0.95,         tli = 0.95, rmsea = 0.06, srmr = 0.08)): unused arguments (name_items = "P", n_factors = 3, estimator = "WLSMV", rotation = "oblimin", fit_targets = list(cfi = 0.95, tli = 0.95, rmsea = 0.06, srmr = 0.08))
+model <- '
+F1 =~ PPTQ1 + PPTQ2 + PPTQ3 + PPTQ4 + PPTQ5
+F2 =~ PPTQ6 + PPTQ7 + PPTQ8 + PPTQ9 + PPTQ10
+F3 =~ PPTQ11 + PPTQ12 + PPTQ13 + PPTQ14 + PPTQ15
+'
+res <- cfa_boosting(Data_Personality, model)
 
 # Pretty print to the console (default).
 report_cfa_results(res)
-#> Error: object 'res' not found
 
 # Capture the structured output without printing — useful inside Shiny
 # apps or scripts that need the data programmatically.
 rep <- report_cfa_results(res, print = FALSE)
-#> Error: object 'res' not found
 str(rep, max.level = 1)
-#> function (x, ...)  
 rep$fit_indices
-#> Error in rep$fit_indices: object of type 'special' is not subsettable
 rep$reliability
-#> Error in rep$reliability: object of type 'special' is not subsettable
 cat(paste(rep$text, collapse = "\n"))
-#> Error in rep$text: object of type 'special' is not subsettable
-# }
+} # }
 ```

@@ -20,6 +20,7 @@ redundancy_short_form(
   groups = NULL,
   min_per_group = 3,
   threshold = 0.15,
+  min_omega = NULL,
   estimator = "WLSMV",
   ordered = TRUE
 )
@@ -54,6 +55,15 @@ redundancy_short_form(
 
   Residual-correlation stopping threshold when `k = NULL`. Default 0.15.
 
+- min_omega:
+
+  Reliability floor. When set (e.g. `0.80`), an item is only dropped if
+  the resulting form keeps McDonald's omega at or above this value, so
+  the short form cannot buy fit at the cost of internal consistency. A
+  scale that already sits below the floor is not frozen: for it the
+  effective bar is its current omega, so removals that do not reduce
+  reliability are still allowed. `NULL` (default) disables the check.
+
 - estimator:
 
   Estimator passed to
@@ -67,9 +77,11 @@ redundancy_short_form(
 ## Value
 
 A list with `items` (retained items), `trajectory` (data frame with
-n_items, cfi, tli, rmsea, srmr and the item dropped at each step), `fit`
-(final one-factor `lavaan` object), `loadings` (standardized) and
-`omega` (McDonald's omega of the final form).
+n_items, cfi, tli, rmsea, srmr, omega and the item dropped at each
+step), `fit` (final one-factor `lavaan` object), `loadings`
+(standardized), `omega` (McDonald's omega of the final form) and
+`stop_reason` (`"target_k"`, `"threshold"`, `"min_items"`,
+`"min_per_group"` or `"min_omega"`).
 
 ## Details
 

@@ -17,19 +17,19 @@ print_conceptual_analysis(resultado, width = 80, show_stats = FALSE)
 
 ## Arguments
 
-- `resultado`:
+- resultado:
 
   A result list returned by
   [`efa_optimizer`](https://jventural.github.io/OptimalFactor/reference/efa_optimizer.md)
   containing `$conceptual_analysis`, `$config_used`, and (optionally)
   `$conceptual_analysis$item_stats`.
 
-- `width`:
+- width:
 
   Integer console width in characters used to wrap paragraphs (passed to
   `strwrap`).
 
-- `show_stats`:
+- show_stats:
 
   Logical; if `TRUE`, prints technical statistics (primary loading,
   \\h^2\\, RMSEA at removal, and removal reason) when available for each
@@ -82,8 +82,9 @@ Spanish when `resultado$config_used$ai_config$language` is `"spanish"`
 (or `"español"`); otherwise, English is used.
 
 **Unicode.** The console output includes simple Unicode characters
-(e.g., box rules, emojis like `📊`, `⚠️`, `❌`). If your console does
-not support UTF-8, some symbols may render as placeholders.
+(e.g., box rules, emojis like `a bar chart symbol`, `a warning sign`,
+`a cross mark`). If your console does not support UTF-8, some symbols
+may render as placeholders.
 
 ## Value
 

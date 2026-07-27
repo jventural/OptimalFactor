@@ -37,11 +37,11 @@ Dr. José Ventura‐León
 ``` r
 # Con ítems eliminados
 imprimir_items_eliminados(c("PPTQ5", "PPTQ10", "PPTQ15"))
-#> Error in imprimir_items_eliminados(c("PPTQ5", "PPTQ10", "PPTQ15")): could not find function "imprimir_items_eliminados"
+#> Ítems eliminados: PPTQ5, PPTQ10, PPTQ15
 #> Ítems eliminados: PPTQ5, PPTQ10, PPTQ15
 
 # Sin ítems eliminados
 imprimir_items_eliminados(character(0))
-#> Error in imprimir_items_eliminados(character(0)): could not find function "imprimir_items_eliminados"
+#> Ítems eliminados: Ninguno
 #> Ítems eliminados: Ninguno
 ```

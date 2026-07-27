@@ -71,26 +71,17 @@ Invisibly returns `result`; called for its side effects on the console.
 ## Examples
 
 ``` r
-# \donttest{
+if (FALSE) { # \dontrun{
 data(Data_Personality, package = "OptimalFactor")
-res <- cfa_boosting(
-  data       = Data_Personality,
-  name_items = "P",
-  n_factors  = 3,
-  estimator  = "WLSMV",
-  rotation   = "oblimin")
-#> Error in cfa_boosting(data = Data_Personality, name_items = "P", n_factors = 3,     estimator = "WLSMV", rotation = "oblimin"): unused arguments (name_items = "P", n_factors = 3, estimator = "WLSMV", rotation = "oblimin")
+model <- '
+F1 =~ PPTQ1 + PPTQ2 + PPTQ3 + PPTQ4 + PPTQ5
+F2 =~ PPTQ6 + PPTQ7 + PPTQ8 + PPTQ9 + PPTQ10
+F3 =~ PPTQ11 + PPTQ12 + PPTQ13 + PPTQ14 + PPTQ15
+'
+res <- cfa_boosting(Data_Personality, model)
 
 # Full printout (default).
 print_cfa_boosting(res)
-#> 
-#> ====================================================================== 
-#>    RESULTADOS CFA BOOSTING
-#> ====================================================================== 
-#> 
-#> --- RESUMEN ---
-#> 
-#> Error: object 'res' not found
 
 # Compact printout — hide steps log, raise the loading threshold, and
 # show fewer decimals when reporting in a slide deck.
@@ -98,13 +89,5 @@ print_cfa_boosting(res,
   show_steps        = FALSE,
   loading_threshold = 0.40,
   digits            = 2)
-#> 
-#> ====================================================================== 
-#>    RESULTADOS CFA BOOSTING
-#> ====================================================================== 
-#> 
-#> --- RESUMEN ---
-#> 
-#> Error: object 'res' not found
-# }
+} # }
 ```

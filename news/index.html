@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">OptimalFactor</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,6 +37,117 @@
       <small>Source: <a href="https://github.com/jventural/OptimalFactor/blob/master/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.3.0" id="optimalfactor-130">OptimalFactor 1.3.0<a class="anchor" aria-label="anchor" href="#optimalfactor-130"></a></h2>
+<div class="section level3">
+<h3 id="breaking-free-change-no-more-psymetrictools-dependency-1-3-0">Breaking-free change: no more PsyMetricTools dependency<a class="anchor" aria-label="anchor" href="#breaking-free-change-no-more-psymetrictools-dependency-1-3-0"></a></h3>
+<ul><li>
+<strong>The package no longer depends on <code>PsyMetricTools</code>.</strong> Every exploratory model was fitted through <code>PsyMetricTools::EFA_modern()</code>, a package that is not on CRAN, which blocked OptimalFactor’s own submission. The engine (model syntax → lavaan fit → fit measures → standardized pattern matrix) is now internal (<code>R/efa_modern_internal.R</code>) and calls <code><a href="https://rdrr.io/pkg/lavaan/man/cfa.html" class="external-link">lavaan::cfa()</a></code> with exactly the same arguments (<code>mimic = "Mplus"</code>, <code>ordered = TRUE</code>), so results are reproduced: on <code>Data_Personality</code> the largest loading difference against the old engine is 1.6e-05, which is smaller than the 1.9e-05 that lavaan itself produces between two identical runs. The internal version drops the <code>purrr</code> and <code>magrittr</code> usage of the original and returns a plain <code>data.frame</code> instead of a tibble.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="new-functions-1-3-0">New functions<a class="anchor" aria-label="anchor" href="#new-functions-1-3-0"></a></h3>
+<ul><li><p><strong><code><a href="../reference/item_stability.html">item_stability()</a></code></strong>: runs the whole <code><a href="../reference/efa_boosting.html">efa_boosting()</a></code> pipeline over bootstrap or subsample resamples and reports, per item, the retention and removal rates plus the stability of its factor assignment. Factor labels are aligned to a full-sample reference before agreement is computed, since rotation names factors arbitrarily. This is the empirical answer to the capitalization-on-chance objection (MacCallum, Roznowski &amp; Necowitz, 1992): an item dropped in 97 of 100 resamples is a defensible decision, one dropped in 55 is not. Ships with a <code>print</code> method that flags decisions taken in 25–75 % of resamples as unstable. Resampling defaults to <code>method = "subsample"</code>: drawing with replacement duplicates cases, which distorts the polychoric correlations ordinal estimation relies on, and on a sample of 100 leaves as few as 63 distinct cases, enough to send a WLSMV fit grinding for minutes. Measured on <code>Data_Personality</code> with <code>R = 40</code> over 8 cores, bootstrap took 5m46s with 3 replications hitting the cap against 2m31s with none under subsampling.</p></li>
+<li><p><strong><code><a href="../reference/simulate_recovery.html">simulate_recovery()</a></code></strong>: Monte Carlo evidence on when the pipeline recovers a known structure. Simulates ordinal data from a population model with good, cross-loading and weak items, crosses conditions over sample size, loading size and items per factor, and reports recovery rate, sensitivity (contaminated items removed) and specificity (good items kept). Replications are fitted in parallel through <code>n_cores</code>, which is what makes a crossed design feasible; the datasets are always drawn sequentially from <code>seed</code>, so results do not depend on how many cores ran them. Ships <code>print</code> and <code>plot</code> methods. <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> draws the recovery curve against sample size, one line per population loading and one panel per number of items per factor, which is the figure a validation paper reports.</p></li>
+<li><p><strong><code><a href="../reference/simulate_cfa_recovery.html">simulate_cfa_recovery()</a></code></strong>: the confirmatory counterpart, running the same population model through <code><a href="../reference/cfa_boosting.html">cfa_boosting()</a></code>. The question is not the same one: the structure is imposed rather than discovered, so the assignment cannot be wrong and what is measured is the item selection. Reports <code>exact_rate</code> (the removed set equals the contaminated set item for item), sensitivity, specificity and <code>mean_covs_added</code>, the residual covariances introduced where the population has none, which turns the MacCallum et al. (1992) objection into a number.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="cfa_boosting-enforces-its-own-loading-floor-1-3-0">
+<code>cfa_boosting()</code> enforces its own loading floor<a class="anchor" aria-label="anchor" href="#cfa_boosting-enforces-its-own-loading-floor-1-3-0"></a></h3>
+<p>The confirmatory simulation was built to evaluate the pipeline and immediately found a defect in it. The optimisation loop tested the fit targets first and broke as soon as they were met, so the low-loading check further down was unreachable: an item the user’s own <code>thresholds$loading</code> declares inadmissible survived untouched whenever global fit happened to be acceptable. And global fit is acceptable far more often than one would hope. In simulation, a population item loading .20 sat inside a model with RMSEA = .03, and adding cross-loading items barely moved the index at all: with six items cross-loading at .60, RMSEA stayed at .053 while CFI <em>rose</em> to .997, because omitted cross-loadings are absorbed by the interfactor correlation instead of degrading fit.</p>
+<ul><li>
+<strong><code>thresholds$enforce_loading</code></strong> (default <code>TRUE</code>): an item below the loading floor is now removed regardless of the fit indices, weakest first and one per iteration since the loadings are re-estimated after each refit. This is an admissibility criterion, not a fit optimisation, so the removal is unconditional rather than contingent on improving the loss. Items whose removal would breach <code>min_items_per_factor</code> are protected. <code>FALSE</code> restores the previous behaviour.</li>
+<li>Measured on the confirmatory simulation (12 replications, 12 good items at .60 plus one cross-loading and one weak item): sensitivity rose from .167 to .667 at N = 300 and from .208 to .583 at N = 600, with specificity unchanged or better (.965 to .986, .965 to .965). The floor finds the contaminated items without taking good ones along.</li>
+<li>The trade is real and worth stating. On <code>Data_Personality</code> the previous behaviour removed one item and bought its fit with a residual covariance (RMSEA .083); enforcing the floor removes the weak item as well, needs no covariance at all, and ends at RMSEA .091. Slightly worse global fit, a defensible retained set, and one less parameter that the population may not have.</li>
+<li>
+<strong><code>thresholds$enforce_simple_structure</code></strong> (default <code>TRUE</code>) and <strong><code>thresholds$cross_loading</code></strong> (default 0.30): the floor catches the item that measures nothing, not the one that measures two things. A cross-loading item still loads acceptably on its own factor, so the floor never sees it. Detection is by the modification index of the absent loading, but never by significance alone: the standardized EPC must also reach the threshold, since a significant index with a trivial EPC is the capitalization on chance the whole exercise is meant to avoid. Adding this took the confirmatory simulation from sensitivity .667/.583 to <strong>.958/.958</strong> and exact recovery from .250/.167 to <strong>.917/.917</strong>, with specificity rising to <strong>1.000</strong> at both sample sizes, fewer spurious residual covariances (.17 to .08 and .08 to .00) and better final fit (RMSEA .031 to .013 and .035 to .004). Nothing was traded away for it.</li>
+<li>
+<strong><code>stop_reason</code></strong> is now returned, with values <code>all_targets_met</code>, <code>targets_met_loading_protected</code>, <code>no_improving_action</code> and <code>max_iterations</code>, so the caller no longer has to infer it from the log.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="misspecified-dimensionality-n_factors_fitted-1-3-0">Misspecified dimensionality: <code>n_factors_fitted</code>
+<a class="anchor" aria-label="anchor" href="#misspecified-dimensionality-n_factors_fitted-1-3-0"></a></h3>
+<p>Every condition in a recovery design hands the pipeline the true number of factors, and in practice nobody knows it. <code><a href="../reference/simulate_recovery.html">simulate_recovery()</a></code> gains <code>n_factors_fitted</code>, crossed like the other conditions, so the population keeps its own dimensionality while the algorithm is told something else.</p>
+<p>The answer is asymmetric, and the asymmetry is the practical finding. Against a three-factor population with 12 good items, one cross-loading item and one weak one (12 replications):</p>
+<table class="table"><thead><tr><th align="right">fitted</th>
+<th align="right">recovery</th>
+<th align="right">sensitivity</th>
+<th align="right">specificity</th>
+<th align="right">retained</th>
+</tr></thead><tbody><tr><td align="right">2</td>
+<td align="right">.000</td>
+<td align="right">.750 / .542</td>
+<td align="right"><strong>.729 / .653</strong></td>
+<td align="right">9.25 / 8.75</td>
+</tr><tr><td align="right">3</td>
+<td align="right">1.000</td>
+<td align="right">.875</td>
+<td align="right">1.000</td>
+<td align="right">12.25</td>
+</tr><tr><td align="right">4</td>
+<td align="right">.667 / .556</td>
+<td align="right"><strong>.000</strong></td>
+<td align="right">.986 / 1.000</td>
+<td align="right">13.83 / 14.00</td>
+</tr></tbody></table><p>Extracting too few factors is destructive: specificity collapses to .65-.73, so between three and four good items are discarded to force the data into a structure that cannot hold them. Extracting too many makes the pipeline inert instead: sensitivity falls to zero, no contaminated item is removed at all, and 18 of 24 replications stop at <code>min_items_per_factor_protected</code>, because with four factors and fourteen items almost any removal breaches the minimum. The scale survives untouched, which is the harmless failure.</p>
+<p>The practical reading: when the dimensionality is uncertain, erring towards more factors leaves the algorithm conservative, while erring towards fewer leaves it removing good items.</p>
+</div>
+<div class="section level3">
+<h3 id="population-model-cross-loading-items-no-longer-share-a-factor-pair-1-3-0">Population model: cross-loading items no longer share a factor pair<a class="anchor" aria-label="anchor" href="#population-model-cross-loading-items-no-longer-share-a-factor-pair-1-3-0"></a></h3>
+<p><code><a href="../reference/simulate_recovery.html">simulate_recovery()</a></code> and <code><a href="../reference/simulate_cfa_recovery.html">simulate_cfa_recovery()</a></code> used to place every cross-loading item on the same two factors. With more than one such item that makes them clones: they correlate strongly, form a coherent cluster, and the rotation reports the cluster as a factor of its own, each item showing a single clean loading near .80. No item-level criterion can call that a cross-loading, because in the estimated solution it no longer is one, and the good items get displaced to make room for it. They are now spread over different pairs.</p>
+<p>The correction matters because it inverts the verdict. Under three cross-loading items at .55 plus two weak ones, the old generator made <code><a href="../reference/efa_boosting.html">efa_boosting()</a></code> look defective (sensitivity .617/.700, recovery falling to .75 at N = 600, contaminated items left in the pool). With the population correctly specified the same conditions give sensitivity .983/1.000, recovery 1.000 and specificity 1.000, retaining 12.08 and 12.00 items against the 12 good ones in the population. The apparent defect was the measuring instrument.</p>
+</div>
+<div class="section level3">
+<h3 id="progress-timeouts-and-parallel-robustness-1-3-0">Progress, timeouts and parallel robustness<a class="anchor" aria-label="anchor" href="#progress-timeouts-and-parallel-robustness-1-3-0"></a></h3>
+<p>Resampling exposed three things that made these functions unusable in practice rather than merely slow.</p>
+<ul><li>
+<strong>Progress is now reported while a cluster works.</strong> The parallel branch used to print nothing at all, which is indistinguishable from a hung session. Both simulations and <code><a href="../reference/item_stability.html">item_stability()</a></code> now print a bar with elapsed time and an estimate of what is left, announce the cluster starting up, and say in advance whether the bar will advance per round or jump at the end. Status lines go through <code><a href="https://rdrr.io/r/utils/flush.console.html" class="external-link">flush.console()</a></code>, without which the R console holds them until the computation ends.</li>
+<li>
+<strong><code>timeout</code> (default 120 s per replication)</strong> in <code><a href="../reference/item_stability.html">item_stability()</a></code>, <code><a href="../reference/simulate_recovery.html">simulate_recovery()</a></code> and <code><a href="../reference/simulate_cfa_recovery.html">simulate_cfa_recovery()</a></code>. A bootstrap draw of N = 100 can leave 63 distinct cases, and a WLSMV fit on the near singular matrix that follows runs for minutes: measured, one such replication passed 180 s without finishing, while the same one capped returns in 69 s. One replication like that stalls an entire run. Capped replications are counted and reported rather than hidden.</li>
+<li>
+<strong>Workers never outnumber tasks</strong>, and the master’s <code><a href="https://rdrr.io/r/base/libPaths.html" class="external-link">.libPaths()</a></code> is pushed to them before loading the package, so a session that added a library at runtime (RStudio project libraries, <code>renv</code>) does not produce workers that cannot find OptimalFactor. That failure previously surfaced as an opaque <code>checkForRemoteErrors()</code> message, because the guard tested for an error while <code><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace(quietly = TRUE)</a></code> merely returns <code>FALSE</code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="performance-1-3-0">Performance<a class="anchor" aria-label="anchor" href="#performance-1-3-0"></a></h3>
+<ul><li>
+<strong><code>performance$fit_target_only</code></strong> (default <code>TRUE</code>) in <code><a href="../reference/efa_boosting.html">efa_boosting()</a></code>. Evaluating a candidate reads only the <code>n_factors</code> solution, yet the engine fitted the 1..k-1 solutions as well and discarded them. Verified identical on <code>Data_Personality</code> and <code>Data_Expectativas</code> (structure, removed items, stop reason, RMSEA, omega and the fit table), with 38 % fewer lavaan fits and a 1.43x speedup where the greedy loop evaluates candidates. <code>FALSE</code> restores the previous behaviour.</li>
+<li>Cluster work is dispatched with <code>parLapplyLB</code>: replication times are heavy tailed, so load balancing matters more than it would with uniform tasks.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-1-3-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-3-0"></a></h3>
+<ul><li>
+<code>fits[[r]] &lt;- NULL</code> deleted the slot instead of filling it, and a failed replication returns exactly <code>NULL</code>. Any condition where a replication failed aborted with a subscript error; the same idiom in <code><a href="../reference/item_stability.html">item_stability()</a></code> kept its progress counter permanently at “0 failed”.</li>
+<li>The fitting workers addressed <code><a href="../reference/efa_boosting.html">OptimalFactor::efa_boosting</a></code> even when running in process, which fails under <code>devtools::load_all()</code> because nothing is exported yet. The error was swallowed and every replication was recorded as a silent non-convergence, a result that looked like evidence.</li>
+<li>The skewed response thresholds were not cumulative proportions, so the skew came out reversed with about 70 % of responses in the top category.</li>
+<li>Passing <code>performance</code> through <code>...</code> to the resampling functions raised “formal argument matched by multiple actual arguments” instead of overriding the defaults. It is now merged.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="tests-1-3-0">Tests<a class="anchor" aria-label="anchor" href="#tests-1-3-0"></a></h3>
+<ul><li>The package ships <code>tests/testthat</code> for the first time: 170 checks over the population model, the ordinal simulation, factor alignment, recovery scoring for both pipelines, the progress helpers and the timeout translation, with regression tests for each of the fixes above.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="reliability-floor-1-3-0">Reliability floor<a class="anchor" aria-label="anchor" href="#reliability-floor-1-3-0"></a></h3>
+<ul><li>
+<strong><code>thresholds$min_omega</code></strong> in <code><a href="../reference/efa_boosting.html">efa_boosting()</a></code> and <strong><code>min_omega</code></strong> in <code><a href="../reference/redundancy_short_form.html">redundancy_short_form()</a></code>: an item is removed only if every factor keeps McDonald’s omega at or above the floor. It is deliberately a constraint and not a term in the loss — reliability is not interpretable in the ill-fitting intermediate models the loss visits, so omega vetoes individual removals instead of trading against the fit indices. A factor already below the floor is not frozen: its effective bar becomes its current omega, so removals that do not reduce reliability remain available. Heywood cases are exempt, because an inadmissible solution must be fixed regardless. <code>NULL</code> (default) reproduces the previous behaviour exactly.</li>
+<li>New stop reason <code>min_omega_protected</code>.</li>
+<li>
+<code><a href="../reference/efa_boosting.html">efa_boosting()</a></code> now always returns <code>omega_final</code> (omega per factor) and <code>omega_check</code>, whether or not the floor is active.</li>
+<li>
+<code><a href="../reference/redundancy_short_form.html">redundancy_short_form()</a></code> gained an <code>omega</code> column in its trajectory plus <code>stop_reason</code> and <code>omega_blocked</code> fields.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.2.2" id="optimalfactor-122">OptimalFactor 1.2.2<a class="anchor" aria-label="anchor" href="#optimalfactor-122"></a></h2>
+<div class="section level3">
+<h3 id="cran-readiness-1-2-2">CRAN readiness<a class="anchor" aria-label="anchor" href="#cran-readiness-1-2-2"></a></h3>
+<ul><li>
+<code>R CMD check --as-cran</code> now passes with 0 errors and 0 warnings (apart from the expected note about <code>PsyMetricTools</code> not yet being on CRAN): non-ASCII characters in R code were escaped to <code>\uXXXX</code>, runtime calls to <code><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages()</a></code> / <code>devtools::install_github()</code> were replaced by informative errors, <code><a href="https://rdrr.io/r/base/library.html" class="external-link">library()</a></code> calls inside functions were removed, and the <code>Remotes</code> field was dropped from <code>DESCRIPTION</code>.</li>
+<li>
+<code><a href="../reference/imprimir_items_eliminados.html">imprimir_items_eliminados()</a></code> is now exported.</li>
+<li>Documentation fixes: usage sections synchronized with the real default arguments of <code><a href="../reference/cfa_boosting.html">cfa_boosting()</a></code> and <code><a href="../reference/efa_boosting.html">efa_boosting()</a></code>, examples updated to the current <code>cfa_boosting(data, model)</code> signature, duplicated alias for <code>print.specification_search</code> removed, and the new <code>print</code> argument of <code><a href="../reference/report_efa_results.html">report_efa_results()</a></code> documented.</li>
+<li>
+<code>parallel</code> and <code>stats</code> are now declared in <code>Imports</code>.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.2.1" id="optimalfactor-121">OptimalFactor 1.2.1<a class="anchor" aria-label="anchor" href="#optimalfactor-121"></a></h2>
 <ul><li>All AI calls (conceptual analysis in <code><a href="../reference/efa_boosting.html">efa_boosting()</a></code>, <code><a href="../reference/efa_optimizer.html">efa_optimizer()</a></code>, <code><a href="../reference/optimal_efa_with_ai.html">optimal_efa_with_ai()</a></code> and <code><a href="../reference/optimal_cfa_with_ai.html">optimal_cfa_with_ai()</a></code>) now honour the <code>OPENAI_BASE_URL</code> environment variable, so they can be redirected to any OpenAI-compatible provider — e.g. the Hugging Face router (<code>https://router.huggingface.co/v1</code>) to use models such as <code>Qwen/Qwen2.5-72B-Instruct</code> with an <code>hf_</code> token. Default behaviour (variable unset) is unchanged.</li>

@@ -7,7 +7,7 @@ factor naming. At each iteration it:
 
 1.  Estimates the specified EFA model on the current set of items.
 
-2.  Computes the scaled RMSEA and checks whether it is ≤
+2.  Computes the scaled RMSEA and checks whether it is \<=
     `threshold_rmsea` and every factor retains at least
     `min_items_per_factor` items.
 
@@ -160,14 +160,13 @@ optimal_efa_with_ai(
 
 - ...:
 
-  Additional arguments passed to
-  [`EFA_modern`](https://rdrr.io/pkg/PsyMetricTools/man/EFA_modern.html).
+  Additional arguments passed to the package's internal EFA engine.
 
 ## Details
 
 The function proceeds as follows:
 
-1.  Installs and loads `PsyMetricTools` if not already available.
+1.  Fits the exploratory models with the package's internal EFA engine.
 
 2.  Determines the initial set of items from `items` or from
     `name_items` and `n_items`.
@@ -181,7 +180,7 @@ The function proceeds as follows:
     3.  Evaluates the factor‐loading structure for cross‐loadings or
         lack of loadings.
 
-    4.  If RMSEA ≤ `threshold_rmsea` and each factor has ≥
+    4.  If RMSEA \<= `threshold_rmsea` and each factor has \>=
         `min_items_per_factor`, stops.
 
     5.  Otherwise, removes the item whose exclusion most improves RMSEA
@@ -222,13 +221,12 @@ A list with components:
 
 - bondades_original:
 
-  Original fit indices and other model information from
-  [`EFA_modern`](https://rdrr.io/pkg/PsyMetricTools/man/EFA_modern.html).
+  Original fit indices and other model information from the package's
+  internal EFA engine.
 
 - specifications:
 
-  Model specifications returned by
-  [`EFA_modern`](https://rdrr.io/pkg/PsyMetricTools/man/EFA_modern.html).
+  Model specifications returned by the package's internal EFA engine.
 
 - conceptual_analysis:
 

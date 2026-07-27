@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">OptimalFactor</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -87,7 +87,9 @@ size.</p>
 <h3 id="step-1-initial-model-fit">Step 1: Initial Model Fit<a class="anchor" aria-label="anchor" href="#step-1-initial-model-fit"></a>
 </h3>
 <p>The algorithm starts by fitting an initial EFA model with all items
-using the <code>EFA_modern()</code> function from PsyMetricTools.</p>
+using the package’s internal EFA engine, which fits the
+<code><a href="https://rdrr.io/pkg/lavaan/man/efa.html" class="external-link">efa()</a></code> block syntax of lavaan with the requested estimator
+and rotation.</p>
 </div>
 <div class="section level3">
 <h3 id="step-2-problem-detection">Step 2: Problem Detection<a class="anchor" aria-label="anchor" href="#step-2-problem-detection"></a>

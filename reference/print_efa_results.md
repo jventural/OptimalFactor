@@ -36,8 +36,7 @@ The function prints to the console in the following order:
 3.  “Step Log” displaying the data frame of each removal step.
 
 4.  “Final Fit Indices” printing the `bondades_original` object as
-    returned by
-    [`PsyMetricTools::EFA_modern`](https://rdrr.io/pkg/PsyMetricTools/man/EFA_modern.html).
+    returned by the package's internal EFA engine.
 
 ## Value
 

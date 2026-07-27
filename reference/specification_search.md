@@ -47,9 +47,6 @@ specification_search(
   n_cores = 1,
   verbose = TRUE
 )
-
-# S3 method for class 'specification_search'
-print(x, top = 10, ...)
 ```
 
 ## Arguments
@@ -147,18 +144,6 @@ print(x, top = 10, ...)
 - verbose:
 
   Print progress and the MacCallum warning.
-
-- x:
-
-  An object returned by `specification_search`.
-
-- top:
-
-  Number of rows displayed by the print method.
-
-- ...:
-
-  Ignored.
 
 ## Details
 

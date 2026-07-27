@@ -36,14 +36,29 @@ efa_boosting(
   n_factors = 3,
   n_sample = NULL,
   exclude_items = NULL,
-  thresholds = list(...),
-  model_config = list(...),
-  performance = list(...),
+  thresholds = list(loading = 0.3, min_items_per_factor = 3,
+    heywood_tol = 1e-06, near_heywood = 0.015,
+    min_interfactor_correlation = 0.32, min_omega = NULL),
+  model_config = list(estimator = "WLSMV", rotation = "oblimin"),
+  performance = list(max_candidates_eval = 12, smart_pruning = TRUE,
+    timeout_efa = 30, timeout_optimization = 120, use_timeouts = FALSE,
+    emit_progress = TRUE, fit_target_only = TRUE),
   use_global = FALSE,
-  global_opt = list(...),
-  fit_config = list(...),
+  global_opt = list(max_drop = 2, max_global_combinations = 5000,
+    verbose = TRUE, progress_bar = TRUE),
+  fit_config = list(targets = list(rmsea = 0.08, srmr = 0.06, cfi = 0.95),
+    margins = list(rmsea = 0.03, srmr = 0.03, cfi = 0.03),
+    base_weights = list(rmsea = 0.5, srmr = 0.25, cfi = 0.25),
+    small_df_cut = 5,
+    small_df_weights = list(rmsea = 0.15, srmr = 0.45, cfi = 0.4),
+    wlsmv_boost = list(rmsea = 0.8, srmr = 1.2, cfi = 1.1),
+    use_pclose_if_available = TRUE, pclose_bonus = 0.1),
   use_ai_analysis = FALSE,
-  ai_config = list(...),
+  ai_config = list(api_key = NULL, generate_names = FALSE,
+    only_removed = TRUE, gpt_model = "gpt-3.5-turbo", language = "english",
+    analysis_detail = "detailed", domain_name = "Default Domain",
+    scale_title = "Default Scale Title", construct_definition = "",
+    model_name = "EFA Model", item_definitions = NULL),
   verbose = TRUE,
   ...
 )
@@ -51,33 +66,33 @@ efa_boosting(
 
 ## Arguments
 
-- `data`:
+- data:
 
   Data frame of item responses.
 
-- `name_items`:
+- name_items:
 
   Item prefix (e.g., `"IT"` produces IT1, IT2, …). Used for
   auto-detection.
 
-- `item_range`:
+- item_range:
 
   Integer vector `c(start, end)`. If `NULL`, items are auto-detected.
 
-- `n_factors`:
+- n_factors:
 
   Number of factors.
 
-- `n_sample`:
+- n_sample:
 
   Sample size. If `NULL`, auto-detected as `nrow(data)`. Used for df × N
   adaptive weighting of the composite fit index.
 
-- `exclude_items`:
+- exclude_items:
 
   Items excluded before starting optimization.
 
-- `thresholds`:
+- thresholds:
 
   Rules governing structural decisions:
 
@@ -90,7 +105,20 @@ efa_boosting(
   - `min_interfactor_correlation`: Minimum acceptable factor
     correlation.
 
-- `model_config`:
+  - `min_omega`: Reliability floor. When set (e.g. `0.80`), an item is
+    removed only if every factor keeps McDonald's omega at or above this
+    value, so the algorithm cannot buy fit at the cost of internal
+    consistency. Omega is a guard rail here, never a term in the loss:
+    reliability is only interpretable once the model fits, so it vetoes
+    individual removals instead of competing with the fit indices. A
+    factor that already sits below the floor is not frozen — its
+    effective bar becomes its current omega, so removals that do not
+    reduce reliability are still allowed. Heywood cases are exempt,
+    since an inadmissible solution must be fixed regardless. `NULL`
+    (default) disables the check and reproduces the behaviour of
+    versions prior to 1.3.0 exactly.
+
+- model_config:
 
   EFA estimation configuration:
 
@@ -98,7 +126,7 @@ efa_boosting(
 
   - `rotation = "oblimin"`
 
-- `performance`:
+- performance:
 
   Performance and timeout settings:
 
@@ -111,11 +139,28 @@ efa_boosting(
 
   - `use_timeouts`: Enable/disable timeout protection.
 
-- `use_global`:
+  - `smart_pruning`: Rank candidates by smallest maximum loading before
+    applying `max_candidates_eval`, so the items most likely to be
+    removed are the ones evaluated.
+
+  - `emit_progress`: Emit a
+    [`message()`](https://rdrr.io/r/base/message.html) per iteration and
+    per candidate, which is what lets a Shiny app show live progress.
+
+  - `fit_target_only`: Fit only the `n_factors` solution while
+    evaluating a candidate (default `TRUE`). The engine used to fit the
+    1..k-1 solutions as well and discard them, since candidate
+    evaluation reads only the target one. Results are identical,
+    verified on `Data_Personality` and `Data_Expectativas` across
+    structure, removed items, stop reason, RMSEA, omega and the fit
+    table, with 38 percent fewer lavaan fits where the greedy loop
+    evaluates candidates. `FALSE` restores the previous behaviour.
+
+- use_global:
 
   Enable global subset search (multi-item removal).
 
-- `global_opt`:
+- global_opt:
 
   Configuration for global search:
 
@@ -127,7 +172,7 @@ efa_boosting(
 
   - `progress_bar`: Show a visual progress bar.
 
-- `fit_config`:
+- fit_config:
 
   Configuration of the adaptive composite fit index:
 
@@ -155,12 +200,12 @@ efa_boosting(
 
   - `pclose_bonus`: Amount subtracted from composite loss.
 
-- `use_ai_analysis`:
+- use_ai_analysis:
 
   Enable GPT-based conceptual analysis of removed (and optionally
   retained) items.
 
-- `ai_config`:
+- ai_config:
 
   AI analysis configuration:
 
@@ -182,10 +227,14 @@ efa_boosting(
 
   - `only_removed`: If FALSE, retained items are also analyzed.
 
-- `verbose`:
+- verbose:
 
   If TRUE, prints the full diagnostic report, global-search bars, item
   maps, interfactor-correlation warnings, and AI progress bars.
+
+- ...:
+
+  Additional arguments passed to internal estimation routines.
 
 ## Details
 
@@ -193,9 +242,9 @@ efa_boosting(
 
 The algorithm follows a strict hierarchical rule system:
 
-- Remove Heywood items (ψ \< –tol or \|loading\| \> 1).
+- Remove Heywood items (\\\psi\\ \< –tol or \|loading\| \> 1).
 
-- Remove near-Heywood items (ψ ≈ 0).
+- Remove near-Heywood items (\\\psi\\ ~ 0).
 
 - Resolve cross-loadings by removing items with smallest ambiguity gap.
 
@@ -217,7 +266,7 @@ Weights for RMSEA / SRMR / CFI adapt dynamically according to:
 
 - estimator (WLSMV boosters),
 
-- p-close ≥ .05 (bonus).
+- p-close \>= .05 (bonus).
 
 This allows stable decisions even when RMSEA is unreliable (df \< 5).
 
@@ -226,8 +275,8 @@ This allows stable decisions even when RMSEA is unreliable (df \< 5).
 After each iteration and at finalization, factor correlations are
 checked:
 
-- If any \|φ_ij\| \< `min_interfactor_correlation`, a warning is
-  printed.
+- If any \\\|\phi\_{ij}\|\\ \< `min_interfactor_correlation`, a warning
+  is printed.
 
 **4. Global subset search.**
 
@@ -246,7 +295,8 @@ If enabled:
 If `use_ai_analysis = TRUE`:
 
 - removed items receive a narrative justification using loadings,
-  ambiguity gaps, h², ψ, RMSEA-at-removal, and algorithmic reason,
+  ambiguity gaps, h², \\\psi\\, RMSEA-at-removal, and algorithmic
+  reason,
 
 - retained items can also be evaluated,
 
@@ -284,9 +334,22 @@ A list containing:
 
 - `bondades_original`: Fit indices from the final model.
 
-- `inter_factor_correlation`: Final φ matrix.
+- `stop_reason`: Why the loop ended (`"all_criteria_met"`,
+  `"min_items_per_factor_protected"`, `"min_omega_protected"`,
+  `"fit_target_reached"`, `"max_iterations"`, `"not_enough_items"`,
+  `"timeout"`, `"efa_convergence_failed"`,
+  `"fit_zero_no_structural_problem"`).
+
+- `inter_factor_correlation`: Final phi matrix.
 
 - `interfactor_check`: Information about violations.
+
+- `omega_final`: McDonald's omega per factor in the final solution,
+  computed from the primary loadings of the pattern matrix. Always
+  reported, whether or not the floor is active.
+
+- `omega_check`: The floor in force, whether it was met, and
+  `blocked_items` (items the floor kept from being removed).
 
 - `last_h2`, `last_psi`: Final communalities and uniquenesses.
 

@@ -19,6 +19,17 @@ and CFA using machine-learning inspired boosting algorithms.
   Kenny, Shi & Savalei (2022)
 - **Automatic Problem Detection**: Heywood cases, cross-loadings, and
   low loadings
+- **Admissibility over fit (CFA)**:
+  [`cfa_boosting()`](https://jventural.github.io/OptimalFactor/reference/cfa_boosting.md)
+  removes items below the loading floor, and items loading on a foreign
+  factor, even when the fit targets are already met — because global fit
+  does not reveal either of them
+- **Monte Carlo validation**:
+  [`simulate_recovery()`](https://jventural.github.io/OptimalFactor/reference/simulate_recovery.md)
+  and
+  [`simulate_cfa_recovery()`](https://jventural.github.io/OptimalFactor/reference/simulate_cfa_recovery.md)
+  measure how often each pipeline recovers a structure that is known in
+  advance
 - **Global Search**: Multi-item removal optimization
 - **AI Integration**: Optional GPT-powered conceptual analysis of
   removed items
@@ -70,9 +81,144 @@ result <- efa_boosting(
 | [`cross_validate_cfa()`](https://jventural.github.io/OptimalFactor/reference/cross_validate_cfa.md) | Split-half cross-validation of a factor model |
 | [`bifactor_indices()`](https://jventural.github.io/OptimalFactor/reference/bifactor_indices.md) | Bifactor statistical indices |
 | [`redundancy_short_form()`](https://jventural.github.io/OptimalFactor/reference/redundancy_short_form.md) | Redundancy-guided short form of a unidimensional scale |
+| [`item_stability()`](https://jventural.github.io/OptimalFactor/reference/item_stability.md) | Resampling stability of the EFA-boosting item selection |
+| [`simulate_recovery()`](https://jventural.github.io/OptimalFactor/reference/simulate_recovery.md) | Monte Carlo recovery of a known factor structure (EFA) |
+| [`simulate_cfa_recovery()`](https://jventural.github.io/OptimalFactor/reference/simulate_cfa_recovery.md) | Monte Carlo item selection against a known population (CFA) |
 | [`report_efa_results()`](https://jventural.github.io/OptimalFactor/reference/report_efa_results.md) | Structured + console report of an EFA-boosting run |
 | [`report_cfa_results()`](https://jventural.github.io/OptimalFactor/reference/report_cfa_results.md) | Structured + console report of a CFA-boosting run |
 | [`print_conceptual_analysis()`](https://jventural.github.io/OptimalFactor/reference/print_conceptual_analysis.md) | Display AI-generated item analyses |
+
+### Is the item selection stable, or is it chance?
+
+Data-driven item purification invites the classic objection of
+capitalization on chance (MacCallum, Roznowski & Necowitz, 1992).
+[`item_stability()`](https://jventural.github.io/OptimalFactor/reference/item_stability.md)
+answers it empirically: it re-runs the whole pipeline over resamples and
+reports how often each item survives and how stable its factor
+assignment is.
+
+``` r
+
+st <- item_stability(your_data, "item", n_factors = 3, R = 100)
+st              # retention rates, factor agreement, unstable decisions
+```
+
+An item dropped in 97 of 100 resamples is a defensible removal; one
+dropped in 55 is a coin flip. The printed summary flags every decision
+taken in 25–75 % of resamples as unstable.
+
+### When does the pipeline recover the true structure?
+
+[`simulate_recovery()`](https://jventural.github.io/OptimalFactor/reference/simulate_recovery.md)
+simulates ordinal data from a population model with good, cross-loading
+and weak items, runs the pipeline on each replication and crosses
+conditions over sample size, loading size and items per factor.
+
+``` r
+
+sim <- simulate_recovery(n = c(200, 500, 1000), loading = c(0.50, 0.70),
+                         n_reps = 200, n_cores = 8)
+sim$summary     # recovery rate, sensitivity, specificity per condition
+plot(sim)       # the recovery curve against sample size
+```
+
+Sensitivity (contaminated items removed) and specificity (good items
+kept) must be read together: an algorithm that removes everything scores
+a perfect sensitivity and a dismal specificity.
+
+Replications are fitted in parallel through `n_cores`, while the
+datasets are always drawn sequentially from `seed`, so the results do
+not depend on how many cores ran them. Each replication is capped by
+`timeout` (120 s by default): resampling puts the pipeline on datasets
+nobody would analyse by hand, and a single one of them can otherwise
+grind for minutes and stall the whole run.
+
+### What if the number of factors is wrong?
+
+Every condition above hands the algorithm the true number of factors,
+and in practice nobody knows it. `n_factors_fitted` crosses that too,
+and the answer is asymmetric:
+
+``` r
+
+simulate_recovery(n = c(300, 600), n_factors = 3,
+                  n_factors_fitted = c(2, 3, 4), n_reps = 200)
+```
+
+Extracting **too few** factors is destructive: specificity falls to
+around .65–.73, so good items are discarded to force the data into a
+structure that cannot hold them, and the loop stops satisfied with the
+result. Extracting **too many** makes the pipeline inert instead: it
+removes nothing, because almost any removal would breach
+`min_items_per_factor`, and the scale comes out untouched. When the
+dimensionality is uncertain, erring towards more factors is the harmless
+mistake.
+
+### The confirmatory side
+
+[`simulate_cfa_recovery()`](https://jventural.github.io/OptimalFactor/reference/simulate_cfa_recovery.md)
+asks a different question, and the difference is not cosmetic. In the
+exploratory case the structure is discovered, so recovery means every
+retained item landed on its true factor. Here the structure is imposed
+by the researcher, so the assignment cannot be wrong: what is measured
+is the item selection. The specified model deliberately contains the
+contaminated items.
+
+``` r
+
+sim <- simulate_cfa_recovery(n = c(300, 600), loading = 0.60, n_reps = 200)
+sim             # exact_rate, sensitivity, specificity, covariances added
+```
+
+`mean_covs_added` counts the residual covariances the pipeline
+introduced. The population has none, so anything above zero is
+capitalization on chance turned into a number.
+
+This simulation was written to evaluate
+[`cfa_boosting()`](https://jventural.github.io/OptimalFactor/reference/cfa_boosting.md)
+and found two defects in it, both now fixed. The loop tested the fit
+targets first and stopped as soon as they were met, leaving the
+low-loading check unreachable: an item loading .20 in the population sat
+comfortably inside a model with RMSEA = .03. And global fit does not
+betray a cross-loading either, because the omitted path is absorbed by
+the interfactor correlation — six items cross-loading at .60 left RMSEA
+at .053 and pushed CFI up to .997. Enforcing both criteria as
+admissibility rather than fit took sensitivity from .167 to .958 and
+exact recovery from 0 to .917, with specificity rising to 1.000 and
+fewer residual covariances needed.
+
+``` r
+
+# Both are on by default; set either to FALSE for the pre-1.3.0 behaviour
+cfa_boosting(your_data, model,
+             thresholds = list(enforce_loading = TRUE,
+                               enforce_simple_structure = TRUE,
+                               cross_loading = 0.30))
+```
+
+Cross-loading detection uses the modification index of the absent
+loading, but never significance alone: the standardized expected
+parameter change must also reach `cross_loading`, since a significant
+index with a trivial EPC is precisely the capitalization on chance the
+whole exercise exists to avoid.
+
+### Reliability floor
+
+Removing items to improve fit tends to cost internal consistency.
+Setting `min_omega` makes that trade-off explicit: an item is removed
+only if every factor keeps McDonald’s omega at or above the floor.
+
+``` r
+
+efa_boosting(your_data, "item", n_factors = 3,
+             thresholds = list(min_omega = 0.80))
+```
+
+The floor is a constraint, not a term in the loss — reliability is not
+interpretable in the ill-fitting intermediate models the loss visits, so
+omega vetoes individual removals instead of trading against the fit
+indices. Omega per factor (`omega_final`) is now reported in every run,
+floor or no floor.
 
 ### Theory-Guided Specification Search (CFA)
 
@@ -215,6 +361,26 @@ Functions for Confirmatory Factor Analysis optimization
 - [`print(`*`<specification_search>`*`)`](https://jventural.github.io/OptimalFactor/reference/print.specification_search.md)
   : Print method for specification_search
 
+## Stability and Validation
+
+Evidence that a data-driven item selection is not capitalizing on
+chance, and Monte Carlo evidence on when the pipeline recovers a known
+structure.
+
+- [`item_stability()`](https://jventural.github.io/OptimalFactor/reference/item_stability.md)
+  [`print(`*`<item_stability>`*`)`](https://jventural.github.io/OptimalFactor/reference/item_stability.md)
+  : Resampling Stability of the EFA-Boosting Item Selection
+- [`simulate_recovery()`](https://jventural.github.io/OptimalFactor/reference/simulate_recovery.md)
+  [`print(`*`<simulate_recovery>`*`)`](https://jventural.github.io/OptimalFactor/reference/simulate_recovery.md)
+  : Monte Carlo Recovery of a Known Factor Structure
+- [`plot(`*`<simulate_recovery>`*`)`](https://jventural.github.io/OptimalFactor/reference/plot.simulate_recovery.md)
+  : Plot a Recovery Simulation
+- [`simulate_cfa_recovery()`](https://jventural.github.io/OptimalFactor/reference/simulate_cfa_recovery.md)
+  [`print(`*`<simulate_cfa_recovery>`*`)`](https://jventural.github.io/OptimalFactor/reference/simulate_cfa_recovery.md)
+  : Monte Carlo Recovery of a Known Structure with CFA-Boosting
+- [`plot(`*`<simulate_cfa_recovery>`*`)`](https://jventural.github.io/OptimalFactor/reference/plot.simulate_cfa_recovery.md)
+  : Plot a CFA Recovery Simulation
+
 ## Results Display
 
 Functions for displaying and exporting results
@@ -258,7 +424,6 @@ Kept for backward compatibility. Use specification_search_theory()
 instead, which adds a theory-congruence penalty to the loss.
 
 - [`specification_search()`](https://jventural.github.io/OptimalFactor/reference/specification_search.md)
-  [`print(`*`<specification_search>`*`)`](https://jventural.github.io/OptimalFactor/reference/specification_search.md)
   : Heuristic Specification Search for CFA Models (deprecated)
 
 # Articles

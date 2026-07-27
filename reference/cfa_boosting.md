@@ -12,10 +12,14 @@ cfa_boosting(
   data,
   model,
   n_sample = NULL,
-  thresholds = list(...),
-  model_config = list(...),
-  mod_indices_config = list(...),
-  performance = list(...),
+  thresholds = list(loading = 0.3, min_items_per_factor = 3,
+    rmsea_target = 0.08, cfi_target = 0.95, srmr_target = 0.08,
+    enforce_loading = TRUE, cross_loading = 0.3,
+    enforce_simple_structure = TRUE),
+  model_config = list(estimator = "WLSMV", ordered = TRUE),
+  mod_indices_config = list(max_covs_to_add = 10, only_within_factor = TRUE,
+    delta = 0.1, power_threshold = 0.75, alpha = 0.05),
+  performance = list(max_iterations = 30, timeout_cfa = 60),
   verbose = TRUE
 )
 ```
@@ -47,6 +51,34 @@ cfa_boosting(
   - `cfi_target`: Target CFI value (default 0.95)
 
   - `srmr_target`: Target SRMR value (default 0.08)
+
+  - `enforce_loading`: Treat `loading` as an admissibility floor rather
+    than a hint (default `TRUE`). An item whose standardized loading
+    falls below it is removed even when the fit targets are already met,
+    unless removing it would breach `min_items_per_factor`. `FALSE`
+    restores the behaviour of versions up to 1.3.0, where the loop
+    stopped as soon as the fit targets were satisfied and the loadings
+    were never inspected. Global fit does not reveal a weak item: in
+    simulation an item loading .20 in the population sat comfortably
+    inside a model with RMSEA = .03. Enforcing the floor can leave
+    global fit slightly worse while making the retained set defensible,
+    which is the trade this option makes explicit.
+
+  - `cross_loading`: Standardized magnitude above which an item is
+    declared to load on a foreign factor (default 0.30).
+
+  - `enforce_simple_structure`: Remove items that load on a factor other
+    than their own (default `TRUE`). The loading floor catches the item
+    that measures nothing; this catches the one that measures two
+    things, which the floor cannot see because a cross-loading item
+    still loads acceptably on its own factor, and which global fit does
+    not reveal either: an omitted cross-loading is absorbed by the
+    interfactor correlation, so in simulation six items cross-loading at
+    .60 left RMSEA at .053 and CFI at .997. Detection uses the
+    modification index of the absent loading, but never significance
+    alone: the standardized expected parameter change must also reach
+    `cross_loading`, since a significant index with a trivial EPC is
+    precisely the capitalization on chance this is meant to avoid.
 
 - model_config:
 
