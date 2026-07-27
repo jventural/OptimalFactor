@@ -6,6 +6,8 @@
 - **EFA-Boosting Algorithm**: Advanced iterative optimization for Exploratory Factor Analysis with smart-pruning of the candidate space (large speed-ups on long instruments) and a canonical `stop_reason` field that explains exactly why the loop ended
 - **Adaptive Fit Indices**: Dynamic weights based on df x N following Kenny, Shi & Savalei (2022)
 - **Automatic Problem Detection**: Heywood cases, cross-loadings, and low loadings
+- **Admissibility over fit (CFA)**: `cfa_boosting()` removes items below the loading floor, and items loading on a foreign factor, even when the fit targets are already met — because global fit does not reveal either of them
+- **Monte Carlo validation**: `simulate_recovery()` and `simulate_cfa_recovery()` measure how often each pipeline recovers a structure that is known in advance
 - **Global Search**: Multi-item removal optimization
 - **AI Integration**: Optional GPT-powered conceptual analysis of removed items
 - **Specification Search (CFA)**: Heuristic hill-climbing over seed configurations following MacCallum (1986), with move / drop / cov operations and optional bifactor variant
@@ -53,7 +55,8 @@ result <- efa_boosting(
 | `bifactor_indices()` | Bifactor statistical indices |
 | `redundancy_short_form()` | Redundancy-guided short form of a unidimensional scale |
 | `item_stability()` | Resampling stability of the EFA-boosting item selection |
-| `simulate_recovery()` | Monte Carlo recovery of a known factor structure |
+| `simulate_recovery()` | Monte Carlo recovery of a known factor structure (EFA) |
+| `simulate_cfa_recovery()` | Monte Carlo item selection against a known population (CFA) |
 | `report_efa_results()` | Structured + console report of an EFA-boosting run |
 | `report_cfa_results()` | Structured + console report of a CFA-boosting run |
 | `print_conceptual_analysis()` | Display AI-generated item analyses |
@@ -82,13 +85,79 @@ conditions over sample size, loading size and items per factor.
 
 ```r
 sim <- simulate_recovery(n = c(200, 500, 1000), loading = c(0.50, 0.70),
-                         n_reps = 200)
+                         n_reps = 200, n_cores = 8)
 sim$summary     # recovery rate, sensitivity, specificity per condition
+plot(sim)       # the recovery curve against sample size
 ```
 
 Sensitivity (contaminated items removed) and specificity (good items kept) must
 be read together: an algorithm that removes everything scores a perfect
 sensitivity and a dismal specificity.
+
+Replications are fitted in parallel through `n_cores`, while the datasets are
+always drawn sequentially from `seed`, so the results do not depend on how many
+cores ran them. Each replication is capped by `timeout` (120 s by default):
+resampling puts the pipeline on datasets nobody would analyse by hand, and a
+single one of them can otherwise grind for minutes and stall the whole run.
+
+### What if the number of factors is wrong?
+
+Every condition above hands the algorithm the true number of factors, and in
+practice nobody knows it. `n_factors_fitted` crosses that too, and the answer is
+asymmetric:
+
+```r
+simulate_recovery(n = c(300, 600), n_factors = 3,
+                  n_factors_fitted = c(2, 3, 4), n_reps = 200)
+```
+
+Extracting **too few** factors is destructive: specificity falls to around .65–.73,
+so good items are discarded to force the data into a structure that cannot hold
+them, and the loop stops satisfied with the result. Extracting **too many** makes
+the pipeline inert instead: it removes nothing, because almost any removal would
+breach `min_items_per_factor`, and the scale comes out untouched. When the
+dimensionality is uncertain, erring towards more factors is the harmless
+mistake.
+
+### The confirmatory side
+
+`simulate_cfa_recovery()` asks a different question, and the difference is not
+cosmetic. In the exploratory case the structure is discovered, so recovery means
+every retained item landed on its true factor. Here the structure is imposed by
+the researcher, so the assignment cannot be wrong: what is measured is the item
+selection. The specified model deliberately contains the contaminated items.
+
+```r
+sim <- simulate_cfa_recovery(n = c(300, 600), loading = 0.60, n_reps = 200)
+sim             # exact_rate, sensitivity, specificity, covariances added
+```
+
+`mean_covs_added` counts the residual covariances the pipeline introduced. The
+population has none, so anything above zero is capitalization on chance turned
+into a number.
+
+This simulation was written to evaluate `cfa_boosting()` and found two defects
+in it, both now fixed. The loop tested the fit targets first and stopped as soon
+as they were met, leaving the low-loading check unreachable: an item loading .20
+in the population sat comfortably inside a model with RMSEA = .03. And global
+fit does not betray a cross-loading either, because the omitted path is absorbed
+by the interfactor correlation — six items cross-loading at .60 left RMSEA at
+.053 and pushed CFI up to .997. Enforcing both criteria as admissibility rather
+than fit took sensitivity from .167 to .958 and exact recovery from 0 to .917,
+with specificity rising to 1.000 and fewer residual covariances needed.
+
+```r
+# Both are on by default; set either to FALSE for the pre-1.3.0 behaviour
+cfa_boosting(your_data, model,
+             thresholds = list(enforce_loading = TRUE,
+                               enforce_simple_structure = TRUE,
+                               cross_loading = 0.30))
+```
+
+Cross-loading detection uses the modification index of the absent loading, but
+never significance alone: the standardized expected parameter change must also
+reach `cross_loading`, since a significant index with a trivial EPC is precisely
+the capitalization on chance the whole exercise exists to avoid.
 
 ### Reliability floor
 
