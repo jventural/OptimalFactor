@@ -1,3 +1,62 @@
+# OptimalFactor 1.4.0
+
+## Two routines for scales that fit but do not measure what they claim
+
+A model can fit well and still be uninterpretable. Four factors correlating .97
+reproduce the covariance matrix as well as one factor does, so CFI and RMSEA say
+nothing about whether the factors exist. These two functions target what the fit
+indices miss.
+
+* **`discriminant_boosting()`** rescues the discriminant validity of a
+  multidimensional scale whose interfactor correlations are above the threshold
+  --- or above 1, which makes the solution inadmissible --- with the smallest
+  possible departure from the theoretical structure. It walks a ladder of
+  specifications ordered by distance from the original (theoretical model, plus
+  a method factor, bifactor, and every partition of the factors into fewer
+  blocks), prunes each level guided by the interfactor correlation, then by CFI,
+  and keeps the model that meets every criterion *with the most factors*.
+
+  Three design decisions come from what does not work. Pruning by fit leaves the
+  interfactor correlation untouched, so the search is guided by it instead.
+  Letting the data assign items surfaces the wording polarity of reverse items
+  as if it were a dimension, so item-to-factor assignment stays theoretical and
+  only whole factors are merged. Optimising fit and correlation at once lets fit
+  dominate, so they are optimised in sequence.
+
+* **`local_fit_search()`** searches for a specification of a one-factor model
+  that reaches the fit targets, combining item removal with freed residual
+  covariances. Where `redundancy_short_form()` prunes near-duplicate items, this
+  one also weighs keeping the pair and modelling its covariance, and decides by
+  the effect on fit.
+
+  It encodes three steps normally taken by hand: items below the loading floor
+  are removed *without* requiring that fit improve (an item that does not load
+  cannot stay, and dropping it often worsens RMSEA at first); an item taking part
+  in two or more covariances is dropped rather than kept, since the item is the
+  problem and not the relations; and every retained covariance is tested for
+  removal at the end, because each freed parameter is a debt.
+
+  It does not judge whether a covariance makes substantive sense. It returns the
+  estimate, its interval, its **sign** and the wording of both items. A negative
+  residual covariance between items at opposite poles of a construct is often
+  the trace of a dimension the unidimensional model absorbed, and is worth
+  reading before treating it as noise.
+
+## Reliability and loading floors are now adaptive
+
+Both routines treat `omega_min` and `min_loading` as adaptive: a model already
+below a floor is not frozen, its effective bar becomes its current value. A floor
+set above the starting value rejects every candidate and stalls the search on the
+first iteration --- a failure mode indistinguishable, from the outside, from a
+genuine negative result.
+
+## Documentation
+
+* `specification_search_theory()`: `only_within_factor` is documented, including
+  why a residual correlation between items of different factors absorbs
+  covariance that belongs at the factor level and makes discriminant validity
+  look better than it is.
+
 # OptimalFactor 1.3.0
 
 ## Breaking-free change: no more PsyMetricTools dependency
