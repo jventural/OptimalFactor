@@ -56,6 +56,24 @@
 #'   (sequential). Values > 1 use a PSOCK cluster (works on Windows, where
 #'   \code{fork} is unavailable); results are identical to the sequential run,
 #'   only faster. A practical choice is \code{parallel::detectCores() - 1}.
+#' @param only_within_factor Restrict the \code{cov} operation to pairs of items
+#'   belonging to the same factor. Default \code{FALSE}, which reproduces the
+#'   behaviour of earlier versions.
+#'
+#'   A residual correlation between items of \emph{different} factors is rarely
+#'   what it looks like. It is usually the signature of an omitted cross-loading,
+#'   a misassigned item or a missing factor, and it absorbs covariance that
+#'   belongs at the factor level: the estimated interfactor correlation drops and
+#'   discriminant validity looks better than it is. Measured on a two-factor
+#'   scale, freeing two cross-factor residuals moved the factor correlation from
+#'   .956 to .919 and pulled the upper bound of its confidence interval from
+#'   1.031 down to .999, which is the difference between two factors that cannot
+#'   be told apart and two that can.
+#'
+#'   \code{TRUE} is the conservative choice. It does not make cross-factor
+#'   residuals wrong in principle, since item adjacency and shared method can
+#'   justify them, but it forces those to be added deliberately rather than by
+#'   modification index.
 #' @param estimator,ordered,std.lv,mi_min,mi_top,loss_weights,patience,early_stop_after_meet,verbose
 #'   As in \code{\link{specification_search}}.
 #'
@@ -99,7 +117,7 @@ specification_search_theory <- function(
     max_iter_per_config = 40, max_covs = 5, max_items_removed = 6,
     try_bifactor = TRUE, operations = c("move","drop","cov"),
     estimator = "WLSMV", ordered = TRUE, std.lv = TRUE,
-    mi_min = 10, mi_top = 3,
+    mi_min = 10, mi_top = 3, only_within_factor = FALSE,
     loss_weights = c(rmsea = 0.5, cfi = 0.3, srmr = 0.2),
     patience = 8, early_stop_after_meet = 3, n_cores = 1, verbose = TRUE) {
 
@@ -310,6 +328,19 @@ specification_search_theory <- function(
         mi <- tryCatch(lavaan::modificationIndices(current_fit, sort. = TRUE, minimum.value = mi_min),
                        error = function(e) data.frame())
         if (NROW(mi) > 0) { mi_cov <- mi[mi$op == "~~" & mi$lhs %in% items_actuales & mi$rhs %in% items_actuales & mi$lhs != mi$rhs, , drop = FALSE]
+          # Restringir a pares del MISMO factor. Un residuo correlacionado entre
+          # items de factores distintos suele ser la firma de una carga cruzada
+          # omitida o de un item mal asignado, y ademas absorbe covarianza del
+          # nivel factorial: baja la correlacion estimada entre factores y hace
+          # parecer mejor la validez discriminante de lo que es. Se filtra antes
+          # del head(mi_top) para que el tope se aplique sobre los pares validos.
+          if (isTRUE(only_within_factor) && NROW(mi_cov) > 0) {
+            fac_de <- stats::setNames(rep(NA_character_, length(items_actuales)), items_actuales)
+            for (fn in names(current_asig)) fac_de[current_asig[[fn]]] <- fn
+            mismo <- !is.na(fac_de[mi_cov$lhs]) & !is.na(fac_de[mi_cov$rhs]) &
+                     fac_de[mi_cov$lhs] == fac_de[mi_cov$rhs]
+            mi_cov <- mi_cov[mismo, , drop = FALSE]
+          }
           if (NROW(mi_cov) > 0) { mi_cov <- utils::head(mi_cov, mi_top)
             for (r in seq_len(nrow(mi_cov))) {
               new_cov <- paste0(mi_cov$lhs[r], " ~~ ", mi_cov$rhs[r]); rev_cov <- paste0(mi_cov$rhs[r], " ~~ ", mi_cov$lhs[r])

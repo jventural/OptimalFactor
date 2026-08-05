@@ -28,6 +28,7 @@ specification_search_theory(
   std.lv = TRUE,
   mi_min = 10,
   mi_top = 3,
+  only_within_factor = FALSE,
   loss_weights = c(rmsea = 0.5, cfi = 0.3, srmr = 0.2),
   patience = 8,
   early_stop_after_meet = 3,
@@ -60,6 +61,25 @@ theoretical structure plus block-partition seeds are generated.}
 \item{max_iter_per_config, max_covs, max_items_removed, try_bifactor, operations}{As in \code{\link{specification_search}}.}
 
 \item{estimator, ordered, std.lv, mi_min, mi_top, loss_weights, patience, early_stop_after_meet, verbose}{As in \code{\link{specification_search}}.}
+
+\item{only_within_factor}{Restrict the \code{cov} operation to pairs of items
+  belonging to the same factor. Default \code{FALSE}, which reproduces the
+  behaviour of earlier versions.
+
+  A residual correlation between items of \emph{different} factors is rarely
+  what it looks like. It is usually the signature of an omitted cross-loading,
+  a misassigned item or a missing factor, and it absorbs covariance that
+  belongs at the factor level: the estimated interfactor correlation drops and
+  discriminant validity looks better than it is. Measured on a two-factor
+  scale, freeing two cross-factor residuals moved the factor correlation from
+  .956 to .919 and pulled the upper bound of its confidence interval from
+  1.031 down to .999, which is the difference between two factors that cannot
+  be told apart and two that can.
+
+  \code{TRUE} is the conservative choice. It does not make cross-factor
+  residuals wrong in principle, since item adjacency and shared method can
+  justify them, but it forces those to be added deliberately rather than by
+  modification index.}
 
 \item{n_cores}{Number of CPU cores for parallel evaluation of the candidate
 models within each greedy iteration (which are independent). Default 1
