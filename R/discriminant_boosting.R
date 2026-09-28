@@ -198,7 +198,15 @@ discriminant_boosting <- function(data,
   }
 
   row_of <- function(m, label) {
-    if (is.null(m)) return(data.frame(model = label, converged = FALSE))
+    # A model that did not converge still needs every column: with only two,
+    # rbind() against the converged rows fails and the whole run is lost.
+    if (is.null(m)) return(data.frame(model = label, converged = FALSE, n_factors = NA_integer_,
+                                      n_items = NA_integer_, cfi = NA_real_, tli = NA_real_,
+                                      rmsea = NA_real_, srmr = NA_real_, phi = NA_real_,
+                                      phi_hi = NA_real_, phi_over = NA_integer_,
+                                      omega_min = NA_real_, min_loading = NA_real_,
+                                      admissible = NA, meets = FALSE,
+                                      stringsAsFactors = FALSE, row.names = NULL))
     data.frame(model = label, converged = TRUE, n_factors = m$n_factors,
                n_items = m$n_items, cfi = round(m$cfi, 3), tli = round(m$tli, 3),
                rmsea = round(m$rmsea, 3), srmr = round(m$srmr, 3),

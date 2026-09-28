@@ -1,3 +1,46 @@
+# OptimalFactor 1.5.0
+
+## Choosing between algorithms: how much theory survives, and does the choice replicate
+
+The package offers several purification routines, and on a given scale they
+disagree. Two functions put them on the same footing so the choice can be
+argued rather than asserted.
+
+* **`theory_recovery()`** measures how much of the theoretical key a solution
+  keeps. A solution departs from the theory by dropping items or by moving them,
+  and a single index confounds the two, so it reports retention, accuracy
+  (matching factors to dimensions by the exhaustive optimum, not greedily),
+  recovery (their product), the Adjusted Rand Index and, when loadings are
+  available, Tucker congruence per dimension. It reads the output of any routine
+  in the package, a plain partition or a loading matrix. Accuracy alone is
+  misleading for confirmatory routines: `cfa_boosting()` can only drop items, so
+  its accuracy is 1 by construction.
+
+* **`algorithm_stability()`** runs any item-selection algorithm on random
+  halves of the data and fits the structure it chooses on the other half. It
+  reports whether the decision replicates (Jaccard overlap with the full-sample
+  solution, per-item retention rates) and whether it holds out of sample (fit
+  and largest interfactor correlation on the validation half), and, given a
+  theory, the recovery on every split. Unlike `item_stability()` it is not tied
+  to `efa_boosting()`, and unlike `cross_validate_cfa()` it is not limited to
+  one factor. Splits run in parallel with `n_cores`. A `timeout` (default 300 s) counts a split whose
+  algorithm does not finish as failed instead of stalling the run: on small
+  derivation halves an iterative search can loop indefinitely.
+
+## Bug fix
+
+* **`bifactor_indices()`** returned `NA` for omega, omega_H, PUC and every
+  specific ECV when some items load on the general factor only, as in a
+  bifactor S-1 model (Eid et al., 2017) or after dropping a specific factor that
+  collapsed. It also reported an inadmissible solution without complaint (an
+  omega of 2.4 in one case); it now warns when a standardized loading reaches 1
+  or a residual variance is not positive.
+
+* **`discriminant_boosting()`** stopped with "arguments imply differing number
+  of columns" when a structure in its ladder did not converge: the row for a
+  non-converged model had two columns instead of all of them. It now carries
+  every column, filled with `NA`.
+
 # OptimalFactor 1.4.0
 
 ## Two routines for scales that fit but do not measure what they claim

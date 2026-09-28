@@ -71,29 +71,42 @@ bifactor_indices <- function(fit, general = NULL) {
     it <- L$rhs[i]
     if (L$lhs[i] == general) g[it] <- L$est.std[i] else { s[it] <- L$est.std[i]; grp[it] <- L$lhs[i] }
   }
+  # An item may load on the general factor only: the reference items of a
+  # bifactor S-1 model (Eid et al., 2017), or a dimension whose specific factor
+  # was dropped because it collapsed. Their group is NA, and 'grp == f' would
+  # turn every sum below into NA, so membership is always taken with which().
+  in_f <- function(f) which(grp == f)
   ei <- 1 - g^2 - s^2
+  # An inadmissible solution (standardized loading at or beyond 1, negative
+  # residual variance) yields indices that look like numbers but mean nothing:
+  # an omega of 2.4 was once reported without complaint. Say so.
+  bad <- names(ei)[ei <= 0 | abs(g) >= 1 | abs(s) >= 1]
+  if (length(bad))
+    warning("Inadmissible bifactor solution (loading >= 1 or negative residual variance for: ",
+            paste(bad, collapse = ", "), "). The indices are not interpretable; ",
+            "consider dropping the collapsed specific factor (bifactor S-1).", call. = FALSE)
   # ECV
   denom  <- sum(g^2 + s^2)
   ECV    <- sum(g^2) / denom
-  ECV_sp <- sapply(spec_facs, function(f) sum(s[grp == f]^2) / denom)
+  ECV_sp <- sapply(spec_facs, function(f) sum(s[in_f(f)]^2) / denom)
   IECV   <- g^2 / (g^2 + s^2)
   # omegas
   SSg     <- sum(g)^2
-  grpsum2 <- sum(sapply(spec_facs, function(f) sum(s[grp == f])^2))
+  grpsum2 <- sum(sapply(spec_facs, function(f) sum(s[in_f(f)])^2))
   Vtot    <- SSg + grpsum2 + sum(ei)
   omega   <- (SSg + grpsum2) / Vtot
   omegaH  <- SSg / Vtot
   bysub <- t(sapply(spec_facs, function(f) {
-    idx <- which(grp == f); sg <- sum(g[idx]); ss <- sum(s[idx]); ve <- sum(ei[idx])
+    idx <- in_f(f); sg <- sum(g[idx]); ss <- sum(s[idx]); ve <- sum(ei[idx])
     Vs  <- sg^2 + ss^2 + ve
     c(ECV = sum(s[idx]^2) / denom, omega_S = (sg^2 + ss^2) / Vs, omega_HS = ss^2 / Vs)
   }))
   Hf <- function(l) { l <- l[!is.na(l)]; 1 / (1 + 1 / sum(l^2 / (1 - l^2))) }
   H_gen <- Hf(g)
-  H_sp  <- sapply(spec_facs, function(f) Hf(s[grp == f]))
+  H_sp  <- sapply(spec_facs, function(f) Hf(s[in_f(f)]))
   # PUC
   p <- length(items); totc <- p * (p - 1) / 2
-  cont <- sum(sapply(spec_facs, function(f) { n <- sum(grp == f); n * (n - 1) / 2 }))
+  cont <- sum(sapply(spec_facs, function(f) { n <- length(in_f(f)); n * (n - 1) / 2 }))
   PUC <- 1 - cont / totc
 
   overall <- data.frame(ECV = ECV, PUC = PUC, omega = omega, omega_H = omegaH, H_general = H_gen)

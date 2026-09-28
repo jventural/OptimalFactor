@@ -63,6 +63,8 @@ reference:
     and Monte Carlo evidence on when the pipeline recovers a known structure.
   contents:
   - item_stability
+  - algorithm_stability
+  - theory_recovery
   - simulate_recovery
   - plot.simulate_recovery
   - simulate_cfa_recovery
