@@ -1,7 +1,7 @@
 # Exploratory Factor Analysis Optimizer with Optional LLM Support
 
 Automatically refines an Exploratory Factor Analysis (EFA) solution by
-combining global fit (scaled RMSEA), item–level loading quality, and
+combining global fit (scaled RMSEA), item-level loading quality, and
 explicit detection of Heywood/near-Heywood cases. At each iteration the
 routine re-fits the model, removes the worst offending item (by
 structural fault or RMSEA improvement), and stops when predefined
@@ -301,45 +301,97 @@ the package's internal EFA engine
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-# Minimal runnable illustration (without LLM)
-set.seed(123)
-X <- as.data.frame(matrix(rnorm(300 * 9), ncol = 9))
-names(X) <- paste0("DP", 1:9)
-
+# \donttest{
+# Run without LLM support
+data(Data_Personality)
 res <- efa_optimizer(
-  data = X,
-  name_items = "DP",
-  item_range = c(1, 9),
-  n_factors = 3,
+  data       = Data_Personality,
+  name_items = "PPTQ",
+  n_factors  = 3,
   thresholds = list(
     rmsea = 0.08, loading = 0.30, min_items_per_factor = 3,
     heywood_tol = 1e-6, near_heywood = 0.015
   ),
   model_config = list(estimator = "WLSMV", rotation = "oblimin"),
+  verbose = FALSE
+)
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 8.540726e-18) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 1.397705e-17) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 1.268967e-17) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= -1.842400e-17) 
+#>    is smaller than zero. This may be a symptom that the model is not 
+#>    identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 2.161542e-17) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 5.176050e-17) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= -4.983443e-17) 
+#>    is smaller than zero. This may be a symptom that the model is not 
+#>    identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 2.201994e-17) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 5.931251e-17) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+res$final_structure
+#>     Items         f1         f2        f3
+#> 1   PPTQ6 -0.6713424  0.0000000 0.0000000
+#> 2  PPTQ12  0.6447529  0.0000000 0.0000000
+#> 3   PPTQ2  0.6403550  0.0000000 0.0000000
+#> 4   PPTQ9  0.0000000  0.6593586 0.0000000
+#> 5   PPTQ4  0.0000000  0.6071600 0.0000000
+#> 6  PPTQ14  0.3643084 -0.5578913 0.0000000
+#> 7   PPTQ5  0.0000000  0.0000000 0.7788308
+#> 8  PPTQ10  0.0000000  0.0000000 0.6900500
+#> 9  PPTQ15  0.0000000  0.0000000 0.6706673
+#> 10  PPTQ3  0.0000000  0.0000000 0.5421446
+#> 11  PPTQ1  0.0000000  0.0000000 0.5200078
+#> 12  PPTQ8  0.0000000  0.0000000 0.3547691
+#> 13 PPTQ11  0.0000000  0.0000000 0.3328500
+res$steps_log
+#>   step removed_item                   reason rmsea
+#> 1    1        PPTQ7 Cross-loading (priority) 0.056
+#> 2    2       PPTQ13               No loading 0.061
+res$final_rmsea
+#> [1] 0.077
+# }
+if (FALSE) { # \dontrun{
+# LLM justification (requires a valid API key and item definitions)
+res_ai <- efa_optimizer(
+  data       = Data_Personality,
+  name_items = "PPTQ",
+  n_factors  = 3,
+  use_ai_analysis = TRUE,
+  ai_config = list(
+    api_key = Sys.getenv("OPENAI_API_KEY"),
+    item_definitions = as.list(stats::setNames(
+      paste("Item", 1:15, "content"), paste0("PPTQ", 1:15))),
+    language = "spanish",
+    analysis_detail = "standard",
+    only_removed = TRUE
+  ),
   verbose = TRUE
 )
-
-print(res$final_structure)
-print(res$steps_log)
-res$final_rmsea
-
-# LLM justification sketch (requires a valid API key and item definitions):
-# res_ai <- efa_optimizer(
-#   data = X,
-#   name_items = "DP",
-#   item_range = c(1, 9),
-#   n_factors = 3,
-#   use_ai_analysis = TRUE,
-#   ai_config = list(
-#     api_key = Sys.getenv("OPENAI_API_KEY"),
-#     item_definitions = as.list(setNames(paste("Item", 1:9, "content"), names(X))),
-#     language = "spanish",
-#     analysis_detail = "standard",
-#     only_removed = TRUE
-#   ),
-#   verbose = TRUE
-# )
-# str(res_ai$conceptual_analysis, max.level = 1)
+str(res_ai$conceptual_analysis, max.level = 1)
 } # }
 ```

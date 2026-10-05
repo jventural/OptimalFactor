@@ -40,6 +40,7 @@ specification_search_theory(
   std.lv = TRUE,
   mi_min = 10,
   mi_top = 3,
+  only_within_factor = FALSE,
   loss_weights = c(rmsea = 0.5, cfi = 0.3, srmr = 0.2),
   patience = 8,
   early_stop_after_meet = 3,
@@ -98,6 +99,28 @@ specification_search_theory(
   As in
   [`specification_search`](https://jventural.github.io/OptimalFactor/reference/specification_search.md).
 
+- only_within_factor:
+
+  Restrict the `cov` operation to pairs of items belonging to the same
+  factor. Default `FALSE`, which reproduces the behaviour of earlier
+  versions.
+
+  A residual correlation between items of *different* factors is rarely
+  what it looks like. It is usually the signature of an omitted
+  cross-loading, a misassigned item or a missing factor, and it absorbs
+  covariance that belongs at the factor level: the estimated interfactor
+  correlation drops and discriminant validity looks better than it is.
+  Measured on a two-factor scale, freeing two cross-factor residuals
+  moved the factor correlation from .956 to .919 and pulled the upper
+  bound of its confidence interval from 1.031 down to .999, which is the
+  difference between two factors that cannot be told apart and two that
+  can.
+
+  `TRUE` is the conservative choice. It does not make cross-factor
+  residuals wrong in principle, since item adjacency and shared method
+  can justify them, but it forces those to be added deliberately rather
+  than by modification index.
+
 - n_cores:
 
   Number of CPU cores for parallel evaluation of the candidate models
@@ -150,20 +173,67 @@ modeling. *Psychological Bulletin, 100*(1), 107–120.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-  data(Data_Personality)
-  items  <- paste0("PPTQ", 1:15)
-  theory <- list(F1 = paste0("PPTQ", 1:5),
-                 F2 = paste0("PPTQ", 6:10),
-                 F3 = paste0("PPTQ", 11:15))
-
-  # Fit-only (drifts from theory) vs theory-guided (keeps the structure)
-  blind   <- specification_search_theory(Data_Personality, items, theory,
-               theory_weight = 0, estimator = "MLR", ordered = FALSE)
-  guided  <- specification_search_theory(Data_Personality, items, theory,
-               theory_weight = 0.5, estimator = "MLR", ordered = FALSE)
-
-  guided$table[, c("config","cfi","rmsea","congruence","loss")]
-  guided$best$factors
-} # }
+# \donttest{
+data(Data_Expectativas)
+items  <- paste0("EAF", 1:10)
+theory <- list(F1 = paste0("EAF", 1:5), F2 = paste0("EAF", 6:10))
+guided <- specification_search_theory(Data_Expectativas, items, theory,
+            theory_weight = 0.5, max_factors = 2, max_iter_per_config = 5,
+            try_bifactor = FALSE, estimator = "MLR", ordered = FALSE)
+#> 
+#> ==========================================================================
+#>  Specification Search TEORICA (MacCallum 1986 + congruencia teorica)
+#> ==========================================================================
+#>  theory_weight = 0.50  | k_teorico = 2 | items teoricos = 10
+#>  ADVERTENCIA: sigue siendo exploratorio; valide en muestra independiente.
+#> ==========================================================================
+#> 
+#> --- k = 1 factor(s) ---
+#>   Config: k1_s1 (standard)
+#>     [k1_s1] iter 1: DROP EAF6 from G -> CFI=0.906 RMSEA=0.097 congr=0.56 loss=0.878
+#>     [k1_s1] iter 2: COV EAF3 ~~ EAF5 (MI=21.5) -> CFI=0.960 RMSEA=0.064 congr=0.56 loss=0.153
+#>     [k1_s1] iter 3: DROP EAF7 from G -> CFI=0.958 RMSEA=0.075 congr=0.62 loss=0.152
+#>     [k1_s1] iter 4: DROP EAF8 from G -> CFI=0.993 RMSEA=0.032 congr=0.71 loss=0.146
+#> --- k = 2 factor(s) ---
+#>   Config: k2_s1 (standard)
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#>     [k2_s1] iter 1: DROP EAF6 from F2 -> CFI=0.914 RMSEA=0.095 congr=1.00 loss=0.633
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#>     [k2_s1] iter 2: COV EAF3 ~~ EAF5 (MI=19.7) -> CFI=0.960 RMSEA=0.066 congr=1.00 loss=0.020
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> 
+#> Modelos evaluados: 2 
+guided$table[, c("config", "cfi", "rmsea", "congruence", "loss")]
+#>   config    cfi  rmsea congruence   loss
+#> 1  k2_s1 0.9604 0.0656      1.000 0.0200
+#> 2  k1_s1 0.9932 0.0319      0.714 0.1457
+guided$best$factors
+#> $F1
+#> [1] "EAF1" "EAF2" "EAF3" "EAF4" "EAF5"
+#> 
+#> $F2
+#> [1] "EAF7"  "EAF8"  "EAF9"  "EAF10"
+#> 
+# }
 ```

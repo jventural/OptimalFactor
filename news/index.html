@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">OptimalFactor</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,6 +37,59 @@
       <small>Source: <a href="https://github.com/jventural/OptimalFactor/blob/master/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.5.0" id="optimalfactor-150">OptimalFactor 1.5.0<a class="anchor" aria-label="anchor" href="#optimalfactor-150"></a></h2>
+<div class="section level3">
+<h3 id="preparation-for-cran-1-5-0">Preparation for CRAN<a class="anchor" aria-label="anchor" href="#preparation-for-cran-1-5-0"></a></h3>
+<ul><li>Title changed to “Item Selection in Factor Analysis by Boosting and Specification Search”. The Description cites Kenny and McCoach (2003) and Shi, Lee and Maydeu-Olivares (2019) for the adaptive fit weights; a non-existent “Kenny, Shi and Savalei (2022)” reference was removed from the Description, README and <code><a href="../reference/efa_boosting.html">efa_boosting()</a></code> help page.</li>
+<li>
+<code><a href="../reference/algorithm_stability.html">algorithm_stability()</a></code>, <code><a href="../reference/cross_validate_cfa.html">cross_validate_cfa()</a></code>, <code><a href="../reference/item_stability.html">item_stability()</a></code>, <code><a href="../reference/simulate_cfa_recovery.html">simulate_cfa_recovery()</a></code> and <code><a href="../reference/simulate_recovery.html">simulate_recovery()</a></code> no longer fix a seed by default (<code>seed = NULL</code>).</li>
+<li>
+<code><a href="../reference/bifactor_indices.html">bifactor_indices()</a></code> and <code><a href="../reference/cross_validate_cfa.html">cross_validate_cfa()</a></code> gain <code>verbose</code>; console output of non-print functions can be silenced.</li>
+<li>
+<code><a href="../reference/export_conceptual_analysis.html">export_conceptual_analysis()</a></code> no longer writes to the working directory by default: <code>file</code> must be supplied.</li>
+<li>
+<code><a href="../reference/optimal_cfa_with_ai.html">optimal_cfa_with_ai()</a></code>, <code><a href="../reference/optimal_efa_with_ai.html">optimal_efa_with_ai()</a></code>, <code><a href="../reference/print_cfa_results.html">print_cfa_results()</a></code> and <code><a href="../reference/print_efa_results.html">print_efa_results()</a></code> are now exported.</li>
+<li>All examples are self-contained; only the calls to the external language model service remain in <code>\dontrun{}</code>.</li>
+<li>Bug fixes: <code><a href="../reference/report_efa_results.html">report_efa_results()</a></code> failed on data frames (<code>n</code> partially matched <code>na.print</code>); <code><a href="../reference/optimal_cfa_with_ai.html">optimal_cfa_with_ai()</a></code> failed with the ML estimator (it requested <code>rmsea.scaled</code>).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="choosing-between-algorithms-how-much-theory-survives-and-does-the-choice-replicate-1-5-0">Choosing between algorithms: how much theory survives, and does the choice replicate<a class="anchor" aria-label="anchor" href="#choosing-between-algorithms-how-much-theory-survives-and-does-the-choice-replicate-1-5-0"></a></h3>
+<p>The package offers several purification routines, and on a given scale they disagree. Two functions put them on the same footing so the choice can be argued rather than asserted.</p>
+<ul><li><p><strong><code><a href="../reference/theory_recovery.html">theory_recovery()</a></code></strong> measures how much of the theoretical key a solution keeps. A solution departs from the theory by dropping items or by moving them, and a single index confounds the two, so it reports retention, accuracy (matching factors to dimensions by the exhaustive optimum, not greedily), recovery (their product), the Adjusted Rand Index and, when loadings are available, Tucker congruence per dimension. It reads the output of any routine in the package, a plain partition or a loading matrix. Accuracy alone is misleading for confirmatory routines: <code><a href="../reference/cfa_boosting.html">cfa_boosting()</a></code> can only drop items, so its accuracy is 1 by construction.</p></li>
+<li><p><strong><code><a href="../reference/algorithm_stability.html">algorithm_stability()</a></code></strong> runs any item-selection algorithm on random halves of the data and fits the structure it chooses on the other half. It reports whether the decision replicates (Jaccard overlap with the full-sample solution, per-item retention rates) and whether it holds out of sample (fit and largest interfactor correlation on the validation half), and, given a theory, the recovery on every split. Unlike <code><a href="../reference/item_stability.html">item_stability()</a></code> it is not tied to <code><a href="../reference/efa_boosting.html">efa_boosting()</a></code>, and unlike <code><a href="../reference/cross_validate_cfa.html">cross_validate_cfa()</a></code> it is not limited to one factor. Splits run in parallel with <code>n_cores</code>. A <code>timeout</code> (default 300 s) counts a split whose algorithm does not finish as failed instead of stalling the run: on small derivation halves an iterative search can loop indefinitely.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fix-1-5-0">Bug fix<a class="anchor" aria-label="anchor" href="#bug-fix-1-5-0"></a></h3>
+<ul><li><p><strong><code><a href="../reference/bifactor_indices.html">bifactor_indices()</a></code></strong> returned <code>NA</code> for omega, omega_H, PUC and every specific ECV when some items load on the general factor only, as in a bifactor S-1 model (Eid et al., 2017) or after dropping a specific factor that collapsed. It also reported an inadmissible solution without complaint (an omega of 2.4 in one case); it now warns when a standardized loading reaches 1 or a residual variance is not positive.</p></li>
+<li><p><strong><code><a href="../reference/discriminant_boosting.html">discriminant_boosting()</a></code></strong> stopped with “arguments imply differing number of columns” when a structure in its ladder did not converge: the row for a non-converged model had two columns instead of all of them. It now carries every column, filled with <code>NA</code>.</p></li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.4.0" id="optimalfactor-140">OptimalFactor 1.4.0<a class="anchor" aria-label="anchor" href="#optimalfactor-140"></a></h2>
+<div class="section level3">
+<h3 id="two-routines-for-scales-that-fit-but-do-not-measure-what-they-claim-1-4-0">Two routines for scales that fit but do not measure what they claim<a class="anchor" aria-label="anchor" href="#two-routines-for-scales-that-fit-but-do-not-measure-what-they-claim-1-4-0"></a></h3>
+<p>A model can fit well and still be uninterpretable. Four factors correlating .97 reproduce the covariance matrix as well as one factor does, so CFI and RMSEA say nothing about whether the factors exist. These two functions target what the fit indices miss.</p>
+<ul><li>
+<p><strong><code><a href="../reference/discriminant_boosting.html">discriminant_boosting()</a></code></strong> rescues the discriminant validity of a multidimensional scale whose interfactor correlations are above the threshold — or above 1, which makes the solution inadmissible — with the smallest possible departure from the theoretical structure. It walks a ladder of specifications ordered by distance from the original (theoretical model, plus a method factor, bifactor, and every partition of the factors into fewer blocks), prunes each level guided by the interfactor correlation, then by CFI, and keeps the model that meets every criterion <em>with the most factors</em>.</p>
+<p>Three design decisions come from what does not work. Pruning by fit leaves the interfactor correlation untouched, so the search is guided by it instead. Letting the data assign items surfaces the wording polarity of reverse items as if it were a dimension, so item-to-factor assignment stays theoretical and only whole factors are merged. Optimising fit and correlation at once lets fit dominate, so they are optimised in sequence.</p>
+</li>
+<li>
+<p><strong><code><a href="../reference/local_fit_search.html">local_fit_search()</a></code></strong> searches for a specification of a one-factor model that reaches the fit targets, combining item removal with freed residual covariances. Where <code><a href="../reference/redundancy_short_form.html">redundancy_short_form()</a></code> prunes near-duplicate items, this one also weighs keeping the pair and modelling its covariance, and decides by the effect on fit.</p>
+<p>It encodes three steps normally taken by hand: items below the loading floor are removed <em>without</em> requiring that fit improve (an item that does not load cannot stay, and dropping it often worsens RMSEA at first); an item taking part in two or more covariances is dropped rather than kept, since the item is the problem and not the relations; and every retained covariance is tested for removal at the end, because each freed parameter is a debt.</p>
+<p>It does not judge whether a covariance makes substantive sense. It returns the estimate, its interval, its <strong>sign</strong> and the wording of both items. A negative residual covariance between items at opposite poles of a construct is often the trace of a dimension the unidimensional model absorbed, and is worth reading before treating it as noise.</p>
+</li>
+</ul></div>
+<div class="section level3">
+<h3 id="reliability-and-loading-floors-are-now-adaptive-1-4-0">Reliability and loading floors are now adaptive<a class="anchor" aria-label="anchor" href="#reliability-and-loading-floors-are-now-adaptive-1-4-0"></a></h3>
+<p>Both routines treat <code>omega_min</code> and <code>min_loading</code> as adaptive: a model already below a floor is not frozen, its effective bar becomes its current value. A floor set above the starting value rejects every candidate and stalls the search on the first iteration — a failure mode indistinguishable, from the outside, from a genuine negative result.</p>
+</div>
+<div class="section level3">
+<h3 id="documentation-1-4-0">Documentation<a class="anchor" aria-label="anchor" href="#documentation-1-4-0"></a></h3>
+<ul><li>
+<code><a href="../reference/specification_search_theory.html">specification_search_theory()</a></code>: <code>only_within_factor</code> is documented, including why a residual correlation between items of different factors absorbs covariance that belongs at the factor level and makes discriminant validity look better than it is.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.3.0" id="optimalfactor-130">OptimalFactor 1.3.0<a class="anchor" aria-label="anchor" href="#optimalfactor-130"></a></h2>
 <div class="section level3">

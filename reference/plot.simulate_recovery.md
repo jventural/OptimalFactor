@@ -52,10 +52,17 @@ A `ggplot` object.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-  sim <- simulate_recovery(n = c(200, 500, 1000), loading = c(0.50, 0.70),
-                           n_reps = 200, n_cores = 6)
-  plot(sim)
-  plot(sim, metric = "sensitivity")
-} # }
+# \donttest{
+sim <- simulate_recovery(n = 200, n_reps = 2, seed = 1)
+#> Condition 1/1: N=200, lambda=0.65, items/factor=5 (17 items total)
+#>   [                          ]   0% (0/2)  elapsed 0s  left ~?       [=============             ]  50% (1/2)  elapsed 9s  left ~9s       [==========================] 100% (2/2)  elapsed 12s  left ~0s     
+plot(sim)
+#> `geom_line()`: Each group consists of only one observation.
+#> ℹ Do you need to adjust the group aesthetic?
+
+plot(sim, metric = "sensitivity")
+#> `geom_line()`: Each group consists of only one observation.
+#> ℹ Do you need to adjust the group aesthetic?
+
+# }
 ```

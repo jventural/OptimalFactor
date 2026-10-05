@@ -71,7 +71,7 @@ print(result$fit_indices)
 ## Theoretical Background
 
 The EFA-Boosting algorithm uses adaptive fit indices based on the
-research by Kenny, McCoach (2003) and Shi, Lee, & Maydeu-Olivares
+research by Kenny and McCoach (2003) and Shi, Lee, & Maydeu-Olivares
 (2019), which demonstrates that traditional cutoff values for fit
 indices depend on model complexity (degrees of freedom) and sample size.
 

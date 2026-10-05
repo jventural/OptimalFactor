@@ -189,22 +189,99 @@ structural equation models or detection of misspecifications?
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-data(Data_Personality)
-items <- paste0("PPTQ", 1:15)
+# \donttest{
+data(Data_Expectativas)
+items <- paste0("EAF", 1:10)
 
 res <- specification_search(
-  data         = Data_Personality,
-  items        = items,
-  max_factors  = 3,
-  estimator    = "MLR",
-  ordered      = FALSE,
-  try_bifactor = TRUE,
-  verbose      = TRUE
+  data                = Data_Expectativas,
+  items               = items,
+  max_factors         = 2,
+  max_iter_per_config = 5,
+  estimator           = "MLR",
+  ordered             = FALSE,
+  try_bifactor        = FALSE,
+  verbose             = TRUE
 )
+#> Warning: specification_search() is deprecated: use specification_search_theory(), which adds a theory-congruence penalty to the loss (theory_weight = 0 reproduces the fit-only search).
+#> 
+#> ========================================================================
+#>  Specification Search (MacCallum, 1986)
+#> ========================================================================
+#>  WARNING: specification search capitalizes on chance. Use this
+#>  function only as an EXPLORATORY device. Recommended practice:
+#>    (1) Report the procedure transparently as exploratory.
+#>    (2) Cross-validate the chosen model with an independent
+#>        sample or via bootstrap.
+#>    (3) Justify each accepted modification on theoretical grounds.
+#> ========================================================================
+#> 
+#>  Items: 10 | Max factors: 2 | Operations: move/drop/cov | Bifactor: FALSE 
+#>  Targets: CFI >= 0.95  | RMSEA <= 0.08  | SRMR <= 0.08 
+#> 
+#> --- k = 1 factor(s) ---
+#>   Config: k1_s1 (standard)
+#>     [k1_s1] iter 1: DROP EAF6 from G -> CFI=0.9061 RMSEA=0.0972 SRMR=0.0672 loss=0.7245
+#>     [k1_s1] iter 2: DROP EAF5 from G -> CFI=0.9752 RMSEA=0.0550 SRMR=0.0453 loss=0.0000
+#> --- k = 2 factor(s) ---
+#>   Config: k2_s1 (standard)
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#>     [k2_s1] iter 1: DROP EAF6 from F2 -> CFI=0.9136 RMSEA=0.0950 SRMR=0.0647 loss=0.6131
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#>     [k2_s1] iter 2: DROP EAF5 from F1 -> CFI=0.9713 RMSEA=0.0608 SRMR=0.0448 loss=0.0000
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> 
+#> Models evaluated: 2 
 
-print(res, top = 8)
+print(res, top = 5)
+#> Specification search: 2 configurations evaluated
+#> Successful (meets CFI/RMSEA targets): 2 
+#> 
+#> Top 2 by composite loss:
+#>  config n_factors bifactor n_items n_covs    cfi    tli  rmsea   srmr chisq df
+#>   k1_s1         1    FALSE       8      0 0.9752 0.9653 0.0550 0.0453 26.06 20
+#>   k2_s1         2    FALSE       8      0 0.9713 0.9577 0.0608 0.0448 26.02 19
+#>  loss meets
+#>     0  TRUE
+#>     0  TRUE
+#> 
+#> Best model (k1_s1):
+#>   CFI=0.9752 | RMSEA=0.0550 | SRMR=0.0453 | loss=0.0000 | meets=TRUE
+#>   Factor assignment:
+#>     G: EAF1, EAF2, EAF3, EAF4, EAF7, EAF8, EAF9, EAF10
 res$successful
-summary(res$best$fit)
-} # }
+#>   config n_factors bifactor n_items n_covs    cfi    tli  rmsea   srmr chisq df
+#> 1  k1_s1         1    FALSE       8      0 0.9752 0.9653 0.0550 0.0453 26.06 20
+#> 2  k2_s1         2    FALSE       8      0 0.9713 0.9577 0.0608 0.0448 26.02 19
+#>   loss meets
+#> 1    0  TRUE
+#> 2    0  TRUE
+# }
 ```

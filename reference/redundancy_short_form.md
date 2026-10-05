@@ -104,9 +104,44 @@ capitalization on chance. *Psychological Bulletin, 111*(3), 490–504.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-  sf <- redundancy_short_form(mydata, paste0("IT", 1:16), k = 7,
-          groups = list(A = paste0("IT",1:8), B = paste0("IT",9:16)))
-  sf$trajectory; sf$items; sf$omega
-} # }
+data(Data_Expectativas)
+sf <- redundancy_short_form(Data_Expectativas, paste0("EAF", 1:10), k = 6,
+        groups = list(A = paste0("EAF", 1:5), B = paste0("EAF", 6:10)))
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= -1.160079e-16) 
+#>    is smaller than zero. This may be a symptom that the model is not 
+#>    identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 2.580688e-18) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 2.873136e-18) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= -1.241411e-17) 
+#>    is smaller than zero. This may be a symptom that the model is not 
+#>    identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= -7.291260e-18) 
+#>    is smaller than zero. This may be a symptom that the model is not 
+#>    identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= -7.291260e-18) 
+#>    is smaller than zero. This may be a symptom that the model is not 
+#>    identified.
+sf$trajectory; sf$items; sf$omega
+#>   n_items   cfi   tli rmsea  srmr omega dropped
+#> 1      10 0.934 0.916 0.182 0.095 0.938       -
+#> 2       9 0.961 0.948 0.156 0.067 0.940    EAF6
+#> 3       8 0.991 0.988 0.082 0.044 0.937    EAF5
+#> 4       7 0.996 0.994 0.060 0.037 0.931    EAF2
+#> 5       6 1.000 1.004 0.000 0.026 0.920   EAF10
+#> [1] "EAF1" "EAF3" "EAF4" "EAF7" "EAF8" "EAF9"
+#> [1] 0.92
 ```

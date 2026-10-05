@@ -9,9 +9,11 @@
 <url><loc>https://jventural.github.io/OptimalFactor/news/index.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/Data_Expectativas.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/Data_Personality.html</loc></url>
+<url><loc>https://jventural.github.io/OptimalFactor/reference/algorithm_stability.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/bifactor_indices.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/cfa_boosting.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/cross_validate_cfa.html</loc></url>
+<url><loc>https://jventural.github.io/OptimalFactor/reference/discriminant_boosting.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/efa_boosting.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/efa_optimizer.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/export_cfa_boosting.html</loc></url>
@@ -19,10 +21,13 @@
 <url><loc>https://jventural.github.io/OptimalFactor/reference/imprimir_items_eliminados.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/index.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/item_stability.html</loc></url>
+<url><loc>https://jventural.github.io/OptimalFactor/reference/local_fit_search.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/optimal_cfa_with_ai.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/optimal_efa_with_ai.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/plot.simulate_cfa_recovery.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/plot.simulate_recovery.html</loc></url>
+<url><loc>https://jventural.github.io/OptimalFactor/reference/print.discriminant_boosting.html</loc></url>
+<url><loc>https://jventural.github.io/OptimalFactor/reference/print.local_fit_search.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/print.specification_search.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/print_cfa_boosting.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/print_cfa_results.html</loc></url>
@@ -35,5 +40,6 @@
 <url><loc>https://jventural.github.io/OptimalFactor/reference/simulate_recovery.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/specification_search.html</loc></url>
 <url><loc>https://jventural.github.io/OptimalFactor/reference/specification_search_theory.html</loc></url>
+<url><loc>https://jventural.github.io/OptimalFactor/reference/theory_recovery.html</loc></url>
 </urlset>
 

@@ -27,6 +27,14 @@ Functions for Confirmatory Factor Analysis optimization
   : Split-Half Cross-Validation of a Factor Model
 - [`bifactor_indices()`](https://jventural.github.io/OptimalFactor/reference/bifactor_indices.md)
   : Bifactor Statistical Indices
+- [`discriminant_boosting()`](https://jventural.github.io/OptimalFactor/reference/discriminant_boosting.md)
+  : Discriminant-Boosting: Rescue the Discriminant Validity of a Scale
+- [`print(`*`<discriminant_boosting>`*`)`](https://jventural.github.io/OptimalFactor/reference/print.discriminant_boosting.md)
+  : Print method for discriminant_boosting
+- [`local_fit_search()`](https://jventural.github.io/OptimalFactor/reference/local_fit_search.md)
+  : Local-Fit Search for a Unidimensional Model
+- [`print(`*`<local_fit_search>`*`)`](https://jventural.github.io/OptimalFactor/reference/print.local_fit_search.md)
+  : Print method for local_fit_search
 - [`print(`*`<specification_search>`*`)`](https://jventural.github.io/OptimalFactor/reference/print.specification_search.md)
   : Print method for specification_search
 
@@ -39,6 +47,10 @@ structure.
 - [`item_stability()`](https://jventural.github.io/OptimalFactor/reference/item_stability.md)
   [`print(`*`<item_stability>`*`)`](https://jventural.github.io/OptimalFactor/reference/item_stability.md)
   : Resampling Stability of the EFA-Boosting Item Selection
+- [`algorithm_stability()`](https://jventural.github.io/OptimalFactor/reference/algorithm_stability.md)
+  : Split-Half Stability of Any Item-Selection Algorithm
+- [`theory_recovery()`](https://jventural.github.io/OptimalFactor/reference/theory_recovery.md)
+  : How Much of the Theoretical Structure a Solution Recovers
 - [`simulate_recovery()`](https://jventural.github.io/OptimalFactor/reference/simulate_recovery.md)
   [`print(`*`<simulate_recovery>`*`)`](https://jventural.github.io/OptimalFactor/reference/simulate_recovery.md)
   : Monte Carlo Recovery of a Known Factor Structure
@@ -55,9 +67,9 @@ structure.
 Functions for displaying and exporting results
 
 - [`print_efa_results()`](https://jventural.github.io/OptimalFactor/reference/print_efa_results.md)
-  : Print Results from AI‐Assisted EFA Refinement
+  : Print Results from AI-Assisted EFA Refinement
 - [`print_cfa_results()`](https://jventural.github.io/OptimalFactor/reference/print_cfa_results.md)
-  : Print Results from AI‐Assisted CFA Refinement
+  : Print Results from AI-Assisted CFA Refinement
 - [`print_cfa_boosting()`](https://jventural.github.io/OptimalFactor/reference/print_cfa_boosting.md)
   : Print CFA-Boosting Results
 - [`report_efa_results()`](https://jventural.github.io/OptimalFactor/reference/report_efa_results.md)

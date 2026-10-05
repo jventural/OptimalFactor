@@ -12,7 +12,7 @@ essentially unidimensional and scored with a single total score
 ## Usage
 
 ``` r
-bifactor_indices(fit, general = NULL)
+bifactor_indices(fit, general = NULL, verbose = TRUE)
 ```
 
 ## Arguments
@@ -26,6 +26,11 @@ bifactor_indices(fit, general = NULL)
 
   Name of the general factor. If `NULL` (default) it is auto-detected as
   the latent variable that loads on all items.
+
+- verbose:
+
+  Logical. If `TRUE` (default), prints the rounded indices to the
+  console.
 
 ## Value
 
@@ -64,14 +69,44 @@ bifactor models: Calculating and interpreting statistical indices.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-  library(lavaan)
-  mod <- 'G  =~ x1+x2+x3+x4+x5+x6
-          S1 =~ x1+x2+x3
-          S2 =~ x4+x5+x6
-          G ~~ 0*S1 + 0*S2
-          S1 ~~ 0*S2'
-  fit <- cfa(mod, data = mydata, ordered = TRUE, estimator = "WLSMV", std.lv = TRUE)
-  bifactor_indices(fit)
-} # }
+# Simulate data from a bifactor population (G + three specific factors)
+pop <- '
+G  =~ 0.6*x1 + 0.6*x2 + 0.6*x3 + 0.6*x4 + 0.6*x5 + 0.6*x6 +
+      0.6*x7 + 0.6*x8 + 0.6*x9
+S1 =~ 0.5*x1 + 0.5*x2 + 0.5*x3
+S2 =~ 0.5*x4 + 0.5*x5 + 0.5*x6
+S3 =~ 0.5*x7 + 0.5*x8 + 0.5*x9
+'
+set.seed(1)
+dat <- lavaan::simulateData(pop, sample.nobs = 500, orthogonal = TRUE)
+
+mod <- '
+G  =~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9
+S1 =~ x1 + x2 + x3
+S2 =~ x4 + x5 + x6
+S3 =~ x7 + x8 + x9
+'
+fit <- lavaan::cfa(mod, data = dat, orthogonal = TRUE, std.lv = TRUE)
+bi <- bifactor_indices(fit)
+#> Bifactor statistical indices (general factor: G )
+#> Overall:
+#>    ECV  PUC omega omega_H H_general
+#>  0.577 0.75 0.793   0.637     0.717
+#> 
+#> By specific factor:
+#>  Factor   ECV omega_S omega_HS     H
+#>      S1 0.124   0.631    0.243 0.329
+#>      S2 0.194   0.651    0.372 0.457
+#>      S3 0.105   0.644    0.195 0.294
+bi$by_item
+#>   Item Factor   General  Specific     I_ECV
+#> 1   x1     S1 0.4440820 0.3937189 0.5598970
+#> 2   x2     S1 0.4915281 0.3610763 0.6495039
+#> 3   x3     S1 0.4801611 0.3674213 0.6307009
+#> 4   x4     S2 0.4163543 0.4813720 0.4279531
+#> 5   x5     S2 0.3463718 0.4806573 0.3417999
+#> 6   x6     S2 0.4511023 0.4407101 0.5116513
+#> 7   x7     S3 0.5179359 0.2764372 0.7782912
+#> 8   x8     S3 0.5476438 0.2910210 0.7797927
+#> 9   x9     S3 0.4651366 0.4406203 0.5270474
 ```

@@ -30,7 +30,7 @@ de línea.
 
 ## Author
 
-Dr. José Ventura‐León
+Dr. José Ventura-León
 
 ## Examples
 

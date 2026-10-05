@@ -1,6 +1,6 @@
 # Confirmatory Factor Analysis Optimization with AI Assistance
 
-Automatically refines a user‐specified Confirmatory Factor Analysis
+Automatically refines a user-specified Confirmatory Factor Analysis
 (CFA) model by iteratively evaluating fit and modification indices. At
 each step, the function:
 
@@ -46,7 +46,7 @@ optimal_cfa_with_ai(
 
 - initial_model:
 
-  A character string with the lavaan‐style CFA model syntax.
+  A character string with the lavaan-style CFA model syntax.
 
 - data:
 
@@ -82,7 +82,7 @@ optimal_cfa_with_ai(
 
 - analyze_removed:
 
-  Logical. If `TRUE`, performs AI‐driven conceptual analysis.
+  Logical. If `TRUE`, performs AI-driven conceptual analysis.
 
 - api_key:
 
@@ -181,72 +181,151 @@ A list with elements:
 
 - conceptual_analysis:
 
-  List with sublists `removed` and `kept` containing AI‐generated texts,
+  List with sublists `removed` and `kept` containing AI-generated texts,
   or `NULL` if not performed.
 
 ## Author
 
-Dr. José Ventura‐León
+Dr. José Ventura-León
 
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-# Define initial CFA model
-model_str <- '
-  F1 =~ Q1 + Q2 + Q3
-  F2 =~ Q4 + Q5 + Q6
+data(Data_Personality)
+model <- '
+F1 =~ PPTQ1 + PPTQ2 + PPTQ3 + PPTQ4 + PPTQ5
+F2 =~ PPTQ6 + PPTQ7 + PPTQ8 + PPTQ9 + PPTQ10
+F3 =~ PPTQ11 + PPTQ12 + PPTQ13 + PPTQ14 + PPTQ15
 '
-# Run optimization without AI
+# Run the optimization without AI
 res_cfa <- optimal_cfa_with_ai(
-  initial_model = model_str,
-  data          = my_data,
-  rmsea_threshold = 0.06,
-  mi_threshold    = 5,
-  max_steps       = 8
+  initial_model   = model,
+  data            = Data_Personality,
+  rmsea_threshold = 0.08,
+  max_steps       = 5
 )
+#> Paso 1 
+#> Warning: lavaan->lavaan():  
+#>    the first indicator of the following latent variable(s) is a poor item; 
+#>    switching to another marker item (to set the metric) to avoid convergence 
+#>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 
+#>    -> PPTQ10)
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F1 F2
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F1 F3
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F2 F3
+#> Eliminando F1 (carga 0 < 0.366). 
+#> Paso 2 
+#> Warning: lavaan->lavaan():  
+#>    the first indicator of the following latent variable(s) is a poor item; 
+#>    switching to another marker item (to set the metric) to avoid convergence 
+#>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 
+#>    -> PPTQ10)
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F1 F2
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F1 F3
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F2 F3
+#> Eliminando F1 (carga 0 < 0.366). 
+#> Paso 3 
+#> Warning: lavaan->lavaan():  
+#>    the first indicator of the following latent variable(s) is a poor item; 
+#>    switching to another marker item (to set the metric) to avoid convergence 
+#>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 
+#>    -> PPTQ10)
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F1 F2
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F1 F3
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F2 F3
+#> Eliminando F1 (carga 0 < 0.366). 
+#> Paso 4 
+#> Warning: lavaan->lavaan():  
+#>    the first indicator of the following latent variable(s) is a poor item; 
+#>    switching to another marker item (to set the metric) to avoid convergence 
+#>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 
+#>    -> PPTQ10)
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F1 F2
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F1 F3
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F2 F3
+#> Eliminando F1 (carga 0 < 0.366). 
+#> Paso 5 
+#> Warning: lavaan->lavaan():  
+#>    the first indicator of the following latent variable(s) is a poor item; 
+#>    switching to another marker item (to set the metric) to avoid convergence 
+#>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 
+#>    -> PPTQ10)
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite ; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F1 F2
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F1 F3
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F2 F3
+#> Eliminando F1 (carga 0 < 0.366). 
+res_cfa$removed_items
+#> [1] "F1" "F1" "F1" "F1" "F1"
+res_cfa$log
+#>   step modification mi_value      rmsea
+#> 1    1 F1 =~ PPTQ15  15.5407 0.08866544
+#> 2    2 F1 =~ PPTQ15  15.5407 0.08866544
+#> 3    3 F1 =~ PPTQ15  15.5407 0.08866544
+#> 4    4 F1 =~ PPTQ15  15.5407 0.08866544
+#> 5    5 F1 =~ PPTQ15  15.5407 0.08866544
+cat(res_cfa$final_model, "\n")
+#> F1 =~ PPTQ1 + PPTQ2 + PPTQ3 + PPTQ4 + PPTQ5
+#> F2 =~ PPTQ6 + PPTQ7 + PPTQ8 + PPTQ9 + PPTQ10
+#> F3 =~ PPTQ11 + PPTQ12 + PPTQ13 + PPTQ14 + PPTQ15 
 
-# Inspect results
-cat("Removed items:", paste(res_cfa$removed_items, collapse = ", "), "\n")
-lavaan::summary(res_cfa$final_fit)
-
-# Run with AI‐driven analysis
+if (FALSE) { # \dontrun{
+# Run with AI-driven analysis (requires an OpenAI-compatible API key)
 res_cfa_ai <- optimal_cfa_with_ai(
-  initial_model       = model_str,
-  data                = my_data,
-  analyze_removed     = TRUE,
-  api_key             = Sys.getenv("OPENAI_API_KEY"),
-  item_definitions    = list(Q1="...", Q2="...", Q3="...", Q4="...", Q5="...", Q6="..."),
-  factor_definitions  = list(F1="Factor 1 description", F2="Factor 2 description")
+  initial_model      = model,
+  data               = Data_Personality,
+  analyze_removed    = TRUE,
+  api_key            = Sys.getenv("OPENAI_API_KEY"),
+  item_definitions   = as.list(stats::setNames(
+    paste("Item", 1:15, "content"), paste0("PPTQ", 1:15))),
+  factor_definitions = list(F1 = "Factor 1 description",
+                            F2 = "Factor 2 description",
+                            F3 = "Factor 3 description")
 )
-
-# 1. Lista de nombres de componentes disponibles
-cat("Componentes en resultado_cfa:\n")
-print(names(resultado_cfa))
-
-# 2. Registro de pasos (log)
-cat("\n1) Log de modificaciones por paso:\n")
-print(resultado_cfa$log)
-
-# 3) Modelo final
-cat("\n2) Modelo final:\n")
-cat(resultado_cfa$final_model, "\n")
-# cat("Modelo final:\n", resultado_cfa$final_model)
-
-# 5) Resumen del ajuste del modelo final
-cat("\n4) Resumen del ajuste (final_fit):\n")
-print(summary(resultado_cfa$final_fit, standardized = T, fit.measures = T, rsquare = T))
-
-# 6) Ítems eliminados
-cat("\n5) Ítems eliminados:\n")
-cat(paste(resultado_cfa$removed_items, collapse = ", "), "\n")
-
-# 7) Medidas finales
-cat("\n6) Medidas finales:\n")
-cat("  • RMSEA final:", resultado_cfa$alternative_rmsea, "\n")
-cat("  • CFI final:  ", resultado_cfa$final_cfi, "\n")
-
-# 8) Análisis conceptual (si existe)
-print_conceptual_analysis(res_cfa_ai)
+res_cfa_ai$conceptual_analysis
 } # }
 ```

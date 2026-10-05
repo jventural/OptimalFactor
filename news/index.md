@@ -1,5 +1,162 @@
 # Changelog
 
+## OptimalFactor 1.5.0
+
+### Preparation for CRAN
+
+- Title changed to “Item Selection in Factor Analysis by Boosting and
+  Specification Search”. The Description cites Kenny and McCoach (2003)
+  and Shi, Lee and Maydeu-Olivares (2019) for the adaptive fit weights;
+  a non-existent “Kenny, Shi and Savalei (2022)” reference was removed
+  from the Description, README and
+  [`efa_boosting()`](https://jventural.github.io/OptimalFactor/reference/efa_boosting.md)
+  help page.
+- [`algorithm_stability()`](https://jventural.github.io/OptimalFactor/reference/algorithm_stability.md),
+  [`cross_validate_cfa()`](https://jventural.github.io/OptimalFactor/reference/cross_validate_cfa.md),
+  [`item_stability()`](https://jventural.github.io/OptimalFactor/reference/item_stability.md),
+  [`simulate_cfa_recovery()`](https://jventural.github.io/OptimalFactor/reference/simulate_cfa_recovery.md)
+  and
+  [`simulate_recovery()`](https://jventural.github.io/OptimalFactor/reference/simulate_recovery.md)
+  no longer fix a seed by default (`seed = NULL`).
+- [`bifactor_indices()`](https://jventural.github.io/OptimalFactor/reference/bifactor_indices.md)
+  and
+  [`cross_validate_cfa()`](https://jventural.github.io/OptimalFactor/reference/cross_validate_cfa.md)
+  gain `verbose`; console output of non-print functions can be silenced.
+- [`export_conceptual_analysis()`](https://jventural.github.io/OptimalFactor/reference/export_conceptual_analysis.md)
+  no longer writes to the working directory by default: `file` must be
+  supplied.
+- [`optimal_cfa_with_ai()`](https://jventural.github.io/OptimalFactor/reference/optimal_cfa_with_ai.md),
+  [`optimal_efa_with_ai()`](https://jventural.github.io/OptimalFactor/reference/optimal_efa_with_ai.md),
+  [`print_cfa_results()`](https://jventural.github.io/OptimalFactor/reference/print_cfa_results.md)
+  and
+  [`print_efa_results()`](https://jventural.github.io/OptimalFactor/reference/print_efa_results.md)
+  are now exported.
+- All examples are self-contained; only the calls to the external
+  language model service remain in `\dontrun{}`.
+- Bug fixes:
+  [`report_efa_results()`](https://jventural.github.io/OptimalFactor/reference/report_efa_results.md)
+  failed on data frames (`n` partially matched `na.print`);
+  [`optimal_cfa_with_ai()`](https://jventural.github.io/OptimalFactor/reference/optimal_cfa_with_ai.md)
+  failed with the ML estimator (it requested `rmsea.scaled`).
+
+### Choosing between algorithms: how much theory survives, and does the choice replicate
+
+The package offers several purification routines, and on a given scale
+they disagree. Two functions put them on the same footing so the choice
+can be argued rather than asserted.
+
+- **[`theory_recovery()`](https://jventural.github.io/OptimalFactor/reference/theory_recovery.md)**
+  measures how much of the theoretical key a solution keeps. A solution
+  departs from the theory by dropping items or by moving them, and a
+  single index confounds the two, so it reports retention, accuracy
+  (matching factors to dimensions by the exhaustive optimum, not
+  greedily), recovery (their product), the Adjusted Rand Index and, when
+  loadings are available, Tucker congruence per dimension. It reads the
+  output of any routine in the package, a plain partition or a loading
+  matrix. Accuracy alone is misleading for confirmatory routines:
+  [`cfa_boosting()`](https://jventural.github.io/OptimalFactor/reference/cfa_boosting.md)
+  can only drop items, so its accuracy is 1 by construction.
+
+- **[`algorithm_stability()`](https://jventural.github.io/OptimalFactor/reference/algorithm_stability.md)**
+  runs any item-selection algorithm on random halves of the data and
+  fits the structure it chooses on the other half. It reports whether
+  the decision replicates (Jaccard overlap with the full-sample
+  solution, per-item retention rates) and whether it holds out of sample
+  (fit and largest interfactor correlation on the validation half), and,
+  given a theory, the recovery on every split. Unlike
+  [`item_stability()`](https://jventural.github.io/OptimalFactor/reference/item_stability.md)
+  it is not tied to
+  [`efa_boosting()`](https://jventural.github.io/OptimalFactor/reference/efa_boosting.md),
+  and unlike
+  [`cross_validate_cfa()`](https://jventural.github.io/OptimalFactor/reference/cross_validate_cfa.md)
+  it is not limited to one factor. Splits run in parallel with
+  `n_cores`. A `timeout` (default 300 s) counts a split whose algorithm
+  does not finish as failed instead of stalling the run: on small
+  derivation halves an iterative search can loop indefinitely.
+
+### Bug fix
+
+- **[`bifactor_indices()`](https://jventural.github.io/OptimalFactor/reference/bifactor_indices.md)**
+  returned `NA` for omega, omega_H, PUC and every specific ECV when some
+  items load on the general factor only, as in a bifactor S-1 model (Eid
+  et al., 2017) or after dropping a specific factor that collapsed. It
+  also reported an inadmissible solution without complaint (an omega of
+  2.4 in one case); it now warns when a standardized loading reaches 1
+  or a residual variance is not positive.
+
+- **[`discriminant_boosting()`](https://jventural.github.io/OptimalFactor/reference/discriminant_boosting.md)**
+  stopped with “arguments imply differing number of columns” when a
+  structure in its ladder did not converge: the row for a non-converged
+  model had two columns instead of all of them. It now carries every
+  column, filled with `NA`.
+
+## OptimalFactor 1.4.0
+
+### Two routines for scales that fit but do not measure what they claim
+
+A model can fit well and still be uninterpretable. Four factors
+correlating .97 reproduce the covariance matrix as well as one factor
+does, so CFI and RMSEA say nothing about whether the factors exist.
+These two functions target what the fit indices miss.
+
+- **[`discriminant_boosting()`](https://jventural.github.io/OptimalFactor/reference/discriminant_boosting.md)**
+  rescues the discriminant validity of a multidimensional scale whose
+  interfactor correlations are above the threshold — or above 1, which
+  makes the solution inadmissible — with the smallest possible departure
+  from the theoretical structure. It walks a ladder of specifications
+  ordered by distance from the original (theoretical model, plus a
+  method factor, bifactor, and every partition of the factors into fewer
+  blocks), prunes each level guided by the interfactor correlation, then
+  by CFI, and keeps the model that meets every criterion *with the most
+  factors*.
+
+  Three design decisions come from what does not work. Pruning by fit
+  leaves the interfactor correlation untouched, so the search is guided
+  by it instead. Letting the data assign items surfaces the wording
+  polarity of reverse items as if it were a dimension, so item-to-factor
+  assignment stays theoretical and only whole factors are merged.
+  Optimising fit and correlation at once lets fit dominate, so they are
+  optimised in sequence.
+
+- **[`local_fit_search()`](https://jventural.github.io/OptimalFactor/reference/local_fit_search.md)**
+  searches for a specification of a one-factor model that reaches the
+  fit targets, combining item removal with freed residual covariances.
+  Where
+  [`redundancy_short_form()`](https://jventural.github.io/OptimalFactor/reference/redundancy_short_form.md)
+  prunes near-duplicate items, this one also weighs keeping the pair and
+  modelling its covariance, and decides by the effect on fit.
+
+  It encodes three steps normally taken by hand: items below the loading
+  floor are removed *without* requiring that fit improve (an item that
+  does not load cannot stay, and dropping it often worsens RMSEA at
+  first); an item taking part in two or more covariances is dropped
+  rather than kept, since the item is the problem and not the relations;
+  and every retained covariance is tested for removal at the end,
+  because each freed parameter is a debt.
+
+  It does not judge whether a covariance makes substantive sense. It
+  returns the estimate, its interval, its **sign** and the wording of
+  both items. A negative residual covariance between items at opposite
+  poles of a construct is often the trace of a dimension the
+  unidimensional model absorbed, and is worth reading before treating it
+  as noise.
+
+### Reliability and loading floors are now adaptive
+
+Both routines treat `omega_min` and `min_loading` as adaptive: a model
+already below a floor is not frozen, its effective bar becomes its
+current value. A floor set above the starting value rejects every
+candidate and stalls the search on the first iteration — a failure mode
+indistinguishable, from the outside, from a genuine negative result.
+
+### Documentation
+
+- [`specification_search_theory()`](https://jventural.github.io/OptimalFactor/reference/specification_search_theory.md):
+  `only_within_factor` is documented, including why a residual
+  correlation between items of different factors absorbs covariance that
+  belongs at the factor level and makes discriminant validity look
+  better than it is.
+
 ## OptimalFactor 1.3.0
 
 ### Breaking-free change: no more PsyMetricTools dependency

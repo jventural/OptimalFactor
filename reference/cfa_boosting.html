@@ -13,7 +13,7 @@ configurable constraints."><meta property="og:image" content="https://jventural.
 
     <a class="navbar-brand me-2" href="../index.html">OptimalFactor</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -160,19 +160,402 @@ configurable constraints.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Define CFA model</span></span></span>
-<span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="st">"</span></span></span>
-<span class="r-in"><span><span class="st">  F1 =~ item1 + item2 + item3 + item4</span></span></span>
-<span class="r-in"><span><span class="st">  F2 =~ item5 + item6 + item7 + item8</span></span></span>
-<span class="r-in"><span><span class="st">"</span></span></span>
-<span class="r-in"><span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">Data_Personality</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="st">'</span></span></span>
+<span class="r-in"><span><span class="st">F1 =~ PPTQ1 + PPTQ2 + PPTQ3 + PPTQ4 + PPTQ5</span></span></span>
+<span class="r-in"><span><span class="st">F2 =~ PPTQ6 + PPTQ7 + PPTQ8 + PPTQ9 + PPTQ10</span></span></span>
+<span class="r-in"><span><span class="st">F3 =~ PPTQ11 + PPTQ12 + PPTQ13 + PPTQ14 + PPTQ15</span></span></span>
+<span class="r-in"><span><span class="st">'</span></span></span>
 <span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">cfa_boosting</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">my_data</span>,</span></span>
-<span class="r-in"><span>  model <span class="op">=</span> <span class="va">model</span>,</span></span>
+<span class="r-in"><span>  data    <span class="op">=</span> <span class="va">Data_Personality</span>,</span></span>
+<span class="r-in"><span>  model   <span class="op">=</span> <span class="va">model</span>,</span></span>
 <span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Tamaño de muestra detectado: N = 100 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ====================================================================== </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    CFA BOOSTING v1.0 - Optimización de Modelo Confirmatorio</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ====================================================================== </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Targets -&gt; RMSEA &lt;= 0.08  | CFI &gt;= 0.95  | SRMR &lt;= 0.08 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Estimador: WLSMV </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Min items/factor: 3 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Loading mínimo: 0.3 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> MI framework: Saris-Satorra-van der Veld (delta= 0.1 , power&gt;= 0.75 , alpha= 0.05 )</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lavaan():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    the first indicator of the following latent variable(s) is a poor item; </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    switching to another marker item (to set the metric) to avoid convergence </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    -&gt; PPTQ10)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -3.404395e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is smaller than zero. This may be a symptom that the model is not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    identified.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> --- MODELO INICIAL ---</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> RMSEA: 0.107 | CFI: 0.759 | SRMR: 0.120 | Loss: 2.618 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F2</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lavaan():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    the first indicator of the following latent variable(s) is a poor item; </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    switching to another marker item (to set the metric) to avoid convergence </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    -&gt; PPTQ10)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= 3.187548e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is close to zero. This may be a symptom that the model is not identified.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   -&gt; Eliminado PPTQ13 por carga 0.147 &lt; piso 0.3 </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F2</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lavaan():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    the first indicator of the following latent variable(s) is a poor item; </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    switching to another marker item (to set the metric) to avoid convergence </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    -&gt; PPTQ10), F3 (PPTQ12 -&gt; PPTQ15)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -9.139381e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is smaller than zero. This may be a symptom that the model is not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    identified.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   -&gt; Eliminado PPTQ11 por carga 0.174 &lt; piso 0.3 </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F2</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lavaan():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    the first indicator of the following latent variable(s) is a poor item; </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    switching to another marker item (to set the metric) to avoid convergence </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    -&gt; PPTQ10), F3 (PPTQ12 -&gt; PPTQ15)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -8.563139e-18) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is smaller than zero. This may be a symptom that the model is not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    identified.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   -&gt; Eliminado PPTQ8 por carga 0.238 &lt; piso 0.3 </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F2</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lavaan():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    the first indicator of the following latent variable(s) is a poor item; </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    switching to another marker item (to set the metric) to avoid convergence </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    problems; use bad.marker.crit = 0 to switch off this behavior: F3 (PPTQ12 </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    -&gt; PPTQ15)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -2.096797e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is smaller than zero. This may be a symptom that the model is not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    identified.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   -&gt; Eliminado PPTQ7 por carga -0.245 &lt; piso 0.3 </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F2</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F2</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lavaan():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    the first indicator of the following latent variable(s) is a poor item; </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    switching to another marker item (to set the metric) to avoid convergence </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    problems; use bad.marker.crit = 0 to switch off this behavior: F3 (PPTQ12 </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    -&gt; PPTQ15)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -2.127868e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is smaller than zero. This may be a symptom that the model is not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    identified.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   -&gt; Eliminado PPTQ1 por carga cruzada en F3 (EPC = 17.426 )</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F2</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F2</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lavaan():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    the first indicator of the following latent variable(s) is a poor item; </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    switching to another marker item (to set the metric) to avoid convergence </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    problems; use bad.marker.crit = 0 to switch off this behavior: F3 (PPTQ12 </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    -&gt; PPTQ15)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -5.347706e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is smaller than zero. This may be a symptom that the model is not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    identified.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   -&gt; Eliminado PPTQ2 por carga cruzada en F3 (EPC = 31.093 )</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F2</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F2</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ------------------------------------------------------------ </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ITERACIÓN 7 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ------------------------------------------------------------ </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F2</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Evaluando 1 pares misespecificados [Saris-Satorra] (4 opciones c/u)...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     --- Par: PPTQ9 ~~ PPTQ10 (MI= 6.0 , EPC= 0.272 , Power= 0.147 , =&gt; m ) ---</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lavaan():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    the first indicator of the following latent variable(s) is a poor item; </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    switching to another marker item (to set the metric) to avoid convergence </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    problems; use bad.marker.crit = 0 to switch off this behavior: F3 (PPTQ12 </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    -&gt; PPTQ15)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -5.844440e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is smaller than zero. This may be a symptom that the model is not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    identified.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       [1] Agregar cov:      RMSEA= 0.148  | CFI= 0.829  | SRMR= 0.103  | Loss= 2.500 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       [2] Eliminar PPTQ9:    NO PERMITIDO (min items)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       [3] Eliminar PPTQ10:    NO PERMITIDO (min items)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       [4] Eliminar ambos:   NO PERMITIDO (min items)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   -&gt; Agregar PPTQ9 ~~ PPTQ10 (MI=6.0) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      RMSEA: 0.148 | CFI: 0.829 | SRMR: 0.103 | Loss: 2.500 </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F2</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F2</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ------------------------------------------------------------ </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ITERACIÓN 8 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ------------------------------------------------------------ </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Evaluando eliminación de 1 items problemáticos...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F2</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F3</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   No se encontraron mejoras posibles. Deteniendo.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ====================================================================== </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    RESULTADOS FINALES</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ====================================================================== </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Iteraciones: 8 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Items eliminados: PPTQ13, PPTQ11, PPTQ8, PPTQ7, PPTQ1, PPTQ2 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Covarianzas agregadas: PPTQ9 ~~ PPTQ10 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> --- ÍNDICES DE AJUSTE FINALES ---</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> RMSEA: 0.148 (NO CUMPLE) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CFI:   0.829 (NO CUMPLE) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> SRMR:  0.103 (NO CUMPLE) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> *** MODELO NO CUMPLE TODOS LOS CRITERIOS ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> --- MODELO FINAL ---</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> F1 =~ PPTQ3 + PPTQ4 + PPTQ5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> F2 =~ PPTQ6 + PPTQ9 + PPTQ10</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> F3 =~ PPTQ12 + PPTQ14 + PPTQ15</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PPTQ9 ~~ PPTQ10 </span>
+<span class="r-in"><span><span class="va">result</span><span class="op">$</span><span class="va">removed_items</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "PPTQ13" "PPTQ11" "PPTQ8"  "PPTQ7"  "PPTQ1"  "PPTQ2" </span>
+<span class="r-in"><span><span class="va">result</span><span class="op">$</span><span class="va">added_covariances</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "PPTQ9 ~~ PPTQ10"</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

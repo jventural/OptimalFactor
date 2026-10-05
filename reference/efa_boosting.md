@@ -1,6 +1,6 @@
 # EFA-Boosting Optimization
 
-Performs an iterative, machine-learning–inspired optimization of
+Performs an iterative, machine-learning-inspired optimization of
 Exploratory Factor Analysis (EFA).
 
 The algorithm integrates: (1) greedy item-by-item elimination, (2)
@@ -8,8 +8,8 @@ optional global subset search (multi-item removal), (3) structural rule
 enforcement (loadings, Heywood / near-Heywood, cross-loadings, minimum
 items per factor), (4) adaptive minimum interfactor correlation checks,
 and (5) a composite fit index whose weights adapt dynamically to degrees
-of freedom *and* sample size (df × N), following recommendations by
-Kenny, Shi, Savalei, and related literature.
+of freedom *and* sample size (df x N), following Kenny and McCoach
+(2003) and Shi, Lee and Maydeu-Olivares (2019).
 
 The function handles ordinal data (WLSMV) and includes robust
 corrections, adaptive weighting rules, and an optional GPT-based
@@ -72,7 +72,7 @@ efa_boosting(
 
 - name_items:
 
-  Item prefix (e.g., `"IT"` produces IT1, IT2, …). Used for
+  Item prefix (e.g., `"IT"` produces IT1, IT2, ...). Used for
   auto-detection.
 
 - item_range:
@@ -85,7 +85,7 @@ efa_boosting(
 
 - n_sample:
 
-  Sample size. If `NULL`, auto-detected as `nrow(data)`. Used for df × N
+  Sample size. If `NULL`, auto-detected as `nrow(data)`. Used for df x N
   adaptive weighting of the composite fit index.
 
 - exclude_items:
@@ -111,7 +111,7 @@ efa_boosting(
     consistency. Omega is a guard rail here, never a term in the loss:
     reliability is only interpretable once the model fits, so it vetoes
     individual removals instead of competing with the fit indices. A
-    factor that already sits below the floor is not frozen — its
+    factor that already sits below the floor is not frozen - its
     effective bar becomes its current omega, so removals that do not
     reduce reliability are still allowed. Heywood cases are exempt,
     since an inadmissible solution must be fixed regardless. `NULL`
@@ -186,9 +186,9 @@ efa_boosting(
 
   - `df_low_n_high_weights`: df \< 5 and N \>= 200.
 
-  - `df_mid_n_low_weights`: df 5–19 and N \< 200.
+  - `df_mid_n_low_weights`: df 5-19 and N \< 200.
 
-  - `df_mid_n_high_weights`: df 5–19 and N \>= 200.
+  - `df_mid_n_high_weights`: df 5-19 and N \>= 200.
 
   - `critical_df_cut`, `moderate_df_cut`: df boundaries.
 
@@ -242,7 +242,7 @@ efa_boosting(
 
 The algorithm follows a strict hierarchical rule system:
 
-- Remove Heywood items (\\\psi\\ \< –tol or \|loading\| \> 1).
+- Remove Heywood items (\\\psi\\ \< -tol or \|loading\| \> 1).
 
 - Remove near-Heywood items (\\\psi\\ ~ 0).
 
@@ -256,7 +256,7 @@ The algorithm follows a strict hierarchical rule system:
 - If `use_global = TRUE`: evaluate all subsets up to `max_drop` using
   the composite loss.
 
-**2. Adaptive composite loss (df × N).**
+**2. Adaptive composite loss (df x N).**
 
 Weights for RMSEA / SRMR / CFI adapt dynamically according to:
 
@@ -282,7 +282,7 @@ checked:
 
 If enabled:
 
-- evaluates all subsets of size 1 … k,
+- evaluates all subsets of size 1 ... k,
 
 - uses safe-combination caps,
 
@@ -295,7 +295,7 @@ If enabled:
 If `use_ai_analysis = TRUE`:
 
 - removed items receive a narrative justification using loadings,
-  ambiguity gaps, h², \\\psi\\, RMSEA-at-removal, and algorithmic
+  ambiguity gaps, h^2, \\\psi\\, RMSEA-at-removal, and algorithmic
   reason,
 
 - retained items can also be evaluated,
@@ -359,6 +359,18 @@ A list containing:
 
 - `config_used`: Full configuration list.
 
+## References
+
+Kenny, D. A., & McCoach, D. B. (2003). Effect of the number of variables
+on measures of fit in structural equation modeling. *Structural Equation
+Modeling, 10*(3), 333-351.
+[doi:10.1207/S15328007SEM1003_1](https://doi.org/10.1207/S15328007SEM1003_1)
+
+Shi, D., Lee, T., & Maydeu-Olivares, A. (2019). Understanding the model
+size effect on SEM fit indices. *Educational and Psychological
+Measurement, 79*(2), 310-334.
+[doi:10.1177/0013164418783530](https://doi.org/10.1177/0013164418783530)
+
 ## See also
 
 [`print_conceptual_analysis`](https://jventural.github.io/OptimalFactor/reference/print_conceptual_analysis.md),
@@ -367,17 +379,176 @@ A list containing:
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-X <- replicate(12, rnorm(500))
-X <- as.data.frame(X); names(X) <- paste0("IT",1:12)
-
+# \donttest{
+data(Data_Personality)
 res <- efa_boosting(
-  data = X,
-  name_items = "IT",
-  n_factors = 3,
-  n_sample = 500,
-  use_global = TRUE,
-  verbose = TRUE
+  data       = Data_Personality,
+  name_items = "PPTQ",
+  n_factors  = 3,
+  verbose    = TRUE
 )
-} # }
+#> Sample size auto-detected: N = 100 
+#> 
+#> ╔════════════════════════════════════════════════════════════════╗
+#> ║   EFA OPTIMIZER v4.1 (Greedy/Global + Objetivo compuesto)      ║
+#> ╚════════════════════════════════════════════════════════════════╝
+#> 
+#> Items iniciales: 15 | Factores: 3 
+#> Targets → RMSEA≤ 0.08  | SRMR≤ 0.06  | CFI≥ 0.95 
+#> Modo de búsqueda: GREEDY 1×1 
+#> Min ítems/factor: 3 | Loading umbral: 0.3 
+#> 
+#> Boosting iter 1: 15 items activos, 0 eliminados hasta ahora
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 8.540726e-18) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 1.397705e-17) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 1.268967e-17) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> 
+#> ──────────────────────────────────────────────────────────────────────
+#> ITERATION 0 | Loss: 0.010 | RMSEA: 0.056 | SRMR: 0.061 | CFI: 0.952 | df: 63 
+#> Items per factor: 3 | 4 | 7 
+#> ──────────────────────────────────────────────────────────────────────
+#> 
+#>     Items     f1     f2    f3
+#> 1   PPTQ9  0.754  0.000 0.000
+#> 2   PPTQ4  0.610  0.000 0.000
+#> 3  PPTQ14 -0.452  0.347 0.000
+#> 4  PPTQ12  0.000  0.668 0.000
+#> 5   PPTQ2  0.000  0.627 0.000
+#> 6   PPTQ6  0.000 -0.621 0.000
+#> 7   PPTQ7 -0.387  0.429 0.000
+#> 8   PPTQ5  0.000  0.000 0.799
+#> 9  PPTQ10  0.000  0.000 0.661
+#> 10 PPTQ15  0.000  0.000 0.639
+#> 11  PPTQ3  0.000  0.000 0.566
+#> 12  PPTQ1  0.000 -0.302 0.502
+#> 13  PPTQ8  0.000  0.000 0.360
+#> 14 PPTQ11  0.000  0.000 0.315
+#> 15 PPTQ13  0.000  0.000 0.000
+#> 
+#> ❌ Removed PPTQ7 due to: Cross-loading (priority)
+#> Boosting iter 2: 14 items activos, 1 eliminados hasta ahora
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= -1.842400e-17) 
+#>    is smaller than zero. This may be a symptom that the model is not 
+#>    identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 2.161542e-17) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 5.176050e-17) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> 
+#> ──────────────────────────────────────────────────────────────────────
+#> ITERATION 1 | Loss: 0.000 | RMSEA: 0.061 | SRMR: 0.060 | CFI: 0.952 | df: 52 
+#> Items per factor: 3 | 3 | 7 
+#> ──────────────────────────────────────────────────────────────────────
+#> 
+#>     Items     f1     f2    f3
+#> 1   PPTQ9  0.699  0.000 0.000
+#> 2   PPTQ4  0.597  0.000 0.000
+#> 3  PPTQ14 -0.528  0.400 0.000
+#> 4  PPTQ12  0.000  0.647 0.000
+#> 5   PPTQ2  0.000  0.644 0.000
+#> 6   PPTQ6  0.000 -0.641 0.000
+#> 7   PPTQ5  0.000  0.000 0.778
+#> 8  PPTQ15  0.000  0.000 0.672
+#> 9  PPTQ10  0.000  0.000 0.669
+#> 10  PPTQ3  0.000  0.000 0.544
+#> 11  PPTQ1  0.000  0.000 0.531
+#> 12  PPTQ8  0.000  0.000 0.360
+#> 13 PPTQ11  0.000  0.000 0.332
+#> 14 PPTQ13  0.000  0.000 0.000
+#> 
+#> ⚠ Cross-loadings detected but protected by min_items_per_factor; RMSEA target reached, stopping.
+#> 📐 STRATEGY: Structural optimization (non-cross-loading)
+#> ❌ Removed PPTQ13 due to: No loading 
+#> Boosting iter 3: 13 items activos, 2 eliminados hasta ahora
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= -4.983443e-17) 
+#>    is smaller than zero. This may be a symptom that the model is not 
+#>    identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 2.201994e-17) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 5.931251e-17) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> 
+#> ──────────────────────────────────────────────────────────────────────
+#> ITERATION 2 | Loss: 0.113 | RMSEA: 0.077 | SRMR: 0.060 | CFI: 0.938 | df: 42 
+#> Items per factor: 3 | 3 | 7 
+#> ──────────────────────────────────────────────────────────────────────
+#> 
+#>     Items     f1     f2    f3
+#> 1   PPTQ6 -0.671  0.000 0.000
+#> 2  PPTQ12  0.645  0.000 0.000
+#> 3   PPTQ2  0.640  0.000 0.000
+#> 4   PPTQ9  0.000  0.659 0.000
+#> 5   PPTQ4  0.000  0.607 0.000
+#> 6  PPTQ14  0.364 -0.558 0.000
+#> 7   PPTQ5  0.000  0.000 0.779
+#> 8  PPTQ10  0.000  0.000 0.690
+#> 9  PPTQ15  0.000  0.000 0.671
+#> 10  PPTQ3  0.000  0.000 0.542
+#> 11  PPTQ1  0.000  0.000 0.520
+#> 12  PPTQ8  0.000  0.000 0.355
+#> 13 PPTQ11  0.000  0.000 0.333
+#> 
+#> ⚠ Cross-loadings detected but protected by min_items_per_factor; RMSEA target reached, stopping.
+#> 📐 STRATEGY: Structural optimization (non-cross-loading)
+#> 
+#> ⚠ Structural issue found (PPTQ14) but protected by min_items_per_factor; RMSEA target reached, stopping.
+#> 
+#> ╔════════════════════════════════════════════════════════════════╗
+#> ║                  OPTIMIZATION COMPLETED                        ║
+#> ╚════════════════════════════════════════════════════════════════╝
+#> 
+#> Total iterations: 2 
+#> Items removed: PPTQ7, PPTQ13 
+#> Final RMSEA: 0.077 
+#> 
+#> ⚠️  ADVERTENCIA: No se alcanzó el criterio de correlación mínima entre factores (>= 0.32)
+#>     Correlaciones que no cumplen el criterio:
+#>     - f1-f2: 0.178
+#>     - f1-f3: 0.313
+#>     - f2-f3: 0.286
+#>     Correlación mínima encontrada: 0.178
+#> 
+#> Omega por factor: f1=0.690 | f2=0.638 | f3=0.764
+#> 
+#> ✅ Analysis finished successfully.
+#> 
+res$removed_items
+#> [1] "PPTQ7"  "PPTQ13"
+res$final_structure
+#>     Items         f1         f2        f3
+#> 1   PPTQ6 -0.6713424  0.0000000 0.0000000
+#> 2  PPTQ12  0.6447529  0.0000000 0.0000000
+#> 3   PPTQ2  0.6403550  0.0000000 0.0000000
+#> 4   PPTQ9  0.0000000  0.6593586 0.0000000
+#> 5   PPTQ4  0.0000000  0.6071600 0.0000000
+#> 6  PPTQ14  0.3643084 -0.5578913 0.0000000
+#> 7   PPTQ5  0.0000000  0.0000000 0.7788308
+#> 8  PPTQ10  0.0000000  0.0000000 0.6900500
+#> 9  PPTQ15  0.0000000  0.0000000 0.6706673
+#> 10  PPTQ3  0.0000000  0.0000000 0.5421446
+#> 11  PPTQ1  0.0000000  0.0000000 0.5200078
+#> 12  PPTQ8  0.0000000  0.0000000 0.3547691
+#> 13 PPTQ11  0.0000000  0.0000000 0.3328500
+# }
 ```

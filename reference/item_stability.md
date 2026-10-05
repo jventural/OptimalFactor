@@ -21,7 +21,7 @@ item_stability(
   method = c("subsample", "bootstrap"),
   subsample_frac = 0.8,
   reference = NULL,
-  seed = 2026,
+  seed = NULL,
   n_cores = 1,
   timeout = 120,
   verbose = TRUE,
@@ -86,7 +86,8 @@ print(x, digits = 3, ...)
 
 - seed:
 
-  Random seed. Default 2026.
+  Optional integer seed for reproducibility; NULL (default) leaves the
+  RNG untouched.
 
 - n_cores:
 
@@ -166,14 +167,81 @@ capitalization on chance. *Psychological Bulletin, 111*(3), 490–504.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-  data(Data_Personality)
-  st <- item_stability(Data_Personality, "PPTQ", n_factors = 3, R = 100)
-  st                      # printed summary
-  st$retention            # per-item detail
-
-  # with the reliability floor active
-  item_stability(Data_Personality, "PPTQ", n_factors = 3, R = 100,
-                 thresholds = list(min_omega = 0.70))
-} # }
+# \donttest{
+data(Data_Expectativas)
+st <- item_stability(Data_Expectativas, "EAF", n_factors = 2, R = 3,
+                     timeout = 15, seed = 1)
+#> Fitting the reference solution on the full sample...
+#> Fitting 3 resamples sequentially...
+#>   [                          ]   0% (0/3)  elapsed 0s  left ~?       [=========                 ]  33% (1/3)  elapsed 7s  left ~15s       [=================         ]  67% (2/3)  elapsed 9s  left ~5s       [==========================] 100% (3/3)  elapsed 25s  left ~0s     
+#>   3 of 3 resamples converged.
+#>   1 hit the 15 s cap and report the model reached so far.
+st                      # printed summary
+#> 
+#> EFA-Boosting item stability
+#> ------------------------------------------------------------
+#> Method: subsample | replications: 3 valid, 0 failed
+#> Reference solution removed: EAF7, EAF1
+#> 
+#> Retention rate per item (lowest first):
+#>   item times_retained retention_rate times_removed removal_rate modal_factor
+#>   EAF7              0          0.000             3        1.000           NA
+#>   EAF1              2          0.667             1        0.333            2
+#>   EAF4              2          0.667             1        0.333            2
+#>  EAF10              3          1.000             0        0.000            2
+#>   EAF2              3          1.000             0        0.000            2
+#>   EAF3              3          1.000             0        0.000            1
+#>   EAF5              3          1.000             0        0.000            1
+#>   EAF6              3          1.000             0        0.000            1
+#>   EAF8              3          1.000             0        0.000            2
+#>   EAF9              3          1.000             0        0.000            2
+#>  factor_agreement in_reference
+#>                NA        FALSE
+#>                 1        FALSE
+#>                 1         TRUE
+#>                 1         TRUE
+#>                 1         TRUE
+#>                 1         TRUE
+#>                 1         TRUE
+#>                 1         TRUE
+#>                 1         TRUE
+#>                 1         TRUE
+#> 
+#> Items removed per replication:
+#> 
+#> 1 2 3 
+#> 1 1 1 
+#> 
+#> Stop reasons:
+#> 
+#>               all_criteria_met min_items_per_factor_protected 
+#>                              1                              1 
+#>                        timeout 
+#>                              1 
+#> 
+#> Unstable decisions (retained in 25-75% of resamples): EAF1, EAF4
+st$retention            # per-item detail
+#>     item times_retained retention_rate times_removed removal_rate modal_factor
+#> 1   EAF7              0          0.000             3        1.000           NA
+#> 2   EAF1              2          0.667             1        0.333            2
+#> 3   EAF4              2          0.667             1        0.333            2
+#> 4  EAF10              3          1.000             0        0.000            2
+#> 5   EAF2              3          1.000             0        0.000            2
+#> 6   EAF3              3          1.000             0        0.000            1
+#> 7   EAF5              3          1.000             0        0.000            1
+#> 8   EAF6              3          1.000             0        0.000            1
+#> 9   EAF8              3          1.000             0        0.000            2
+#> 10  EAF9              3          1.000             0        0.000            2
+#>    factor_agreement in_reference
+#> 1                NA        FALSE
+#> 2                 1        FALSE
+#> 3                 1         TRUE
+#> 4                 1         TRUE
+#> 5                 1         TRUE
+#> 6                 1         TRUE
+#> 7                 1         TRUE
+#> 8                 1         TRUE
+#> 9                 1         TRUE
+#> 10                1         TRUE
+# }
 ```

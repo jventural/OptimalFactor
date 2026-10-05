@@ -24,7 +24,7 @@ simulate_recovery(
   n_categories = 5,
   skew = c("symmetric", "skewed"),
   n_reps = 100,
-  seed = 2026,
+  seed = NULL,
   verbose = TRUE,
   n_cores = 1,
   timeout = 120,
@@ -90,7 +90,8 @@ print(x, ...)
 
 - seed:
 
-  Random seed. Default 2026.
+  Optional integer seed for reproducibility; NULL (default) leaves the
+  RNG untouched.
 
 - verbose:
 
@@ -185,13 +186,15 @@ terrible specificity, so both must be read together.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-  # single condition, quick check
-  simulate_recovery(n = 300, n_reps = 20)
-
-  # crossed design for a validation paper
-  sim <- simulate_recovery(n = c(200, 500, 1000), loading = c(0.50, 0.70),
-                           items_per_factor = 5, n_reps = 200)
-  sim$summary
-} # }
+# \donttest{
+# single condition, quick check (use n_reps >= 100 in real studies)
+sim <- simulate_recovery(n = 200, n_reps = 2, seed = 1)
+#> Condition 1/1: N=200, lambda=0.65, items/factor=5 (17 items total)
+#>   [                          ]   0% (0/2)  elapsed 0s  left ~?       [=============             ]  50% (1/2)  elapsed 9s  left ~9s       [==========================] 100% (2/2)  elapsed 12s  left ~0s     
+sim$summary
+#>     n loading items_per_factor n_factors_fitted n_reps convergence_rate
+#> 1 200    0.65                5                3      2                1
+#>   recovery_rate sensitivity specificity mean_retained mean_rmsea
+#> 1             1         0.5           1            16      0.018
+# }
 ```

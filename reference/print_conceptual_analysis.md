@@ -98,7 +98,6 @@ printing).
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
 # Minimal mock object illustrating the expected structure:
 resultado <- list(
   conceptual_analysis = list(
@@ -125,9 +124,80 @@ resultado <- list(
 
 # Print in Spanish with technical stats:
 print_conceptual_analysis(resultado, width = 80, show_stats = TRUE)
+#> 
+#> ═════════════════════════════════════════════
+#> ANÁLISIS CONCEPTUAL DE ÍTEMS ELIMINADOS 
+#> 
+#> ═════════════════════════════════════════════
+#> 
+#> 📊 DP1 - "La gente generalmente piensa que soy inmoral porque soy LGBT."
+#> ────────────────────────────────────────────────────────────────────── 
+#> 
+#> ⚠️  NOTA: Este análisis parece estar incompleto o truncado.
+#> 
+#> INFORMACIÓN TÉCNICA: Carga=0.220, h²=0.110, RMSEA=0.095, Cross-loading
+#> 
+#> PROBLEMAS PSICOMÉTRICOS:
+#> Desde el punto de vista psicométrico, el ítem muestra carga baja y cruces...
+#> 
+#> 
+#> DESALINEACIÓN CONCEPTUAL:
+#> BENEFICIO DE ELIMINACIÓN:
+#> 
+#> ═════════════════════════════════════════════
+#> ANÁLISIS CONCEPTUAL DE ÍTEMS CONSERVADOS 
+#> 
+#> ═════════════════════════════════════════════
+#> 
+#> 📊 DP2 - "Me tratan diferente porque no soy heterosexual."
+#> ────────────────────────────────────────────────────────────────────── 
+#> 
+#> ⚠️  NOTA: Este análisis parece estar incompleto o truncado.
+#> 
+#> FORTALEZAS PSICOMÉTRICAS:
+#> Psychometrically, the item shows strong primary loading and specificity...
+#> 
+#> 
+#> ALINEACIÓN CONCEPTUAL:
+#> BENEFICIO DE RETENCIÓN:
 
 # Switch to English:
 resultado$config_used$ai_config$language <- "english"
 print_conceptual_analysis(resultado, width = 70, show_stats = FALSE)
-} # }
+#> 
+#> ═════════════════════════════════════════════
+#> CONCEPTUAL ANALYSIS OF REMOVED ITEMS 
+#> 
+#> ═════════════════════════════════════════════
+#> 
+#> 📊 DP1 - "La gente generalmente piensa que soy inmoral porque soy LGBT."
+#> ────────────────────────────────────────────────────────────────────── 
+#> 
+#> ⚠️  NOTE: This analysis appears to be incomplete or truncated.
+#> 
+#> PSYCHOMETRIC PROBLEMS:
+#> Desde el punto de vista psicométrico, el ítem muestra carga baja y
+#> cruces...
+#> 
+#> 
+#> CONCEPTUAL MISALIGNMENT:
+#> REMOVAL BENEFIT:
+#> 
+#> ═════════════════════════════════════════════
+#> CONCEPTUAL ANALYSIS OF RETAINED ITEMS 
+#> 
+#> ═════════════════════════════════════════════
+#> 
+#> 📊 DP2 - "Me tratan diferente porque no soy heterosexual."
+#> ────────────────────────────────────────────────────────────────────── 
+#> 
+#> ⚠️  NOTE: This analysis appears to be incomplete or truncated.
+#> 
+#> PSYCHOMETRIC STRENGTHS:
+#> Psychometrically, the item shows strong primary loading and
+#> specificity...
+#> 
+#> 
+#> CONCEPTUAL ALIGNMENT:
+#> RETENTION BENEFIT:
 ```

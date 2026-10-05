@@ -11,7 +11,7 @@ Designed for quick inspection in interactive sessions; returns invisible(NULL)."
 
     <a class="navbar-brand me-2" href="../index.html">OptimalFactor</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,7 +60,7 @@ Designed for quick inspection in interactive sessions; returns <code>invisible(N
 <dl><dt id="arg-res">res<a class="anchor" aria-label="anchor" href="#arg-res"></a></dt>
 <dd><p>A result list as returned by <code><a href="efa_boosting.html">efa_boosting</a></code>, expected to contain:</p><ul><li><p><code>$final_structure</code>: data frame of thresholded factor loadings and item labels.</p></li>
 <li><p><code>$removed_items</code>: character vector of removed items in order.</p></li>
-<li><p><code>$steps_log</code>: data frame with columns <code>step</code>, <code>removed_item</code>, <code>reason</code>, and—if available—<code>rmsea</code>, <code>srmr</code>, <code>cfi</code>.</p></li>
+<li><p><code>$steps_log</code>: data frame with columns <code>step</code>, <code>removed_item</code>, <code>reason</code>, and-if available-<code>rmsea</code>, <code>srmr</code>, <code>cfi</code>.</p></li>
 <li><p><code>$final_rmsea</code>: final scaled RMSEA.</p></li>
 <li><p><code>$iterations</code>: number of iterations executed.</p></li>
 <li><p><code>$bondades_original</code>: fit indices (columns: <code>chisq.scaled</code>, <code>df.scaled</code>, <code>rmsea.scaled</code>, <code>cfi.scaled</code>, <code>tli.scaled</code>, <code>srmr</code>).</p></li>
@@ -123,25 +123,200 @@ The report uses UTF-8 box characters (<code>a full block</code>) and accented te
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">300</span> <span class="op">*</span> <span class="fl">9</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">9</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"DP"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">9</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">Data_Expectativas</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="efa_boosting.html">efa_boosting</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">X</span>,</span></span>
-<span class="r-in"><span>  name_items <span class="op">=</span> <span class="st">"DP"</span>,</span></span>
-<span class="r-in"><span>  item_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">9</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  n_factors <span class="op">=</span> <span class="fl">3</span>,</span></span>
-<span class="r-in"><span>  thresholds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    rmsea <span class="op">=</span> <span class="fl">0.08</span>, loading <span class="op">=</span> <span class="fl">0.30</span>, min_items_per_factor <span class="op">=</span> <span class="fl">3</span>,</span></span>
-<span class="r-in"><span>    heywood_tol <span class="op">=</span> <span class="fl">1e-6</span>, near_heywood <span class="op">=</span> <span class="fl">0.015</span></span></span>
-<span class="r-in"><span>  <span class="op">)</span>,</span></span>
-<span class="r-in"><span>  model_config <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>estimator <span class="op">=</span> <span class="st">"WLSMV"</span>, rotation <span class="op">=</span> <span class="st">"oblimin"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  data       <span class="op">=</span> <span class="va">Data_Expectativas</span>,</span></span>
+<span class="r-in"><span>  name_items <span class="op">=</span> <span class="st">"EAF"</span>,</span></span>
+<span class="r-in"><span>  n_factors  <span class="op">=</span> <span class="fl">2</span>,</span></span>
+<span class="r-in"><span>  verbose    <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Boosting iter 1: 10 items activos, 0 eliminados hasta ahora</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -1.201524e-16) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is smaller than zero. This may be a symptom that the model is not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    identified.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -2.509295e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is smaller than zero. This may be a symptom that the model is not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    identified.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Boosting iter 2: 9 items activos, 1 eliminados hasta ahora</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -1.889844e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is smaller than zero. This may be a symptom that the model is not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    identified.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= 3.444830e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is close to zero. This may be a symptom that the model is not identified.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   [iter 2] Greedy: evaluando 9 candidatos para mejorar el ajuste...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>     cand 1/9: probando sin 'EAF1'...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= 1.350965e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is close to zero. This may be a symptom that the model is not identified.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>     cand 2/9: probando sin 'EAF2'...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= 2.675043e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is close to zero. This may be a symptom that the model is not identified.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>     cand 3/9: probando sin 'EAF3'...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= 7.644142e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is close to zero. This may be a symptom that the model is not identified.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>     cand 4/9: probando sin 'EAF4'...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= 4.558963e-18) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is close to zero. This may be a symptom that the model is not identified.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>     cand 5/9: probando sin 'EAF5'...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= 4.024153e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is close to zero. This may be a symptom that the model is not identified.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    some estimated ov variances are negative</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    some estimated ov variances are negative</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    some estimated ov variances are negative</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>     cand 6/9: probando sin 'EAF6'...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= 5.021168e-16) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is close to zero. This may be a symptom that the model is not identified.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    some estimated ov variances are negative</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    some estimated ov variances are negative</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    some estimated ov variances are negative</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>     cand 7/9: probando sin 'EAF8'...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -3.022502e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is smaller than zero. This may be a symptom that the model is not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    identified.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>     cand 8/9: probando sin 'EAF9'...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -2.944919e-18) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is smaller than zero. This may be a symptom that the model is not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    identified.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>     cand 9/9: probando sin 'EAF10'...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= 7.873810e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is close to zero. This may be a symptom that the model is not identified.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Boosting iter 3: 8 items activos, 2 eliminados hasta ahora</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -2.039337e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is smaller than zero. This may be a symptom that the model is not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    identified.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= 1.350965e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is close to zero. This may be a symptom that the model is not identified.</span>
 <span class="r-in"><span><span class="fu">report_efa_results</span><span class="op">(</span><span class="va">res</span>, show_plot <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ─────────────────────────────────────────────────────────────────</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ANÁLISIS FACTORIAL EXPLORATORIO - REPORTE DE OPTIMIZACIÓN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ─────────────────────────────────────────────────────────────────</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> RESUMEN DEL PROCESO</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Metrica          Valor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Items iniciales  10   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Items finales    8    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Items eliminados 2    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  % Retenido       80%  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  RMSEA inicial    0.088</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  RMSEA final      0.069</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Reduccion RMSEA  21.6%</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Iteraciones      2    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> EVOLUCIÓN DEL RMSEA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Paso  0 [0.088] █████████</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Paso  1 [0.088] █████████</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Paso  2 [0.069] █████</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                     └─────┴─────┴─────┴─────┘</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                      0.05  0.08  0.10  0.13</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> EVOLUCIÓN DEL SRMR</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Paso  0 [0.042] ███</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Paso  1 [0.042] ███</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Paso  2 [0.034] █</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                     └─────┴─────┴─────┴─────┘</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                      0.03  0.05  0.08  0.10</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> EVOLUCIÓN DEL CFI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Paso  0 [0.989] ███████████████████</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Paso  1 [0.989] ███████████████████</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Paso  2 [0.995] ████████████████████</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                     └─────┴─────┴─────┴─────┴─────┘</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                      0.70  0.80  0.90  0.95  1.00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> DETALLE DE ELIMINACIÓN DE ÍTEMS</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  step removed_item                   reason rmsea  srmr   cfi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     1         EAF7 Cross-loading (priority) 0.088 0.042 0.989</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     2         EAF1            Composite fit 0.069 0.034 0.995</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ESTRUCTURA FACTORIAL FINAL (cargas &gt; 0.30)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Items        f1        f2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  EAF6 0.8488690 0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  EAF3 0.7337100 0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  EAF5 0.6924949 0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  EAF9 0.0000000 0.9562016</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  EAF8 0.0000000 0.9091470</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 EAF10 0.0000000 0.8093821</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  EAF4 0.0000000 0.6706327</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  EAF2 0.0000000 0.6649135</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ÍNDICES DE AJUSTE DEL MODELO FINAL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 Indice Valor Interpretacion</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Chi-cuadrado escalado 19.08               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                     gl    13               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  RMSEA 0.069          Bueno</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                    CFI 0.995      Excelente</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                    TLI 0.990      Excelente</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   SRMR 0.034          Bueno</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> CORRELACIONES INTER-FACTORIALES (PHI)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       f1    f2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> f1 1.000      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> f2 0.568 1.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [OK] Criterio de correlacion minima cumplido (todas &gt;= 0.32)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      Minima encontrada: 0.568</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ─────────────────────────────────────────────────────────────────</span>
+<span class="r-in"><span><span class="va">rep</span> <span class="op">&lt;-</span> <span class="fu">report_efa_results</span><span class="op">(</span><span class="va">res</span>, print <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">rep</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "type"                     "summary"                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [3] "steps_log"                "final_structure"         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [5] "fit_indices"              "inter_factor_correlation"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [7] "interfactor_check"        "removed_items"           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [9] "text"                    </span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

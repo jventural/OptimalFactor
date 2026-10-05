@@ -24,7 +24,7 @@ simulate_cfa_recovery(
   n_categories = 5,
   skew = c("symmetric", "skewed"),
   n_reps = 100,
-  seed = 2026,
+  seed = NULL,
   verbose = TRUE,
   n_cores = 1,
   timeout = 120,
@@ -89,7 +89,8 @@ print(x, ...)
 
 - seed:
 
-  Random seed. Default 2026.
+  Optional integer seed for reproducibility; NULL (default) leaves the
+  RNG untouched.
 
 - verbose:
 
@@ -159,10 +160,29 @@ without knowing which items are faulty.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-  sim <- simulate_cfa_recovery(n = c(200, 500), loading = c(0.50, 0.70),
-                               n_reps = 50, n_cores = 6)
-  sim
-  plot(sim, metric = "sensitivity")
-} # }
+# \donttest{
+sim <- simulate_cfa_recovery(n = 300, n_reps = 2, seed = 1)
+#> Condition 1/1: N=300, lambda=0.65, items/factor=5 (17 items total)
+#>   [                          ]   0% (0/2)  elapsed 0s  left ~?       [=============             ]  50% (1/2)  elapsed 3s  left ~3s       [==========================] 100% (2/2)  elapsed 6s  left ~0s     
+sim
+#> 
+#> CFA-Boosting recovery simulation
+#> --------------------------------------------------------------------
+#> 1 condition(s) x 2 replications
+#> Population: 3 factors, roles: cross=1, good=15, low=1
+#> 
+#>    n loading items_per_factor n_reps convergence_rate exact_rate sensitivity
+#>  300    0.65                5      2                1          1           1
+#>  specificity mean_retained mean_covs_added mean_rmsea
+#>            1            15               0      0.012
+#> 
+#> exact_rate = the removed set equals the contaminated set, item for item.
+#> sensitivity = contaminated items removed; specificity = good items kept.
+#> mean_covs_added = residual covariances added; the population has none,
+#> so anything above zero is capitalization on chance.
+plot(sim, metric = "sensitivity")
+#> `geom_line()`: Each group consists of only one observation.
+#> ℹ Do you need to adjust the group aesthetic?
+
+# }
 ```

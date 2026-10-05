@@ -19,7 +19,7 @@ scored with a single total score (Rodriguez, Reise &amp;amp; Haviland, 2016)."><
 
     <a class="navbar-brand me-2" href="../index.html">OptimalFactor</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -62,7 +62,7 @@ scored with a single total score (Rodriguez, Reise &amp; Haviland, 2016).</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">bifactor_indices</span><span class="op">(</span><span class="va">fit</span>, general <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">bifactor_indices</span><span class="op">(</span><span class="va">fit</span>, general <span class="op">=</span> <span class="cn">NULL</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -77,6 +77,11 @@ specific factors).</p></dd>
 <dt id="arg-general">general<a class="anchor" aria-label="anchor" href="#arg-general"></a></dt>
 <dd><p>Name of the general factor. If <code>NULL</code> (default) it is
 auto-detected as the latent variable that loads on all items.</p></dd>
+
+
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
+<dd><p>Logical. If <code>TRUE</code> (default), prints the rounded indices
+to the console.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -111,16 +116,46 @@ general loadings \(g_i\), specific loadings \(s_i\) and errors
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lavaan.ugent.be" class="external-link">lavaan</a></span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="va">mod</span> <span class="op">&lt;-</span> <span class="st">'G  =~ x1+x2+x3+x4+x5+x6</span></span></span>
-<span class="r-in"><span><span class="st">          S1 =~ x1+x2+x3</span></span></span>
-<span class="r-in"><span><span class="st">          S2 =~ x4+x5+x6</span></span></span>
-<span class="r-in"><span><span class="st">          G ~~ 0*S1 + 0*S2</span></span></span>
-<span class="r-in"><span><span class="st">          S1 ~~ 0*S2'</span></span></span>
-<span class="r-in"><span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lavaan/man/cfa.html" class="external-link">cfa</a></span><span class="op">(</span><span class="va">mod</span>, data <span class="op">=</span> <span class="va">mydata</span>, ordered <span class="op">=</span> <span class="cn">TRUE</span>, estimator <span class="op">=</span> <span class="st">"WLSMV"</span>, std.lv <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="fu">bifactor_indices</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Simulate data from a bifactor population (G + three specific factors)</span></span></span>
+<span class="r-in"><span><span class="va">pop</span> <span class="op">&lt;-</span> <span class="st">'</span></span></span>
+<span class="r-in"><span><span class="st">G  =~ 0.6*x1 + 0.6*x2 + 0.6*x3 + 0.6*x4 + 0.6*x5 + 0.6*x6 +</span></span></span>
+<span class="r-in"><span><span class="st">      0.6*x7 + 0.6*x8 + 0.6*x9</span></span></span>
+<span class="r-in"><span><span class="st">S1 =~ 0.5*x1 + 0.5*x2 + 0.5*x3</span></span></span>
+<span class="r-in"><span><span class="st">S2 =~ 0.5*x4 + 0.5*x5 + 0.5*x6</span></span></span>
+<span class="r-in"><span><span class="st">S3 =~ 0.5*x7 + 0.5*x8 + 0.5*x9</span></span></span>
+<span class="r-in"><span><span class="st">'</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu">lavaan</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lavaan/man/simulateData.html" class="external-link">simulateData</a></span><span class="op">(</span><span class="va">pop</span>, sample.nobs <span class="op">=</span> <span class="fl">500</span>, orthogonal <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="st">'</span></span></span>
+<span class="r-in"><span><span class="st">G  =~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9</span></span></span>
+<span class="r-in"><span><span class="st">S1 =~ x1 + x2 + x3</span></span></span>
+<span class="r-in"><span><span class="st">S2 =~ x4 + x5 + x6</span></span></span>
+<span class="r-in"><span><span class="st">S3 =~ x7 + x8 + x9</span></span></span>
+<span class="r-in"><span><span class="st">'</span></span></span>
+<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">lavaan</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lavaan/man/cfa.html" class="external-link">cfa</a></span><span class="op">(</span><span class="va">mod</span>, data <span class="op">=</span> <span class="va">dat</span>, orthogonal <span class="op">=</span> <span class="cn">TRUE</span>, std.lv <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">bi</span> <span class="op">&lt;-</span> <span class="fu">bifactor_indices</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Bifactor statistical indices (general factor: G )</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Overall:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    ECV  PUC omega omega_H H_general</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.577 0.75 0.793   0.637     0.717</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> By specific factor:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Factor   ECV omega_S omega_HS     H</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      S1 0.124   0.631    0.243 0.329</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      S2 0.194   0.651    0.372 0.457</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      S3 0.105   0.644    0.195 0.294</span>
+<span class="r-in"><span><span class="va">bi</span><span class="op">$</span><span class="va">by_item</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Item Factor   General  Specific     I_ECV</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   x1     S1 0.4440820 0.3937189 0.5598970</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   x2     S1 0.4915281 0.3610763 0.6495039</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3   x3     S1 0.4801611 0.3674213 0.6307009</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   x4     S2 0.4163543 0.4813720 0.4279531</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5   x5     S2 0.3463718 0.4806573 0.3417999</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6   x6     S2 0.4511023 0.4407101 0.5116513</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7   x7     S3 0.5179359 0.2764372 0.7782912</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8   x8     S3 0.5476438 0.2910210 0.7797927</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9   x9     S3 0.4651366 0.4406203 0.5270474</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

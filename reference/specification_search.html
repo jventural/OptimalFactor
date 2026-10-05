@@ -37,7 +37,7 @@ a composite loss."><meta property="og:image" content="https://jventural.github.i
 
     <a class="navbar-brand me-2" href="../index.html">OptimalFactor</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -229,24 +229,101 @@ Modeling, 16</em>(4), 561–582.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">Data_Personality</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">items</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"PPTQ"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">15</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">Data_Expectativas</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">items</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"EAF"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">specification_search</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data         <span class="op">=</span> <span class="va">Data_Personality</span>,</span></span>
-<span class="r-in"><span>  items        <span class="op">=</span> <span class="va">items</span>,</span></span>
-<span class="r-in"><span>  max_factors  <span class="op">=</span> <span class="fl">3</span>,</span></span>
-<span class="r-in"><span>  estimator    <span class="op">=</span> <span class="st">"MLR"</span>,</span></span>
-<span class="r-in"><span>  ordered      <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
-<span class="r-in"><span>  try_bifactor <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
-<span class="r-in"><span>  verbose      <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span>  data                <span class="op">=</span> <span class="va">Data_Expectativas</span>,</span></span>
+<span class="r-in"><span>  items               <span class="op">=</span> <span class="va">items</span>,</span></span>
+<span class="r-in"><span>  max_factors         <span class="op">=</span> <span class="fl">2</span>,</span></span>
+<span class="r-in"><span>  max_iter_per_config <span class="op">=</span> <span class="fl">5</span>,</span></span>
+<span class="r-in"><span>  estimator           <span class="op">=</span> <span class="st">"MLR"</span>,</span></span>
+<span class="r-in"><span>  ordered             <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>  try_bifactor        <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>  verbose             <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>specification_search() is deprecated: use specification_search_theory(), which adds a theory-congruence penalty to the loss (theory_weight = 0 reproduces the fit-only search).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ========================================================================</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Specification Search (MacCallum, 1986)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ========================================================================</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  WARNING: specification search capitalizes on chance. Use this</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  function only as an EXPLORATORY device. Recommended practice:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    (1) Report the procedure transparently as exploratory.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    (2) Cross-validate the chosen model with an independent</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        sample or via bootstrap.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    (3) Justify each accepted modification on theoretical grounds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ========================================================================</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Items: 10 | Max factors: 2 | Operations: move/drop/cov | Bifactor: FALSE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Targets: CFI &gt;= 0.95  | RMSEA &lt;= 0.08  | SRMR &lt;= 0.08 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> --- k = 1 factor(s) ---</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Config: k1_s1 (standard)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     [k1_s1] iter 1: DROP EAF6 from G -&gt; CFI=0.9061 RMSEA=0.0972 SRMR=0.0672 loss=0.7245</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     [k1_s1] iter 2: DROP EAF5 from G -&gt; CFI=0.9752 RMSEA=0.0550 SRMR=0.0453 loss=0.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> --- k = 2 factor(s) ---</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Config: k2_s1 (standard)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     [k2_s1] iter 1: DROP EAF6 from F2 -&gt; CFI=0.9136 RMSEA=0.0950 SRMR=0.0647 loss=0.6131</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     [k2_s1] iter 2: DROP EAF5 from F1 -&gt; CFI=0.9713 RMSEA=0.0608 SRMR=0.0448 loss=0.0000</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Models evaluated: 2 </span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">res</span>, top <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">res</span>, top <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Specification search: 2 configurations evaluated</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Successful (meets CFI/RMSEA targets): 2 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Top 2 by composite loss:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  config n_factors bifactor n_items n_covs    cfi    tli  rmsea   srmr chisq df</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   k1_s1         1    FALSE       8      0 0.9752 0.9653 0.0550 0.0453 26.06 20</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   k2_s1         2    FALSE       8      0 0.9713 0.9577 0.0608 0.0448 26.02 19</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  loss meets</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     0  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     0  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Best model (k1_s1):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   CFI=0.9752 | RMSEA=0.0550 | SRMR=0.0453 | loss=0.0000 | meets=TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Factor assignment:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     G: EAF1, EAF2, EAF3, EAF4, EAF7, EAF8, EAF9, EAF10</span>
 <span class="r-in"><span><span class="va">res</span><span class="op">$</span><span class="va">successful</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">best</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   config n_factors bifactor n_items n_covs    cfi    tli  rmsea   srmr chisq df</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  k1_s1         1    FALSE       8      0 0.9752 0.9653 0.0550 0.0453 26.06 20</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  k2_s1         2    FALSE       8      0 0.9713 0.9577 0.0608 0.0448 26.02 19</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   loss meets</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    0  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2    0  TRUE</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -5,14 +5,15 @@ Writes the formatted conceptual analyses produced by
 to a UTF-8 encoded text file. Internally calls
 [`print_conceptual_analysis`](https://jventural.github.io/OptimalFactor/reference/print_conceptual_analysis.md)
 with `width = 100` and `show_stats = TRUE`, capturing its console output
-via [`sink()`](https://rdrr.io/r/base/sink.html). After writing, prints
-a short confirmation to the console and invisibly returns the output
-file path.
+via [`sink()`](https://rdrr.io/r/base/sink.html). After writing, emits a
+short confirmation via
+[`message()`](https://rdrr.io/r/base/message.html) and invisibly returns
+the output file path.
 
 ## Usage
 
 ``` r
-export_conceptual_analysis(resultado, file = "conceptual_analysis.txt")
+export_conceptual_analysis(resultado, file)
 ```
 
 ## Arguments
@@ -26,8 +27,11 @@ export_conceptual_analysis(resultado, file = "conceptual_analysis.txt")
 
 - file:
 
-  Character path to the output text file (UTF-8). If it exists, it will
-  be overwritten.
+  Character path to the output text file (UTF-8). Required (there is no
+  default, so nothing is written to the working directory unless asked);
+  for a throw-away file use, e.g.,
+  `file.path(tempdir(), "conceptual_analysis.txt")`. If it exists, it
+  will be overwritten.
 
 ## Details
 
@@ -59,9 +63,10 @@ reset if needed.
 
 ## Value
 
-Invisibly returns the `file` path (character scalar). The console also
-receives a brief confirmation message of the form “Análisis exportado a:
-\<file\>”.
+Invisibly returns the `file` path (character scalar). A brief
+confirmation message is also emitted with
+[`message()`](https://rdrr.io/r/base/message.html), of the form
+“Análisis exportado a: \<file\>”.
 
 ## See also
 
@@ -71,7 +76,6 @@ receives a brief confirmation message of the form “Análisis exportado a:
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
 # Example mock object (see print_conceptual_analysis() examples for structure)
 resultado <- list(
   conceptual_analysis = list(
@@ -91,9 +95,17 @@ resultado <- list(
   )
 )
 
-out <- export_conceptual_analysis(resultado, file = tempfile("conceptual_", fileext = ".txt"))
+out <- export_conceptual_analysis(resultado,
+                                  file = file.path(tempdir(), "conceptual_analysis.txt"))
+#> Análisis exportado a: /tmp/RtmpNtsLuD/conceptual_analysis.txt
 out  # invisible return; prints the path if typed
+#> [1] "/tmp/RtmpNtsLuD/conceptual_analysis.txt"
 # Read first lines to verify encoding and content:
 head(readLines(out, encoding = "UTF-8"))
-} # }
+#> [1] ""                                             
+#> [2] "═════════════════════════════════════════════"
+#> [3] "ANÁLISIS CONCEPTUAL DE ÍTEMS ELIMINADOS "     
+#> [4] ""                                             
+#> [5] "═════════════════════════════════════════════"
+#> [6] ""                                             
 ```

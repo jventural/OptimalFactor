@@ -16,7 +16,7 @@ and CFA using machine-learning inspired boosting algorithms.
   (large speed-ups on long instruments) and a canonical `stop_reason`
   field that explains exactly why the loop ended
 - **Adaptive Fit Indices**: Dynamic weights based on df x N following
-  Kenny, Shi & Savalei (2022)
+  Kenny & McCoach (2003) and Shi, Lee & Maydeu-Olivares (2019)
 - **Automatic Problem Detection**: Heywood cases, cross-loadings, and
   low loadings
 - **Admissibility over fit (CFA)**:
@@ -311,9 +311,14 @@ library](https://rpubs.com/jventural/OptimalFactor)
 - Saris, W. E., Satorra, A., & van der Veld, W. M. (2009). Testing
   structural equation models or detection of misspecifications?
   *Structural Equation Modeling, 16*(4), 561–582.
-- Kenny, D. A., Shi, D., & Savalei, V. (2022). Improvements in the
-  goodness of fit assessment for confirmatory factor analysis.
-  *Psychological Methods*.
+- Kenny, D. A., & McCoach, D. B. (2003). Effect of the number of
+  variables on measures of fit in structural equation modeling.
+  *Structural Equation Modeling, 10*(3), 333-351.
+  <https://doi.org/10.1207/S15328007SEM1003_1>
+- Shi, D., Lee, T., & Maydeu-Olivares, A. (2019). Understanding the
+  model size effect on SEM fit indices. *Educational and Psychological
+  Measurement, 79*(2), 310-334.
+  <https://doi.org/10.1177/0013164418783530>
 
 ## License
 
@@ -321,8 +326,8 @@ GPL-3
 
 ## Citation
 
-Ventura-Leon, J. (2026). *OptimalFactor: Optimal Factor Analysis with
-EFA-Boosting Algorithm* \[R package\]. GitHub.
+Ventura-Leon, J. (2026). *OptimalFactor: Item Selection in Factor
+Analysis by Boosting and Specification Search* \[R package\]. GitHub.
 <https://github.com/jventural/OptimalFactor>
 
 ## Author
