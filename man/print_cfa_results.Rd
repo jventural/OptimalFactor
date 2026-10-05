@@ -1,6 +1,6 @@
 \name{print_cfa_results}
 \alias{print_cfa_results}
-\title{Print Results from AI‐Assisted CFA Refinement}
+\title{Print Results from AI-Assisted CFA Refinement}
 \description{
 Prints a structured report of key outputs from \code{optimal_cfa_with_ai} applied to a Confirmatory Factor Analysis (CFA), including available components, modification log, final model syntax, removed items, fit indices, standardized loadings, and reliability.
 }
@@ -34,12 +34,15 @@ The function prints the following sections to the console:
 Invisibly returns \code{NULL}. The primary purpose is to print results.
 }
 \examples{
-\dontrun{
-# Assume you have run a CFA with optimal_cfa_with_ai:
-# res_cfa <- optimal_cfa_with_ai(...)
-
-# Print the organized results:
+data(Data_Personality)
+model <- '
+F1 =~ PPTQ1 + PPTQ2 + PPTQ3 + PPTQ4 + PPTQ5
+F2 =~ PPTQ6 + PPTQ7 + PPTQ8 + PPTQ9 + PPTQ10
+F3 =~ PPTQ11 + PPTQ12 + PPTQ13 + PPTQ14 + PPTQ15
+'
+res_cfa <- optimal_cfa_with_ai(model, Data_Personality, max_steps = 5,
+                               verbose = FALSE)
 print_cfa_results(res_cfa)
-}}
-\author{Dr. José Ventura‐León}
+}
+\author{Dr. José Ventura-León}
 \keyword{print}

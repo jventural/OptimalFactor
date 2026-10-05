@@ -135,21 +135,15 @@ MacCallum, R. C. (1986). Specification searches in covariance structure
 }
 
 \examples{
-\dontrun{
-  data(Data_Personality)
-  items  <- paste0("PPTQ", 1:15)
-  theory <- list(F1 = paste0("PPTQ", 1:5),
-                 F2 = paste0("PPTQ", 6:10),
-                 F3 = paste0("PPTQ", 11:15))
-
-  # Fit-only (drifts from theory) vs theory-guided (keeps the structure)
-  blind   <- specification_search_theory(Data_Personality, items, theory,
-               theory_weight = 0, estimator = "MLR", ordered = FALSE)
-  guided  <- specification_search_theory(Data_Personality, items, theory,
-               theory_weight = 0.5, estimator = "MLR", ordered = FALSE)
-
-  guided$table[, c("config","cfi","rmsea","congruence","loss")]
-  guided$best$factors
+\donttest{
+data(Data_Expectativas)
+items  <- paste0("EAF", 1:10)
+theory <- list(F1 = paste0("EAF", 1:5), F2 = paste0("EAF", 6:10))
+guided <- specification_search_theory(Data_Expectativas, items, theory,
+            theory_weight = 0.5, max_factors = 2, max_iter_per_config = 5,
+            try_bifactor = FALSE, estimator = "MLR", ordered = FALSE)
+guided$table[, c("config", "cfi", "rmsea", "congruence", "loss")]
+guided$best$factors
 }
 
 }

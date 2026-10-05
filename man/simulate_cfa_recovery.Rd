@@ -18,7 +18,7 @@ simulate_cfa_recovery(
   n_categories = 5,
   skew = c("symmetric", "skewed"),
   n_reps = 100,
-  seed = 2026,
+  seed = NULL,
   verbose = TRUE,
   n_cores = 1,
   timeout = 120,
@@ -56,7 +56,8 @@ Default 0.40.}
 
 \item{n_reps}{Replications per condition. Default 100.}
 
-\item{seed}{Random seed. Default 2026.}
+\item{seed}{Optional integer seed for reproducibility; NULL (default)
+leaves the RNG untouched.}
 
 \item{verbose}{Print progress per condition. Default \code{TRUE}.}
 
@@ -111,11 +112,10 @@ well, which is what a researcher would do when writing the model without
 knowing which items are faulty.
 }
 \examples{
-\dontrun{
-  sim <- simulate_cfa_recovery(n = c(200, 500), loading = c(0.50, 0.70),
-                               n_reps = 50, n_cores = 6)
-  sim
-  plot(sim, metric = "sensitivity")
+\donttest{
+sim <- simulate_cfa_recovery(n = 300, n_reps = 2, seed = 1)
+sim
+plot(sim, metric = "sensitivity")
 }
 }
 \seealso{

@@ -12,7 +12,7 @@ test_that("a fixed structure is replicated on every split", {
   # The "algorithm" returns the theory unchanged: the decision cannot vary, so
   # the replication metrics must be perfect and every split must succeed.
   st <- algorithm_stability(dat, function(d) theory, n_splits = 4,
-                            theory = theory, verbose = FALSE)
+                            theory = theory, verbose = FALSE, seed = 2026)
   expect_s3_class(st, "algorithm_stability")
   expect_equal(st$summary$success_rate, 1)
   expect_equal(st$summary$jaccard, 1)
@@ -29,8 +29,8 @@ test_that("the splits are reproducible and a failing algorithm is counted, not f
   its <- colnames(dat)
   flaky <- function(d) if (nrow(d) > 0 && d[1, 1] >= 3) stop("boom") else list(G = its)
 
-  a <- algorithm_stability(dat, flaky, n_splits = 6, reference = list(G = its), verbose = FALSE)
-  b <- algorithm_stability(dat, flaky, n_splits = 6, reference = list(G = its), verbose = FALSE)
+  a <- algorithm_stability(dat, flaky, n_splits = 6, reference = list(G = its), verbose = FALSE, seed = 2026)
+  b <- algorithm_stability(dat, flaky, n_splits = 6, reference = list(G = its), verbose = FALSE, seed = 2026)
   expect_identical(a$splits$success, b$splits$success)
   expect_lt(a$summary$success_rate, 1)
 })
@@ -55,7 +55,7 @@ test_that("a split that exceeds the timeout is counted as failed, not waited for
   lento <- function(d) { Sys.sleep(30); list(G = its) }
   t0 <- Sys.time()
   st <- algorithm_stability(dat, lento, n_splits = 2, reference = list(G = its),
-                            timeout = 1, verbose = FALSE)
+                            timeout = 1, verbose = FALSE, seed = 2026)
   expect_lt(as.numeric(difftime(Sys.time(), t0, units = "secs")), 20)
   expect_equal(st$summary$success_rate, 0)
 })

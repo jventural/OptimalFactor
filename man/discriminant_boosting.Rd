@@ -130,16 +130,17 @@ Cross-validate the chosen model on an independent sample; see
 \code{\link{cross_validate_cfa}}.
 }
 \examples{
-\dontrun{
-  theory <- list(Cognitive  = paste0("IT", 1:8),
-                 Affective  = paste0("IT", 9:16),
-                 Behavioral = paste0("IT", 17:24))
-
-  res <- discriminant_boosting(mydata, theory,
-           reverse_items = c("IT5", "IT6", "IT11"),
-           n_cores = parallel::detectCores() - 1)
+\donttest{
+if (requireNamespace("semTools", quietly = TRUE)) {
+  data(Data_Personality)
+  theory <- list(F1 = paste0("PPTQ", 1:5),
+                 F2 = paste0("PPTQ", 6:10),
+                 F3 = paste0("PPTQ", 11:15))
+  res <- discriminant_boosting(Data_Personality, theory,
+           estimator = "MLR", ordered = FALSE, n_cores = 1)
   res
   res$ladder
+}
 }
 
 }

@@ -17,7 +17,7 @@ report_efa_results(res, show_plot = TRUE, print = TRUE)
 \itemize{
   \item \code{$final_structure}: data frame of thresholded factor loadings and item labels.
   \item \code{$removed_items}: character vector of removed items in order.
-  \item \code{$steps_log}: data frame with columns \code{step}, \code{removed_item}, \code{reason}, and—if available—\code{rmsea}, \code{srmr}, \code{cfi}.
+  \item \code{$steps_log}: data frame with columns \code{step}, \code{removed_item}, \code{reason}, and-if available-\code{rmsea}, \code{srmr}, \code{cfi}.
   \item \code{$final_rmsea}: final scaled RMSEA.
   \item \code{$iterations}: number of iterations executed.
   \item \code{$bondades_original}: fit indices (columns: \code{chisq.scaled}, \code{df.scaled}, \code{rmsea.scaled}, \code{cfi.scaled}, \code{tli.scaled}, \code{srmr}).
@@ -91,24 +91,17 @@ The report uses UTF-8 box characters (\verb{a full block}) and accented text. If
 }
 
 \examples{
-\dontrun{
-set.seed(123)
-X <- as.data.frame(matrix(rnorm(300 * 9), ncol = 9))
-names(X) <- paste0("DP", 1:9)
-
+\donttest{
+data(Data_Expectativas)
 res <- efa_boosting(
-  data = X,
-  name_items = "DP",
-  item_range = c(1, 9),
-  n_factors = 3,
-  thresholds = list(
-    rmsea = 0.08, loading = 0.30, min_items_per_factor = 3,
-    heywood_tol = 1e-6, near_heywood = 0.015
-  ),
-  model_config = list(estimator = "WLSMV", rotation = "oblimin")
+  data       = Data_Expectativas,
+  name_items = "EAF",
+  n_factors  = 2,
+  verbose    = FALSE
 )
-
 report_efa_results(res, show_plot = TRUE)
+rep <- report_efa_results(res, print = FALSE)
+names(rep)
 }
 }
 

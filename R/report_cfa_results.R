@@ -18,7 +18,7 @@
 #'   report to the console. Set to \code{FALSE} when only the structured
 #'   list is needed.
 #'
-#' @return An invisible \code{list} with class \code{"cfa_boost_report"} —
+#' @return An invisible \code{list} with class \code{"cfa_boost_report"} -
 #'   see Details below for fields.
 #'
 #' @details Fields of the returned list:
@@ -35,11 +35,11 @@
 #'     \item{reliability}{Reliability table (composite/AVE/etc.)}
 #'     \item{steps_log}{Per-iteration log}
 #'     \item{final_syntax}{The final lavaan syntax used}
-#'     \item{text}{Character vector — same lines that were printed}
+#'     \item{text}{Character vector - same lines that were printed}
 #'   }
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' data(Data_Personality, package = "OptimalFactor")
 #' # Run CFA boosting first to obtain an object suitable for the reporter.
 #' model <- '
@@ -47,18 +47,17 @@
 #' F2 =~ PPTQ6 + PPTQ7 + PPTQ8 + PPTQ9 + PPTQ10
 #' F3 =~ PPTQ11 + PPTQ12 + PPTQ13 + PPTQ14 + PPTQ15
 #' '
-#' res <- cfa_boosting(Data_Personality, model)
+#' res <- cfa_boosting(Data_Personality, model,
+#'                     model_config = list(estimator = "MLR", ordered = FALSE),
+#'                     verbose = FALSE)
 #'
 #' # Pretty print to the console (default).
 #' report_cfa_results(res)
 #'
-#' # Capture the structured output without printing — useful inside Shiny
+#' # Capture the structured output without printing - useful inside Shiny
 #' # apps or scripts that need the data programmatically.
 #' rep <- report_cfa_results(res, print = FALSE)
 #' str(rep, max.level = 1)
-#' rep$fit_indices
-#' rep$reliability
-#' cat(paste(rep$text, collapse = "\n"))
 #' }
 #'
 #' @seealso \code{\link{cfa_boosting}}, \code{\link{report_efa_results}}

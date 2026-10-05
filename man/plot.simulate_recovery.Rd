@@ -35,11 +35,10 @@ reports, so the crossed design is worth running with enough replications for
 the curve to be stable.
 }
 \examples{
-\dontrun{
-  sim <- simulate_recovery(n = c(200, 500, 1000), loading = c(0.50, 0.70),
-                           n_reps = 200, n_cores = 6)
-  plot(sim)
-  plot(sim, metric = "sensitivity")
+\donttest{
+sim <- simulate_recovery(n = 200, n_reps = 2, seed = 1)
+plot(sim)
+plot(sim, metric = "sensitivity")
 }
 }
 \seealso{

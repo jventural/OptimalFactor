@@ -3,7 +3,7 @@
 \title{Exploratory Factor Analysis Optimizer with Optional LLM Support}
 
 \description{
-Automatically refines an Exploratory Factor Analysis (EFA) solution by combining global fit (scaled RMSEA), item–level loading quality, and explicit detection of Heywood/near-Heywood cases. At each iteration the routine re-fits the model, removes the worst offending item (by structural fault or RMSEA improvement), and stops when predefined fit/structure criteria are met or no admissible improvement remains. Optionally, it can call a Large Language Model (LLM) to generate plain-language justifications for removing/keeping items, with language control and detail level.
+Automatically refines an Exploratory Factor Analysis (EFA) solution by combining global fit (scaled RMSEA), item-level loading quality, and explicit detection of Heywood/near-Heywood cases. At each iteration the routine re-fits the model, removes the worst offending item (by structural fault or RMSEA improvement), and stops when predefined fit/structure criteria are met or no admissible improvement remains. Optionally, it can call a Large Language Model (LLM) to generate plain-language justifications for removing/keeping items, with language control and detail level.
 }
 
 \usage{
@@ -136,46 +136,42 @@ A list with:
 }
 
 \examples{
-\dontrun{
-# Minimal runnable illustration (without LLM)
-set.seed(123)
-X <- as.data.frame(matrix(rnorm(300 * 9), ncol = 9))
-names(X) <- paste0("DP", 1:9)
-
+\donttest{
+# Run without LLM support
+data(Data_Personality)
 res <- efa_optimizer(
-  data = X,
-  name_items = "DP",
-  item_range = c(1, 9),
-  n_factors = 3,
+  data       = Data_Personality,
+  name_items = "PPTQ",
+  n_factors  = 3,
   thresholds = list(
     rmsea = 0.08, loading = 0.30, min_items_per_factor = 3,
     heywood_tol = 1e-6, near_heywood = 0.015
   ),
   model_config = list(estimator = "WLSMV", rotation = "oblimin"),
+  verbose = FALSE
+)
+res$final_structure
+res$steps_log
+res$final_rmsea
+}
+\dontrun{
+# LLM justification (requires a valid API key and item definitions)
+res_ai <- efa_optimizer(
+  data       = Data_Personality,
+  name_items = "PPTQ",
+  n_factors  = 3,
+  use_ai_analysis = TRUE,
+  ai_config = list(
+    api_key = Sys.getenv("OPENAI_API_KEY"),
+    item_definitions = as.list(stats::setNames(
+      paste("Item", 1:15, "content"), paste0("PPTQ", 1:15))),
+    language = "spanish",
+    analysis_detail = "standard",
+    only_removed = TRUE
+  ),
   verbose = TRUE
 )
-
-print(res$final_structure)
-print(res$steps_log)
-res$final_rmsea
-
-# LLM justification sketch (requires a valid API key and item definitions):
-# res_ai <- efa_optimizer(
-#   data = X,
-#   name_items = "DP",
-#   item_range = c(1, 9),
-#   n_factors = 3,
-#   use_ai_analysis = TRUE,
-#   ai_config = list(
-#     api_key = Sys.getenv("OPENAI_API_KEY"),
-#     item_definitions = as.list(setNames(paste("Item", 1:9, "content"), names(X))),
-#     language = "spanish",
-#     analysis_detail = "standard",
-#     only_removed = TRUE
-#   ),
-#   verbose = TRUE
-# )
-# str(res_ai$conceptual_analysis, max.level = 1)
+str(res_ai$conceptual_analysis, max.level = 1)
 }
 }
 

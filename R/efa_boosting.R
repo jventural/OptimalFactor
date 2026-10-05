@@ -141,7 +141,7 @@ efa_boosting <- function(data,
     targets=list(rmsea=0.08, srmr=0.08, cfi=0.95),
     margins=list(rmsea=0.03, srmr=0.03, cfi=0.03),
     base_weights=list(rmsea=0.50, srmr=0.25, cfi=0.25),
-    # Pesos adaptativos basados en df × N (Kenny, Shi et al. 2022)
+    # Pesos adaptativos basados en df x N (Kenny & McCoach, 2003; Shi, Lee & Maydeu-Olivares, 2019)
     # df < 5 & N < 200: RMSEA muy poco confiable
     critical_weights=list(rmsea=0.02, srmr=0.55, cfi=0.43),
     # df < 5 & N >= 200: problema se atenúa pero persiste
@@ -485,7 +485,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     lapply(w, function(x) as.numeric(x/s))
   }
   adaptive_weights <- function(df_val, n_sample, estimator, fitcfg) {
-    # Sistema de pesos adaptativos basado en df × N (Kenny, Shi et al. 2022)
+    # Sistema de pesos adaptativos basado en df x N (Kenny & McCoach, 2003; Shi, Lee & Maydeu-Olivares, 2019)
     # 5 escenarios según literatura sobre confiabilidad del RMSEA
 
     # Escenario 1: df < 5 & N < 200 (crítico - RMSEA muy poco confiable)
@@ -977,7 +977,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         if (!is.null(gs)) { chosen_subset <- gs$subset; chosen_fit <- gs$fit; chosen_loss <- gs$loss }
       }
 
-      # 2) Si global no mejora o está desactivado → GREEDY 1×1
+      # 2) Si global no mejora o está desactivado → GREEDY 1x1
       if (is.null(chosen_subset)) {
         n_cand <- length(candidates)
         # Smart pruning: rank candidates by ascending max-|loading| so that

@@ -18,7 +18,7 @@ simulate_recovery(
   n_categories = 5,
   skew = c("symmetric", "skewed"),
   n_reps = 100,
-  seed = 2026,
+  seed = NULL,
   verbose = TRUE,
   n_cores = 1,
   timeout = 120,
@@ -57,7 +57,8 @@ Default 0.40.}
 
 \item{n_reps}{Replications per condition. Default 100.}
 
-\item{seed}{Random seed. Default 2026.}
+\item{seed}{Optional integer seed for reproducibility; NULL (default)
+leaves the RNG untouched.}
 
 \item{verbose}{Print progress per condition. Default \code{TRUE}.}
 
@@ -130,14 +131,10 @@ algorithm that removes everything scores a perfect sensitivity and a terrible
 specificity, so both must be read together.
 }
 \examples{
-\dontrun{
-  # single condition, quick check
-  simulate_recovery(n = 300, n_reps = 20)
-
-  # crossed design for a validation paper
-  sim <- simulate_recovery(n = c(200, 500, 1000), loading = c(0.50, 0.70),
-                           items_per_factor = 5, n_reps = 200)
-  sim$summary
+\donttest{
+# single condition, quick check (use n_reps >= 100 in real studies)
+sim <- simulate_recovery(n = 200, n_reps = 2, seed = 1)
+sim$summary
 }
 }
 \seealso{

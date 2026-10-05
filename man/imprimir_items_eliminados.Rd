@@ -29,5 +29,5 @@ imprimir_items_eliminados(character(0))
 #> Ítems eliminados: Ninguno
 }
 \author{
-Dr. José Ventura‐León
+Dr. José Ventura-León
 }

@@ -4,7 +4,7 @@
 ## Features
 
 - **EFA-Boosting Algorithm**: Advanced iterative optimization for Exploratory Factor Analysis with smart-pruning of the candidate space (large speed-ups on long instruments) and a canonical `stop_reason` field that explains exactly why the loop ended
-- **Adaptive Fit Indices**: Dynamic weights based on df x N following Kenny, Shi & Savalei (2022)
+- **Adaptive Fit Indices**: Dynamic weights based on df x N following Kenny & McCoach (2003) and Shi, Lee & Maydeu-Olivares (2019)
 - **Automatic Problem Detection**: Heywood cases, cross-loadings, and low loadings
 - **Admissibility over fit (CFA)**: `cfa_boosting()` removes items below the loading floor, and items loading on a foreign factor, even when the fit targets are already met — because global fit does not reveal either of them
 - **Monte Carlo validation**: `simulate_recovery()` and `simulate_cfa_recovery()` measure how often each pipeline recovers a structure that is known in advance
@@ -256,7 +256,8 @@ The function prints this warning at the start of every run (suppress with
 
 - MacCallum, R. C. (1986). Specification searches in covariance structure modeling. *Psychological Bulletin, 100*(1), 107–120.
 - Saris, W. E., Satorra, A., & van der Veld, W. M. (2009). Testing structural equation models or detection of misspecifications? *Structural Equation Modeling, 16*(4), 561–582.
-- Kenny, D. A., Shi, D., & Savalei, V. (2022). Improvements in the goodness of fit assessment for confirmatory factor analysis. *Psychological Methods*.
+- Kenny, D. A., & McCoach, D. B. (2003). Effect of the number of variables on measures of fit in structural equation modeling. *Structural Equation Modeling, 10*(3), 333-351. https://doi.org/10.1207/S15328007SEM1003_1
+- Shi, D., Lee, T., & Maydeu-Olivares, A. (2019). Understanding the model size effect on SEM fit indices. *Educational and Psychological Measurement, 79*(2), 310-334. https://doi.org/10.1177/0013164418783530
 
 ## License
 
@@ -264,7 +265,7 @@ GPL-3
 
 ## Citation
 
-Ventura-Leon, J. (2026). _OptimalFactor: Optimal Factor Analysis with EFA-Boosting Algorithm_ [R package]. GitHub. https://github.com/jventural/OptimalFactor
+Ventura-Leon, J. (2026). _OptimalFactor: Item Selection in Factor Analysis by Boosting and Specification Search_ [R package]. GitHub. https://github.com/jventural/OptimalFactor
 
 ## Author
 

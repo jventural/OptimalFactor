@@ -1,5 +1,27 @@
 # OptimalFactor 1.5.0
 
+## Preparation for CRAN
+
+* Title changed to "Item Selection in Factor Analysis by Boosting and
+  Specification Search". The Description cites Kenny and McCoach (2003) and
+  Shi, Lee and Maydeu-Olivares (2019) for the adaptive fit weights; a
+  non-existent "Kenny, Shi and Savalei (2022)" reference was removed from the
+  Description, README and `efa_boosting()` help page.
+* `algorithm_stability()`, `cross_validate_cfa()`, `item_stability()`,
+  `simulate_cfa_recovery()` and `simulate_recovery()` no longer fix a seed by
+  default (`seed = NULL`).
+* `bifactor_indices()` and `cross_validate_cfa()` gain `verbose`; console
+  output of non-print functions can be silenced.
+* `export_conceptual_analysis()` no longer writes to the working directory by
+  default: `file` must be supplied.
+* `optimal_cfa_with_ai()`, `optimal_efa_with_ai()`, `print_cfa_results()` and
+  `print_efa_results()` are now exported.
+* All examples are self-contained; only the calls to the external language
+  model service remain in `\dontrun{}`.
+* Bug fixes: `report_efa_results()` failed on data frames (`n` partially
+  matched `na.print`); `optimal_cfa_with_ai()` failed with the ML estimator
+  (it requested `rmsea.scaled`).
+
 ## Choosing between algorithms: how much theory survives, and does the choice replicate
 
 The package offers several purification routines, and on a given scale they

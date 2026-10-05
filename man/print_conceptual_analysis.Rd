@@ -58,7 +58,6 @@ If your console does not support UTF-8, some symbols may render as placeholders.
 }
 
 \examples{
-\dontrun{
 # Minimal mock object illustrating the expected structure:
 resultado <- list(
   conceptual_analysis = list(
@@ -89,7 +88,6 @@ print_conceptual_analysis(resultado, width = 80, show_stats = TRUE)
 # Switch to English:
 resultado$config_used$ai_config$language <- "english"
 print_conceptual_analysis(resultado, width = 70, show_stats = FALSE)
-}
 }
 
 \seealso{

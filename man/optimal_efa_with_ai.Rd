@@ -3,7 +3,7 @@
 \title{Exploratory Factor Analysis Optimization with AI Assistance}
 \description{
 Automatically refines an Exploratory Factor Analysis (EFA) solution by combining
-model‐fit criteria (scaled RMSEA) and item‐loading quality, and—when requested—
+model-fit criteria (scaled RMSEA) and item-loading quality, and-when requested-
 integrates AI-generated conceptual analyses and factor naming.  At each iteration it:
 \enumerate{
   \item Estimates the specified EFA model on the current set of items.
@@ -11,15 +11,15 @@ integrates AI-generated conceptual analyses and factor naming.  At each iteratio
         and every factor retains at least \code{min_items_per_factor} items.
   \item If fit or structure criteria are not met, identifies and removes the item
         whose exclusion yields the greatest RMSEA improvement or that exhibits
-        structural issues (cross‐loading or no loading).
-  \item Repeats steps 1–3 until both fit and structure criteria are satisfied or
+        structural issues (cross-loading or no loading).
+  \item Repeats steps 1-3 until both fit and structure criteria are satisfied or
         \code{max_steps} iterations are reached.
 }
 Optionally, when \code{analyze_removed = TRUE} and \code{item_definitions} are provided,
 it calls the OpenAI API to generate concise justifications for both exclusion and
 retention of each item, using the provided definitions and the final loading structure
 as context.  If \code{generate_factor_names = TRUE}, it also prompts the AI to propose
-brief (1–2 word) tentative names for each factor, taking into account the specified
+brief (1-2 word) tentative names for each factor, taking into account the specified
 \code{domain_name}, \code{scale_title}, and \code{construct_definition}.
 }
 \usage{
@@ -62,7 +62,7 @@ optimal_efa_with_ai(
   \item{threshold_rmsea}{Numeric. Maximum allowable scaled RMSEA to stop refinement
                          (default \code{0.08}).}
   \item{threshold_loading}{Numeric. Minimum absolute loading to consider an item
-                           well‐loaded (default \code{0.30}).}
+                           well-loaded (default \code{0.30}).}
   \item{min_items_per_factor}{Integer. Minimum items required per factor
                               (default \code{2}).}
   \item{apply_threshold}{Logical. If \code{TRUE}, zeros out loadings below
@@ -96,7 +96,7 @@ The function proceeds as follows:
     \enumerate{
       \item Estimates the EFA model with the current items.
       \item Computes the scaled RMSEA.
-      \item Evaluates the factor‐loading structure for cross‐loadings or lack of loadings.
+      \item Evaluates the factor-loading structure for cross-loadings or lack of loadings.
       \item If RMSEA <= \code{threshold_rmsea} and each factor has >=
             \code{min_items_per_factor}, stops.
       \item Otherwise, removes the item whose exclusion most improves RMSEA or that
@@ -124,54 +124,44 @@ A list with components:
 \item{conceptual_analysis}{A list with elements \code{removed} and \code{kept},
                            each a named list of AI-generated texts per item,
                            or \code{NULL} if \code{analyze_removed = FALSE}.}
-\item{factor_names}{Named character vector or list of AI‐proposed factor names,
+\item{factor_names}{Named character vector or list of AI-proposed factor names,
                     or \code{NULL} if \code{generate_factor_names = FALSE}.}
 }
 \examples{
+\donttest{
+data(Data_Expectativas)
+# Run the optimized EFA without AI
+res_efa <- optimal_efa_with_ai(
+  data       = Data_Expectativas,
+  items      = paste0("EAF", 1:10),
+  name_items = "EAF",
+  n_factors  = 2,
+  verbose    = FALSE
+)
+res_efa$removed_items
+res_efa$final_structure
+}
 \dontrun{
-  # Construct definition
-  construct_def <- "Las consecuencias positivas de terminar una carrera de grado,
-                   tales como prestigio, compensación monetaria y mejora en la autoevaluación."
-
-  # Definiciones de ítems para EFA
-  item_defs_efa_ud <- list(
-    EAF1  = "Graduarme de la universidad me ayudará a recibir una buena oferta de trabajo.",
-    EAF2  = "Graduarme de la universidad me ayudará a ganar un buen sueldo.",
-    EAF3  = "Graduarme de la universidad me ayudará a obtener el respeto de los demás.",
-    EAF4  = paste0("Graduarme de la universidad me ayudará a hacer un trabajo ",
-                   "en el que encuentre satisfacción personal."),
-    EAF5  = "Graduarme de la universidad me ayudará a aumentar mi autoestima.",
-    EAF6  = paste0("Graduarme de la universidad me ayudará a tener una carrera ",
-                   "que sea valorada por mi familia."),
-    EAF7  = paste0("Graduarme de la universidad me ayudará a hacer un trabajo ",
-                   "que pueda \"marcar la diferencia\" en la vida de las personas."),
-    EAF8  = paste0("Graduarme de la universidad me ayudará a trabajar en un ",
-                   "campo con grandes oportunidades laborales."),
-    EAF9  = "Graduarme de la universidad me ayudará a hacer un trabajo apasionante.",
-    EAF10 = paste0("Graduarme de la universidad me ayudará a tener el tipo y la ",
-                   "cantidad de contacto social necesario con otras personas.")
-  )
-
-  # Ejecutar EFA optimizada con asistencia de IA
-  res_efa <- optimal_efa_with_ai(
-    data                  = df_EFA %>% dplyr::select(EAF1:EAF10),
-    items                 = names(df_EFA %>% dplyr::select(EAF1:EAF10)),
-    name_items            = "EAF",
-    n_factors             = 2,
-    analyze_removed       = TRUE,
-    api_key               = Sys.getenv("OPENAI_API_KEY"),
-    item_definitions      = item_defs_efa_ud,
-    construct_definition  = construct_def,
-    scale_title           = "EAF Scale",
-    model_name            = "EFA Multidimensional",
-    generate_factor_names = TRUE,
-    domain_name           = "Expectativas académicas de resultados"
-  )
-
-  # Ver resultados
-  print(res_efa$final_structure)
-  print(res_efa$steps_log)
-  print(res_efa$conceptual_analysis)
-  print(res_efa$factor_names)
+# With AI-assisted conceptual analysis (requires an OpenAI-compatible API key)
+construct_def <- paste("Positive consequences of completing a degree, such as",
+                       "prestige, income and self-evaluation.")
+item_defs <- as.list(stats::setNames(
+  paste("Content of item", 1:10), paste0("EAF", 1:10)))
+res_efa_ai <- optimal_efa_with_ai(
+  data                  = Data_Expectativas,
+  items                 = paste0("EAF", 1:10),
+  name_items            = "EAF",
+  n_factors             = 2,
+  analyze_removed       = TRUE,
+  api_key               = Sys.getenv("OPENAI_API_KEY"),
+  item_definitions      = item_defs,
+  construct_definition  = construct_def,
+  scale_title           = "EAF Scale",
+  model_name            = "EFA Multidimensional",
+  generate_factor_names = TRUE,
+  domain_name           = "Academic outcome expectations"
+)
+res_efa_ai$conceptual_analysis
+res_efa_ai$factor_names
 }
 }

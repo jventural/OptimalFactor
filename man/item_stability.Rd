@@ -13,7 +13,7 @@ item_stability(
   method = c("subsample", "bootstrap"),
   subsample_frac = 0.8,
   reference = NULL,
-  seed = 2026,
+  seed = NULL,
   n_cores = 1,
   timeout = 120,
   verbose = TRUE,
@@ -56,7 +56,8 @@ the cost of a single \code{efa_boosting()} call, so start small.}
 used as the alignment reference. If \code{NULL} (default) it is computed
 internally.}
 
-\item{seed}{Random seed. Default 2026.}
+\item{seed}{Optional integer seed for reproducibility; NULL (default)
+leaves the RNG untouched.}
 
 \item{n_cores}{Number of parallel workers. Default 1 (sequential). Values
 above 1 use a PSOCK cluster and require the package to be installed, not
@@ -123,15 +124,12 @@ MacCallum, R. C., Roznowski, M., & Necowitz, L. B. (1992). Model
 }
 
 \examples{
-\dontrun{
-  data(Data_Personality)
-  st <- item_stability(Data_Personality, "PPTQ", n_factors = 3, R = 100)
-  st                      # printed summary
-  st$retention            # per-item detail
-
-  # with the reliability floor active
-  item_stability(Data_Personality, "PPTQ", n_factors = 3, R = 100,
-                 thresholds = list(min_omega = 0.70))
+\donttest{
+data(Data_Expectativas)
+st <- item_stability(Data_Expectativas, "EAF", n_factors = 2, R = 3,
+                     timeout = 15, seed = 1)
+st                      # printed summary
+st$retention            # per-item detail
 }
 }
 \seealso{

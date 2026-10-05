@@ -15,7 +15,7 @@
 #'   evolution charts for RMSEA / SRMR / CFI.
 #' @param print Logical. If \code{TRUE} (default), write the formatted report
 #'   to the console via \code{cat()}. Set to \code{FALSE} to suppress the
-#'   side-effect — useful when only the structured list is needed.
+#'   side-effect - useful when only the structured list is needed.
 #'
 #' @return An invisible \code{list} with class \code{"efa_boost_report"} and
 #'   the following fields:
@@ -30,7 +30,7 @@
 #'     \item{inter_factor_correlation}{Phi matrix (if available)}
 #'     \item{interfactor_check}{Inter-factor minimum-correlation check}
 #'     \item{removed_items}{Character vector of dropped items}
-#'     \item{text}{Character vector — the same lines that were printed,
+#'     \item{text}{Character vector - the same lines that were printed,
 #'       suitable for re-rendering in any frontend}
 #'   }
 #'
@@ -183,7 +183,11 @@ report_efa_results <- function(res, show_plot = TRUE, print = TRUE) {
     print(el_df[, ordered, drop = FALSE], row.names = FALSE)))
 
   out <- c(out, "", "", "ESTRUCTURA FACTORIAL FINAL (cargas > 0.30)", "")
-  out <- c(out, utils::capture.output(print(rpt$final_structure, n = Inf)))
+  # 'n = Inf' solo vale para tibbles; en un data.frame se empareja
+  # parcialmente con 'na.print' y print.default() falla.
+  fs_print <- if (inherits(rpt$final_structure, "tbl_df"))
+    function(x) print(x, n = Inf) else function(x) print(x)
+  out <- c(out, utils::capture.output(fs_print(rpt$final_structure)))
 
   if (!is.null(rpt$fit_indices)) {
     out <- c(out, "", "", "\u00CDNDICES DE AJUSTE DEL MODELO FINAL", "")

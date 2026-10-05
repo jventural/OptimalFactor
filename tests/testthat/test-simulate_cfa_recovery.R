@@ -78,7 +78,7 @@ test_that("the design is summarised one row per condition", {
 
   sim <- simulate_cfa_recovery(n = c(150, 300), items_per_factor = 3,
                                n_factors = 2, n_reps = 3, n_cross = 1, n_low = 1,
-                               verbose = FALSE)
+                               verbose = FALSE, seed = 2026)
 
   expect_s3_class(sim, "simulate_cfa_recovery")
   expect_equal(nrow(sim$summary), 2L)
@@ -92,7 +92,7 @@ test_that("the design is summarised one row per condition", {
 test_that("failed replications are recorded rather than dropped", {
   local_mocked_bindings(cfa_boosting = function(...) stop("no fit"))
   sim <- simulate_cfa_recovery(n = 150, items_per_factor = 3, n_factors = 2,
-                               n_reps = 4, verbose = FALSE)
+                               n_reps = 4, verbose = FALSE, seed = 2026)
 
   expect_equal(nrow(sim$replications), 4L)
   expect_false(any(sim$replications$converged))
@@ -106,7 +106,7 @@ test_that("plot draws every metric, counts included", {
                  fit_indices = list(rmsea = 0.03))
   local_mocked_bindings(cfa_boosting = function(...) canned)
   sim <- simulate_cfa_recovery(n = c(150, 300), items_per_factor = 3,
-                               n_factors = 2, n_reps = 2, verbose = FALSE)
+                               n_factors = 2, n_reps = 2, verbose = FALSE, seed = 2026)
 
   for (m in c("exact_rate", "sensitivity", "specificity", "convergence_rate",
               "mean_retained", "mean_covs_added")) {
@@ -123,7 +123,7 @@ test_that("the print method explains what zero added covariances means", {
                  fit_indices = list(rmsea = 0.03))
   local_mocked_bindings(cfa_boosting = function(...) canned)
   sim <- simulate_cfa_recovery(n = 150, items_per_factor = 3, n_factors = 2,
-                               n_reps = 2, verbose = FALSE)
+                               n_reps = 2, verbose = FALSE, seed = 2026)
 
   out <- capture.output(print(sim))
   expect_true(any(grepl("CFA-Boosting recovery", out)))

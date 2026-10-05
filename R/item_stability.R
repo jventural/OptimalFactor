@@ -55,7 +55,8 @@
 #' @param reference Optional \code{efa_boosting()} result on the full sample,
 #'   used as the alignment reference. If \code{NULL} (default) it is computed
 #'   internally.
-#' @param seed Random seed. Default 2026.
+#' @param seed Optional integer seed for reproducibility; NULL (default)
+#'   leaves the RNG untouched.
 #' @param n_cores Number of parallel workers. Default 1 (sequential). Values
 #'   above 1 use a PSOCK cluster and require the package to be installed, not
 #'   merely loaded with \code{pkgload::load_all()}.
@@ -83,15 +84,12 @@
 #'   capitalization on chance. \emph{Psychological Bulletin, 111}(3), 490--504.
 #'
 #' @examples
-#' \dontrun{
-#'   data(Data_Personality)
-#'   st <- item_stability(Data_Personality, "PPTQ", n_factors = 3, R = 100)
-#'   st                      # printed summary
-#'   st$retention            # per-item detail
-#'
-#'   # with the reliability floor active
-#'   item_stability(Data_Personality, "PPTQ", n_factors = 3, R = 100,
-#'                  thresholds = list(min_omega = 0.70))
+#' \donttest{
+#' data(Data_Expectativas)
+#' st <- item_stability(Data_Expectativas, "EAF", n_factors = 2, R = 3,
+#'                      timeout = 15, seed = 1)
+#' st                      # printed summary
+#' st$retention            # per-item detail
 #' }
 #' @seealso \code{\link{efa_boosting}}, \code{\link{cross_validate_cfa}},
 #'   \code{\link{simulate_recovery}}
@@ -99,7 +97,7 @@
 item_stability <- function(data, name_items, n_factors = 3, R = 100,
                            method = c("subsample", "bootstrap"),
                            subsample_frac = 0.8, reference = NULL,
-                           seed = 2026, n_cores = 1, timeout = 120,
+                           seed = NULL, n_cores = 1, timeout = 120,
                            verbose = TRUE, ...) {
   method <- match.arg(method)
   cl <- match.call()
@@ -127,7 +125,7 @@ item_stability <- function(data, name_items, n_factors = 3, R = 100,
   items <- grep(paste0("^", name_items, "\\d+$"), names(data), value = TRUE)
   if (!length(items)) items <- names(ref_map)
 
-  set.seed(seed)
+  if (!is.null(seed)) set.seed(seed)
   n_draw <- if (method == "bootstrap") N else max(2L, floor(subsample_frac * N))
   draws  <- lapply(seq_len(R), function(r)
     sample.int(N, n_draw, replace = (method == "bootstrap")))

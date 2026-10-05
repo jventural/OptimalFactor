@@ -116,23 +116,23 @@ Modeling, 16}(4), 561--582.
 }
 
 \examples{
-\dontrun{
-data(Data_Personality)
-items <- paste0("PPTQ", 1:15)
+\donttest{
+data(Data_Expectativas)
+items <- paste0("EAF", 1:10)
 
 res <- specification_search(
-  data         = Data_Personality,
-  items        = items,
-  max_factors  = 3,
-  estimator    = "MLR",
-  ordered      = FALSE,
-  try_bifactor = TRUE,
-  verbose      = TRUE
+  data                = Data_Expectativas,
+  items               = items,
+  max_factors         = 2,
+  max_iter_per_config = 5,
+  estimator           = "MLR",
+  ordered             = FALSE,
+  try_bifactor        = FALSE,
+  verbose             = TRUE
 )
 
-print(res, top = 8)
+print(res, top = 5)
 res$successful
-summary(res$best$fit)
 }
 }
 

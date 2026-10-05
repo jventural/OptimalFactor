@@ -23,6 +23,13 @@ optimal_cfa_with_ai <- function(initial_model,
          "Install them with: install.packages(c('httr', 'jsonlite'))")
   }
 
+  # Indice escalado si existe (WLSMV, MLR); si no (ML), el no escalado
+  fm_scaled <- function(fit, m) {
+    fm <- lavaan::fitMeasures(fit, c(paste0(m, ".scaled"), m))
+    sc <- paste0(m, ".scaled")
+    if (sc %in% names(fm) && !is.na(fm[[sc]])) unname(fm[[sc]]) else unname(fm[[m]])
+  }
+
   # — Helpers para modelo multidimensional —
   split_model <- function(model_str) {
     lines <- trimws(unlist(strsplit(model_str, "[\r\n]")))
@@ -114,7 +121,7 @@ optimal_cfa_with_ai <- function(initial_model,
       lavaan::cfa(current_model_str, data = data, ...),
       error = function(e) stop("Error en ajuste CFA: ", e$message)
     )
-    curr_rmsea <- fitMeasures(fit, "rmsea.scaled")
+    curr_rmsea <- fm_scaled(fit, "rmsea")
     # parada por RMSEA
     if (!is.na(curr_rmsea) && curr_rmsea < rmsea_threshold) {
       if (verbose) cat("RMSEA(", round(curr_rmsea,4), ") <", rmsea_threshold, ": deteniendo.\n")
@@ -167,7 +174,8 @@ optimal_cfa_with_ai <- function(initial_model,
   }
 
   # medidas finales
-  final_meas <- fitMeasures(alternative_fit, c("rmsea.scaled","cfi.scaled"))
+  final_meas <- c(rmsea.scaled = fm_scaled(alternative_fit, "rmsea"),
+                  cfi.scaled   = fm_scaled(alternative_fit, "cfi"))
 
   # — Análisis conceptual con IA —
   conceptual_analysis <- NULL

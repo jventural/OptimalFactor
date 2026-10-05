@@ -24,19 +24,21 @@
 #'   on the console.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' data(Data_Personality, package = "OptimalFactor")
 #' model <- '
 #' F1 =~ PPTQ1 + PPTQ2 + PPTQ3 + PPTQ4 + PPTQ5
 #' F2 =~ PPTQ6 + PPTQ7 + PPTQ8 + PPTQ9 + PPTQ10
 #' F3 =~ PPTQ11 + PPTQ12 + PPTQ13 + PPTQ14 + PPTQ15
 #' '
-#' res <- cfa_boosting(Data_Personality, model)
+#' res <- cfa_boosting(Data_Personality, model,
+#'                     model_config = list(estimator = "MLR", ordered = FALSE),
+#'                     verbose = FALSE)
 #'
 #' # Full printout (default).
 #' print_cfa_boosting(res)
 #'
-#' # Compact printout — hide steps log, raise the loading threshold, and
+#' # Compact printout - hide steps log, raise the loading threshold, and
 #' # show fewer decimals when reporting in a slide deck.
 #' print_cfa_boosting(res,
 #'   show_steps        = FALSE,
@@ -312,26 +314,30 @@ print_cfa_boosting <- function(result,
 #'   \code{reliability}, \code{steps_log}).
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' data(Data_Personality, package = "OptimalFactor")
 #' model <- '
 #' F1 =~ PPTQ1 + PPTQ2 + PPTQ3 + PPTQ4 + PPTQ5
 #' F2 =~ PPTQ6 + PPTQ7 + PPTQ8 + PPTQ9 + PPTQ10
 #' F3 =~ PPTQ11 + PPTQ12 + PPTQ13 + PPTQ14 + PPTQ15
 #' '
-#' res <- cfa_boosting(Data_Personality, model)
+#' res <- cfa_boosting(Data_Personality, model,
+#'                     model_config = list(estimator = "MLR", ordered = FALSE),
+#'                     verbose = FALSE)
 #' out <- export_cfa_boosting(res)
 #' names(out)
 #'
-#' # Each component is a data.frame ready for write.csv() / openxlsx
+#' # Each component is a data.frame ready for write.csv()
 #' head(out$fit_indices)
-#' head(out$standardized_loadings)
-#' head(out$steps_log)
+#' head(out$loadings)
+#' head(out$steps)
 #'
-#' # Save the lot to disk in one shot.
-#' for (nm in names(out))
-#'   write.csv(out[[nm]],
-#'             sprintf("cfa_boost_\%s.csv", nm), row.names = FALSE)
+#' # Save the data frames to a temporary directory.
+#' for (nm in c("fit_indices", "loadings", "reliability"))
+#'   if (!is.null(out[[nm]]))
+#'     utils::write.csv(out[[nm]],
+#'                      file.path(tempdir(), paste0("cfa_boost_", nm, ".csv")),
+#'                      row.names = FALSE)
 #' }
 #'
 #' @seealso \code{\link{cfa_boosting}}, \code{\link{print_cfa_boosting}}

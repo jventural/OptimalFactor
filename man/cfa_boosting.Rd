@@ -108,18 +108,20 @@ A list containing:
 }
 
 \examples{
-\dontrun{
-# Define CFA model
-model <- "
-  F1 =~ item1 + item2 + item3 + item4
-  F2 =~ item5 + item6 + item7 + item8
-"
-
+\donttest{
+data(Data_Personality)
+model <- '
+F1 =~ PPTQ1 + PPTQ2 + PPTQ3 + PPTQ4 + PPTQ5
+F2 =~ PPTQ6 + PPTQ7 + PPTQ8 + PPTQ9 + PPTQ10
+F3 =~ PPTQ11 + PPTQ12 + PPTQ13 + PPTQ14 + PPTQ15
+'
 result <- cfa_boosting(
-  data = my_data,
-  model = model,
+  data    = Data_Personality,
+  model   = model,
   verbose = TRUE
 )
+result$removed_items
+result$added_covariances
 }
 }
 

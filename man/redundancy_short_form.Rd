@@ -76,11 +76,10 @@ MacCallum, R. C., Roznowski, M., & Necowitz, L. B. (1992). Model modifications
 }
 
 \examples{
-\dontrun{
-  sf <- redundancy_short_form(mydata, paste0("IT", 1:16), k = 7,
-          groups = list(A = paste0("IT",1:8), B = paste0("IT",9:16)))
-  sf$trajectory; sf$items; sf$omega
-}
+data(Data_Expectativas)
+sf <- redundancy_short_form(Data_Expectativas, paste0("EAF", 1:10), k = 6,
+        groups = list(A = paste0("EAF", 1:5), B = paste0("EAF", 6:10)))
+sf$trajectory; sf$items; sf$omega
 }
 \seealso{
 \code{\link{cross_validate_cfa}}

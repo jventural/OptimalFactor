@@ -280,7 +280,7 @@ specification_search <- function(data,
   if (n_cores > 1L && requireNamespace("parallel", quietly = TRUE)) {
     .cl <- parallel::makeCluster(n_cores)
     parallel::clusterExport(.cl, c("data", "estimator", "ordered", "std.lv"), envir = environment())
-    parallel::clusterEvalQ(.cl, { suppressMessages(library(lavaan)); TRUE })
+    parallel::clusterEvalQ(.cl, { suppressMessages(requireNamespace("lavaan", quietly = TRUE)); TRUE })
     on.exit(try(parallel::stopCluster(.cl), silent = TRUE), add = TRUE)
   }
   .fit_worker <- function(spec) {

@@ -16,7 +16,7 @@ test_that("the failure counter reports the resamples that actually failed", {
 
   out <- capture.output(
     st <- item_stability(dat, name_items = "IT", n_factors = 2, R = 3,
-                         verbose = TRUE)
+                         verbose = TRUE, seed = 2026)
   )
   expect_true(any(grepl("1 of 3 resamples converged", out)))
   expect_equal(st$n_valid, 1L)
@@ -36,7 +36,7 @@ test_that("retention rates are computed over every candidate item", {
 
   local_mocked_bindings(efa_boosting = function(...) canned)
   st <- item_stability(dat, name_items = "IT", n_factors = 2, R = 3,
-                       verbose = FALSE)
+                       verbose = FALSE, seed = 2026)
 
   # The universe is the eight items in the data, not the six survivors.
   expect_equal(nrow(st$retention), 8L)
@@ -55,7 +55,7 @@ test_that("item_stability refuses to run when the reference fit fails", {
   dat <- .of_simulate_ordinal(pop$sigma, 150, 5, "symmetric")
 
   expect_error(
-    item_stability(dat, name_items = "IT", n_factors = 2, R = 2, verbose = FALSE),
+    item_stability(dat, name_items = "IT", n_factors = 2, R = 2, verbose = FALSE, seed = 2026),
     "reference"
   )
 })

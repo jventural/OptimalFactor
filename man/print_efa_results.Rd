@@ -1,8 +1,8 @@
 \name{print_efa_results}
 \alias{print_efa_results}
-\title{Print Results from AI‐Assisted EFA Refinement}
+\title{Print Results from AI-Assisted EFA Refinement}
 \description{
-Prints a structured summary of the key outputs from \code{optimal_efa_with_ai}, including the removed items, final RMSEA, iteration count, final factor structure, step‐by‐step log, and final fit indices.
+Prints a structured summary of the key outputs from \code{optimal_efa_with_ai}, including the removed items, final RMSEA, iteration count, final factor structure, step-by-step log, and final fit indices.
 }
 \usage{
 print_efa_results(res)
@@ -31,12 +31,13 @@ The function prints to the console in the following order:
  invisibly returns \code{NULL}. Used for its printing side effect.
 }
 \examples{
-\dontrun{
-# Assume you have run:
-# res_efa <- optimal_efa_with_ai(...)
-
-# Then print the results:
+\donttest{
+data(Data_Expectativas)
+res_efa <- optimal_efa_with_ai(Data_Expectativas, items = paste0("EAF", 1:10),
+                               name_items = "EAF", n_factors = 2,
+                               verbose = FALSE)
 print_efa_results(res_efa)
-}}
-\author{Dr. José Ventura‐León}
+}
+}
+\author{Dr. José Ventura-León}
 \keyword{print}

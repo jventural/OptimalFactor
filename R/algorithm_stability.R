@@ -58,7 +58,8 @@
 #'   Default \code{c(cfi = .95, rmsea = .08, srmr = .08)}.
 #' @param phi_max Interfactor correlation at or above which two factors are
 #'   considered indistinguishable; part of \code{meets}. Default .90.
-#' @param seed Seed for the splits. Default 2026.
+#' @param seed Optional integer seed for reproducibility; NULL (default)
+#'   leaves the RNG untouched.
 #' @param timeout Seconds allowed for the algorithm on one split; a split that
 #'   exceeds it is counted as failed instead of stalling the whole run. Small
 #'   derivation halves can send an iterative search into a loop that never
@@ -84,17 +85,18 @@
 #'
 #' @examples
 #' \donttest{
-#' data(Data_Personality)
-#' items  <- paste0("PPTQ", 1:15)
-#' theory <- list(F1 = paste0("PPTQ", 1:5), F2 = paste0("PPTQ", 6:10),
-#'                F3 = paste0("PPTQ", 11:15))
+#' data(Data_Expectativas)
+#' items  <- paste0("EAF", 1:10)
+#' theory <- list(F1 = paste0("EAF", 1:5), F2 = paste0("EAF", 6:10))
 #' model  <- paste(sapply(names(theory), function(f)
 #'             paste(f, "=~", paste(theory[[f]], collapse = " + "))), collapse = "\n")
 #'
 #' st <- algorithm_stability(
-#'   Data_Personality[, items],
-#'   algorithm = function(d) cfa_boosting(d, model = model, verbose = FALSE),
-#'   n_splits = 5, theory = theory, estimator = "MLR", ordered = FALSE)
+#'   Data_Expectativas[, items],
+#'   algorithm = function(d) cfa_boosting(d, model = model, verbose = FALSE,
+#'                 model_config = list(estimator = "MLR", ordered = FALSE)),
+#'   n_splits = 3, theory = theory, estimator = "MLR", ordered = FALSE,
+#'   seed = 1)
 #' st
 #' }
 #' @export
@@ -102,7 +104,7 @@ algorithm_stability <- function(data, algorithm, n_splits = 30, theory = NULL,
                                 reference = NULL, estimator = "WLSMV",
                                 ordered = TRUE,
                                 targets = c(cfi = 0.95, rmsea = 0.08, srmr = 0.08),
-                                phi_max = 0.90, seed = 2026, n_cores = 1,
+                                phi_max = 0.90, seed = NULL, n_cores = 1,
                                 timeout = 300, verbose = TRUE) {
   if (!requireNamespace("lavaan", quietly = TRUE)) stop("Package 'lavaan' is required.")
   if (!is.function(algorithm)) stop("'algorithm' must be a function of the data.", call. = FALSE)
@@ -123,7 +125,7 @@ algorithm_stability <- function(data, algorithm, n_splits = 30, theory = NULL,
   ref <- .of_as_partition(reference)$asig
   ref_items <- unlist(ref, use.names = FALSE)
 
-  set.seed(seed)
+  if (!is.null(seed)) set.seed(seed)
   n_der  <- floor(nrow(data) / 2)
   splits <- lapply(seq_len(n_splits), function(i) sample.int(nrow(data), n_der))
 

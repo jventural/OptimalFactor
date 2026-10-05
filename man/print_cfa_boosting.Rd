@@ -49,19 +49,21 @@ factor loadings (above a threshold), latent correlations, reliability
 coefficients and the final lavaan model syntax.
 }
 \examples{
-\dontrun{
+\donttest{
 data(Data_Personality, package = "OptimalFactor")
 model <- '
 F1 =~ PPTQ1 + PPTQ2 + PPTQ3 + PPTQ4 + PPTQ5
 F2 =~ PPTQ6 + PPTQ7 + PPTQ8 + PPTQ9 + PPTQ10
 F3 =~ PPTQ11 + PPTQ12 + PPTQ13 + PPTQ14 + PPTQ15
 '
-res <- cfa_boosting(Data_Personality, model)
+res <- cfa_boosting(Data_Personality, model,
+                    model_config = list(estimator = "MLR", ordered = FALSE),
+                    verbose = FALSE)
 
 # Full printout (default).
 print_cfa_boosting(res)
 
-# Compact printout — hide steps log, raise the loading threshold, and
+# Compact printout - hide steps log, raise the loading threshold, and
 # show fewer decimals when reporting in a slide deck.
 print_cfa_boosting(res,
   show_steps        = FALSE,

@@ -37,11 +37,10 @@
 #'   the pipeline) and \code{call}.
 #'
 #' @examples
-#' \dontrun{
-#'   sim <- simulate_cfa_recovery(n = c(200, 500), loading = c(0.50, 0.70),
-#'                                n_reps = 50, n_cores = 6)
-#'   sim
-#'   plot(sim, metric = "sensitivity")
+#' \donttest{
+#' sim <- simulate_cfa_recovery(n = 300, n_reps = 2, seed = 1)
+#' sim
+#' plot(sim, metric = "sensitivity")
 #' }
 #' @seealso \code{\link{simulate_recovery}}, \code{\link{cfa_boosting}}
 #' @export
@@ -51,14 +50,14 @@ simulate_cfa_recovery <- function(n = 500, loading = 0.65, items_per_factor = 5,
                                   n_low = 1, low_loading = 0.20,
                                   n_categories = 5,
                                   skew = c("symmetric", "skewed"),
-                                  n_reps = 100, seed = 2026, verbose = TRUE,
+                                  n_reps = 100, seed = NULL, verbose = TRUE,
                                   n_cores = 1, timeout = 120, ...) {
   skew <- match.arg(skew)
   cl <- match.call()
   conditions <- expand.grid(n = n, loading = loading,
                             items_per_factor = items_per_factor,
                             stringsAsFactors = FALSE)
-  set.seed(seed)
+  if (!is.null(seed)) set.seed(seed)
 
   use_par <- n_cores > 1 && requireNamespace("parallel", quietly = TRUE)
   clu <- NULL

@@ -5,16 +5,16 @@
 \description{
 Writes the formatted conceptual analyses produced by \code{\link{efa_optimizer}} to a UTF-8 encoded text file.
 Internally calls \code{\link{print_conceptual_analysis}} with \code{width = 100} and \code{show_stats = TRUE}, capturing its console output via \code{sink()}.
-After writing, prints a short confirmation to the console and invisibly returns the output file path.
+After writing, emits a short confirmation via \code{message()} and invisibly returns the output file path.
 }
 
 \usage{
-export_conceptual_analysis(resultado, file = "conceptual_analysis.txt")
+export_conceptual_analysis(resultado, file)
 }
 
 \arguments{
 \item{resultado}{A result list returned by \code{\link{efa_optimizer}}; must contain \code{$conceptual_analysis} and \code{$config_used} (see \code{\link{print_conceptual_analysis}}).}
-\item{file}{Character path to the output text file (UTF-8). If it exists, it will be overwritten.}
+\item{file}{Character path to the output text file (UTF-8). Required (there is no default, so nothing is written to the working directory unless asked); for a throw-away file use, e.g., \code{file.path(tempdir(), "conceptual_analysis.txt")}. If it exists, it will be overwritten.}
 }
 
 \details{
@@ -34,11 +34,10 @@ If an error interrupts execution before the second \code{sink()}, the connection
 }
 
 \value{
-Invisibly returns the \code{file} path (character scalar). The console also receives a brief confirmation message of the form \dQuote{Análisis exportado a: <file>}.
+Invisibly returns the \code{file} path (character scalar). A brief confirmation message is also emitted with \code{message()}, of the form \dQuote{Análisis exportado a: <file>}.
 }
 
 \examples{
-\dontrun{
 # Example mock object (see print_conceptual_analysis() examples for structure)
 resultado <- list(
   conceptual_analysis = list(
@@ -58,11 +57,11 @@ resultado <- list(
   )
 )
 
-out <- export_conceptual_analysis(resultado, file = tempfile("conceptual_", fileext = ".txt"))
+out <- export_conceptual_analysis(resultado,
+                                  file = file.path(tempdir(), "conceptual_analysis.txt"))
 out  # invisible return; prints the path if typed
 # Read first lines to verify encoding and content:
 head(readLines(out, encoding = "UTF-8"))
-}
 }
 
 \seealso{

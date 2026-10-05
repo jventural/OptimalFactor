@@ -13,7 +13,8 @@ cross_validate_cfa(
   min_per_group = 3,
   estimator = "WLSMV",
   targets = c(cfi = 0.95, rmsea = 0.08),
-  seed = 2026
+  seed = NULL,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -37,7 +38,11 @@ validation half.}
 \item{targets}{Named numeric vector of pass thresholds for the fraction of
 subsamples meeting fit. Default \code{c(cfi = 0.95, rmsea = 0.08)}.}
 
-\item{seed}{Random seed for reproducibility. Default 2026.}
+\item{seed}{Optional integer seed for reproducibility; NULL (default)
+leaves the RNG untouched.}
+
+\item{verbose}{Logical. If \code{TRUE} (default), prints the summary tables
+to the console.}
 }
 \value{
 A list. In fixed mode: \code{summary} (P10/P50/P90 of cfi, rmsea, srmr,
@@ -64,12 +69,16 @@ MacCallum, R. C., Roznowski, M., & Necowitz, L. B. (1992). Model modifications
 }
 
 \examples{
-\dontrun{
-  # confirm a fixed 7-item scale out of sample
-  cross_validate_cfa(mydata, short_items, n_splits = 200)
-  # test the derivation procedure itself
-  cross_validate_cfa(mydata, all_items, derive_k = 7, n_splits = 100,
-                     groups = list(A = a_items, B = b_items))
+\donttest{
+data(Data_Expectativas)
+items <- paste0("EAF", 1:10)
+# confirm a fixed item set out of sample
+cross_validate_cfa(Data_Expectativas, items, n_splits = 3, seed = 1)
+# test the derivation procedure itself
+cross_validate_cfa(Data_Expectativas, items, derive_k = 6, n_splits = 3,
+                   groups = list(A = paste0("EAF", 1:5),
+                                 B = paste0("EAF", 6:10)),
+                   seed = 1)
 }
 }
 \seealso{

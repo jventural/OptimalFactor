@@ -48,11 +48,10 @@
 #'   \emph{Psychological Bulletin, 111}(3), 490--504.
 #'
 #' @examples
-#' \dontrun{
-#'   sf <- redundancy_short_form(mydata, paste0("IT", 1:16), k = 7,
-#'           groups = list(A = paste0("IT",1:8), B = paste0("IT",9:16)))
-#'   sf$trajectory; sf$items; sf$omega
-#' }
+#' data(Data_Expectativas)
+#' sf <- redundancy_short_form(Data_Expectativas, paste0("EAF", 1:10), k = 6,
+#'         groups = list(A = paste0("EAF", 1:5), B = paste0("EAF", 6:10)))
+#' sf$trajectory; sf$items; sf$omega
 #' @seealso \code{\link{cross_validate_cfa}}
 #' @export
 redundancy_short_form <- function(data, items, k = NULL, groups = NULL,

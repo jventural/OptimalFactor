@@ -108,12 +108,12 @@ before treating it as noise.
 specification exists; it does not replace validation on an independent sample.
 }
 \examples{
-\dontrun{
-  res <- local_fit_search(mydata, paste0("IT", 1:12),
-           factor_name = "Moral_identity",
-           item_text   = codebook[, c("Item", "Texto")])
-  res
-  res$log
+\donttest{
+data(Data_Expectativas)
+res <- local_fit_search(Data_Expectativas, paste0("EAF", 1:10),
+         factor_name = "Expectations", estimator = "MLR", ordered = FALSE)
+res
+res$log
 }
 
 }

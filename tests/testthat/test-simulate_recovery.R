@@ -25,7 +25,7 @@ test_that("failed replications are recorded instead of dropped", {
   local_mocked_bindings(efa_boosting = function(...) stop("no fit"))
 
   sim <- simulate_recovery(n = 120, n_factors = 2, items_per_factor = 3,
-                           n_cross = 0, n_low = 0, n_reps = 4, verbose = FALSE)
+                           n_cross = 0, n_low = 0, n_reps = 4, verbose = FALSE, seed = 2026)
 
   expect_equal(nrow(sim$replications), 4L)
   expect_false(any(sim$replications$converged))
@@ -47,7 +47,7 @@ test_that("a mixture of failed and successful replications is summarised correct
   })
 
   sim <- simulate_recovery(n = 120, n_factors = 2, items_per_factor = 3,
-                           n_cross = 0, n_low = 0, n_reps = 4, verbose = FALSE)
+                           n_cross = 0, n_low = 0, n_reps = 4, verbose = FALSE, seed = 2026)
 
   expect_equal(sum(sim$replications$converged), 2L)
   expect_equal(sim$summary$convergence_rate, 0.5)
@@ -68,7 +68,7 @@ test_that("the number of factors fitted is crossed and reaches efa_boosting", {
 
   sim <- simulate_recovery(n = 150, n_factors = 3, items_per_factor = 3,
                            n_factors_fitted = c(2, 3, 4), n_reps = 2,
-                           verbose = FALSE)
+                           verbose = FALSE, seed = 2026)
 
   expect_equal(sort(unique(visto)), c(2L, 3L, 4L))
   expect_equal(nrow(sim$summary), 3L)
@@ -85,7 +85,7 @@ test_that("omitting n_factors_fitted fits the true number of factors", {
     NULL
   })
   sim <- simulate_recovery(n = 150, n_factors = 2, items_per_factor = 3,
-                           n_reps = 2, verbose = FALSE)
+                           n_reps = 2, verbose = FALSE, seed = 2026)
 
   expect_true(all(visto == 2L))
   expect_equal(unique(sim$summary$n_factors_fitted), 2)
@@ -109,7 +109,7 @@ test_that("the in-process worker really fits", {
 test_that("a crossed design returns one summary row per condition", {
   skip_on_cran()
   sim <- simulate_recovery(n = c(200, 400), loading = 0.70, items_per_factor = 3,
-                           n_factors = 2, n_reps = 2, verbose = FALSE)
+                           n_factors = 2, n_reps = 2, verbose = FALSE, seed = 2026)
 
   expect_s3_class(sim, "simulate_recovery")
   expect_equal(nrow(sim$summary), 2L)

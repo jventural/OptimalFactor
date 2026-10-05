@@ -24,7 +24,10 @@
 #' @param estimator Estimator passed to \code{lavaan::cfa}. Default \code{"WLSMV"}.
 #' @param targets Named numeric vector of pass thresholds for the fraction of
 #'   subsamples meeting fit. Default \code{c(cfi = 0.95, rmsea = 0.08)}.
-#' @param seed Random seed for reproducibility. Default 2026.
+#' @param seed Optional integer seed for reproducibility; NULL (default)
+#'   leaves the RNG untouched.
+#' @param verbose Logical. If \code{TRUE} (default), prints the summary tables
+#'   to the console.
 #'
 #' @return A list. In fixed mode: \code{summary} (P10/P50/P90 of cfi, rmsea, srmr,
 #'   omega across holdout subsamples) and \code{pct_meeting} (fraction meeting all
@@ -37,19 +40,24 @@
 #'   \emph{Psychological Bulletin, 111}(3), 490--504.
 #'
 #' @examples
-#' \dontrun{
-#'   # confirm a fixed 7-item scale out of sample
-#'   cross_validate_cfa(mydata, short_items, n_splits = 200)
-#'   # test the derivation procedure itself
-#'   cross_validate_cfa(mydata, all_items, derive_k = 7, n_splits = 100,
-#'                      groups = list(A = a_items, B = b_items))
+#' \donttest{
+#' data(Data_Expectativas)
+#' items <- paste0("EAF", 1:10)
+#' # confirm a fixed item set out of sample
+#' cross_validate_cfa(Data_Expectativas, items, n_splits = 3, seed = 1)
+#' # test the derivation procedure itself
+#' cross_validate_cfa(Data_Expectativas, items, derive_k = 6, n_splits = 3,
+#'                    groups = list(A = paste0("EAF", 1:5),
+#'                                  B = paste0("EAF", 6:10)),
+#'                    seed = 1)
 #' }
 #' @seealso \code{\link{redundancy_short_form}}
 #' @export
 cross_validate_cfa <- function(data, items, n_splits = 200, derive_k = NULL,
                                groups = NULL, min_per_group = 3,
                                estimator = "WLSMV",
-                               targets = c(cfi = 0.95, rmsea = 0.08), seed = 2026) {
+                               targets = c(cfi = 0.95, rmsea = 0.08), seed = NULL,
+                               verbose = TRUE) {
   if (!requireNamespace("lavaan", quietly = TRUE)) stop("Package 'lavaan' is required.")
   D <- data[stats::complete.cases(data[, items]), , drop = FALSE]
   N <- nrow(D)
@@ -65,7 +73,7 @@ cross_validate_cfa <- function(data, items, n_splits = 200, derive_k = NULL,
   qtab <- function(M) { M <- M[stats::complete.cases(M), , drop = FALSE]
     round(apply(M, 2, function(x) stats::quantile(x, c(.1,.5,.9))), 3) }
 
-  set.seed(seed)
+  if (!is.null(seed)) set.seed(seed)
   if (is.null(derive_k)) {
     draws <- matrix(NA_real_, 2 * n_splits, 4, dimnames = list(NULL, c("cfi","rmsea","srmr","omega")))
     for (r in seq_len(n_splits)) {
@@ -74,11 +82,13 @@ cross_validate_cfa <- function(data, items, n_splits = 200, derive_k = NULL,
     }
     dd <- draws[stats::complete.cases(draws), , drop = FALSE]
     pct <- mean(dd[,"cfi"] >= targets["cfi"] & dd[,"rmsea"] <= targets["rmsea"])
-    cat(sprintf("Cross-validacion split-half de %d items en %d submuestras (n~%d)\n",
-                length(items), nrow(dd), floor(N/2)))
-    print(qtab(dd))
-    cat(sprintf("%% submuestras que cumplen CFI>=%.2f y RMSEA<=%.2f: %.1f%%\n",
-                targets["cfi"], targets["rmsea"], 100*pct))
+    if (verbose) {
+      cat(sprintf("Cross-validacion split-half de %d items en %d submuestras (n~%d)\n",
+                  length(items), nrow(dd), floor(N/2)))
+      print(qtab(dd))
+      cat(sprintf("%% submuestras que cumplen CFI>=%.2f y RMSEA<=%.2f: %.1f%%\n",
+                  targets["cfi"], targets["rmsea"], 100*pct))
+    }
     return(invisible(list(summary = qtab(dd), pct_meeting = pct, draws = dd)))
   } else {
     conf <- matrix(NA_real_, n_splits, 4, dimnames = list(NULL, c("cfi","rmsea","srmr","omega")))
@@ -93,12 +103,14 @@ cross_validate_cfa <- function(data, items, n_splits = 200, derive_k = NULL,
     }
     cc <- conf[stats::complete.cases(conf), , drop = FALSE]
     pct <- mean(cc[,"cfi"] >= targets["cfi"] & cc[,"rmsea"] <= targets["rmsea"])
-    cat(sprintf("Estabilidad del procedimiento: derivar %d items en calibracion y confirmar en validacion (%d derivaciones)\n",
-                derive_k, ok))
-    cat("Frecuencia de seleccion por item:\n"); print(round(sort(sel/ok, decreasing = TRUE), 2))
-    cat("Ajuste de las formas derivadas, confirmadas fuera de muestra:\n"); print(qtab(cc))
-    cat(sprintf("%% que cumplen CFI>=%.2f y RMSEA<=%.2f: %.1f%%\n",
-                targets["cfi"], targets["rmsea"], 100*pct))
+    if (verbose) {
+      cat(sprintf("Estabilidad del procedimiento: derivar %d items en calibracion y confirmar en validacion (%d derivaciones)\n",
+                  derive_k, ok))
+      cat("Frecuencia de seleccion por item:\n"); print(round(sort(sel/ok, decreasing = TRUE), 2))
+      cat("Ajuste de las formas derivadas, confirmadas fuera de muestra:\n"); print(qtab(cc))
+      cat(sprintf("%% que cumplen CFI>=%.2f y RMSEA<=%.2f: %.1f%%\n",
+                  targets["cfi"], targets["rmsea"], 100*pct))
+    }
     return(invisible(list(summary = qtab(cc), pct_meeting = pct,
                           selection_freq = round(sel/ok, 3), n_valid = ok, draws = cc)))
   }

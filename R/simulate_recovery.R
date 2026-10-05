@@ -49,7 +49,8 @@
 #' @param skew Category threshold shape: \code{"symmetric"} (default) or
 #'   \code{"skewed"}.
 #' @param n_reps Replications per condition. Default 100.
-#' @param seed Random seed. Default 2026.
+#' @param seed Optional integer seed for reproducibility; NULL (default)
+#'   leaves the RNG untouched.
 #' @param verbose Print progress per condition. Default \code{TRUE}.
 #' @param n_cores Number of worker processes used to fit the replications of a
 #'   condition. Default 1 (sequential). A crossed design is hundreds of
@@ -82,14 +83,10 @@
 #'   condition) and \code{call}.
 #'
 #' @examples
-#' \dontrun{
-#'   # single condition, quick check
-#'   simulate_recovery(n = 300, n_reps = 20)
-#'
-#'   # crossed design for a validation paper
-#'   sim <- simulate_recovery(n = c(200, 500, 1000), loading = c(0.50, 0.70),
-#'                            items_per_factor = 5, n_reps = 200)
-#'   sim$summary
+#' \donttest{
+#' # single condition, quick check (use n_reps >= 100 in real studies)
+#' sim <- simulate_recovery(n = 200, n_reps = 2, seed = 1)
+#' sim$summary
 #' }
 #' @seealso \code{\link{efa_boosting}}, \code{\link{item_stability}}
 #' @export
@@ -98,7 +95,7 @@ simulate_recovery <- function(n = 500, loading = 0.65, items_per_factor = 5,
                               n_cross = 1, cross_loading = 0.40,
                               n_low = 1, low_loading = 0.20,
                               n_categories = 5, skew = c("symmetric", "skewed"),
-                              n_reps = 100, seed = 2026, verbose = TRUE,
+                              n_reps = 100, seed = NULL, verbose = TRUE,
                               n_cores = 1, timeout = 120,
                               n_factors_fitted = NULL, ...) {
   skew <- match.arg(skew)
@@ -108,7 +105,7 @@ simulate_recovery <- function(n = 500, loading = 0.65, items_per_factor = 5,
                             items_per_factor = items_per_factor,
                             n_factors_fitted = n_factors_fitted,
                             stringsAsFactors = FALSE)
-  set.seed(seed)
+  if (!is.null(seed)) set.seed(seed)
 
   # One cluster for the whole design, not one per condition.
   use_par <- n_cores > 1 && requireNamespace("parallel", quietly = TRUE)
@@ -351,11 +348,10 @@ print.simulate_recovery <- function(x, ...) {
 #'
 #' @return A \code{ggplot} object.
 #' @examples
-#' \dontrun{
-#'   sim <- simulate_recovery(n = c(200, 500, 1000), loading = c(0.50, 0.70),
-#'                            n_reps = 200, n_cores = 6)
-#'   plot(sim)
-#'   plot(sim, metric = "sensitivity")
+#' \donttest{
+#' sim <- simulate_recovery(n = 200, n_reps = 2, seed = 1)
+#' plot(sim)
+#' plot(sim, metric = "sensitivity")
 #' }
 #' @seealso \code{\link{simulate_recovery}}
 #' @export

@@ -4,7 +4,7 @@
 \alias{bifactor_indices}
 \title{Bifactor Statistical Indices}
 \usage{
-bifactor_indices(fit, general = NULL)
+bifactor_indices(fit, general = NULL, verbose = TRUE)
 }
 \arguments{
 \item{fit}{A fitted bifactor \code{lavaan} object (general factor + orthogonal
@@ -12,6 +12,9 @@ specific factors).}
 
 \item{general}{Name of the general factor. If \code{NULL} (default) it is
 auto-detected as the latent variable that loads on all items.}
+
+\item{verbose}{Logical. If \code{TRUE} (default), prints the rounded indices
+to the console.}
 }
 \value{
 A list with: \code{overall} (a one-row data frame with ECV, PUC,
@@ -52,14 +55,24 @@ Rodriguez, A., Reise, S. P., & Haviland, M. G. (2016). Evaluating bifactor
 }
 
 \examples{
-\dontrun{
-  library(lavaan)
-  mod <- 'G  =~ x1+x2+x3+x4+x5+x6
-          S1 =~ x1+x2+x3
-          S2 =~ x4+x5+x6
-          G ~~ 0*S1 + 0*S2
-          S1 ~~ 0*S2'
-  fit <- cfa(mod, data = mydata, ordered = TRUE, estimator = "WLSMV", std.lv = TRUE)
-  bifactor_indices(fit)
-}
+# Simulate data from a bifactor population (G + three specific factors)
+pop <- '
+G  =~ 0.6*x1 + 0.6*x2 + 0.6*x3 + 0.6*x4 + 0.6*x5 + 0.6*x6 +
+      0.6*x7 + 0.6*x8 + 0.6*x9
+S1 =~ 0.5*x1 + 0.5*x2 + 0.5*x3
+S2 =~ 0.5*x4 + 0.5*x5 + 0.5*x6
+S3 =~ 0.5*x7 + 0.5*x8 + 0.5*x9
+'
+set.seed(1)
+dat <- lavaan::simulateData(pop, sample.nobs = 500, orthogonal = TRUE)
+
+mod <- '
+G  =~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9
+S1 =~ x1 + x2 + x3
+S2 =~ x4 + x5 + x6
+S3 =~ x7 + x8 + x9
+'
+fit <- lavaan::cfa(mod, data = dat, orthogonal = TRUE, std.lv = TRUE)
+bi <- bifactor_indices(fit)
+bi$by_item
 }

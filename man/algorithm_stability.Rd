@@ -14,7 +14,7 @@ algorithm_stability(
   ordered = TRUE,
   targets = c(cfi = 0.95, rmsea = 0.08, srmr = 0.08),
   phi_max = 0.9,
-  seed = 2026,
+  seed = NULL,
   n_cores = 1,
   timeout = 300,
   verbose = TRUE
@@ -49,7 +49,8 @@ Default \code{c(cfi = .95, rmsea = .08, srmr = .08)}.}
 \item{phi_max}{Interfactor correlation at or above which two factors are
 considered indistinguishable; part of \code{meets}. Default .90.}
 
-\item{seed}{Seed for the splits. Default 2026.}
+\item{seed}{Optional integer seed for reproducibility; NULL (default)
+leaves the RNG untouched.}
 
 \item{n_cores}{Number of cores. Values above 1 run the splits on a PSOCK
 cluster (works on Windows). Default 1.}
@@ -109,17 +110,18 @@ The halves are drawn on the master, so results are reproducible with
 }
 \examples{
 \donttest{
-data(Data_Personality)
-items  <- paste0("PPTQ", 1:15)
-theory <- list(F1 = paste0("PPTQ", 1:5), F2 = paste0("PPTQ", 6:10),
-               F3 = paste0("PPTQ", 11:15))
+data(Data_Expectativas)
+items  <- paste0("EAF", 1:10)
+theory <- list(F1 = paste0("EAF", 1:5), F2 = paste0("EAF", 6:10))
 model  <- paste(sapply(names(theory), function(f)
             paste(f, "=~", paste(theory[[f]], collapse = " + "))), collapse = "\n")
 
 st <- algorithm_stability(
-  Data_Personality[, items],
-  algorithm = function(d) cfa_boosting(d, model = model, verbose = FALSE),
-  n_splits = 5, theory = theory, estimator = "MLR", ordered = FALSE)
+  Data_Expectativas[, items],
+  algorithm = function(d) cfa_boosting(d, model = model, verbose = FALSE,
+                model_config = list(estimator = "MLR", ordered = FALSE)),
+  n_splits = 3, theory = theory, estimator = "MLR", ordered = FALSE,
+  seed = 1)
 st
 }
 }
