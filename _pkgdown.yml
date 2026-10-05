@@ -55,6 +55,10 @@ reference:
   - specification_search_theory
   - cross_validate_cfa
   - bifactor_indices
+  - discriminant_boosting
+  - print.discriminant_boosting
+  - local_fit_search
+  - print.local_fit_search
   - print.specification_search
 
 - title: Stability and Validation
