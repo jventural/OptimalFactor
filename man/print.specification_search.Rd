@@ -13,6 +13,14 @@
 
 \item{...}{Ignored.}
 }
+\value{
+The input \code{x}, an object of class \code{specification_search},
+  returned invisibly and unchanged. The method is called for its side effect:
+  it prints the number of configurations evaluated and how many meet the
+  CFI/RMSEA targets, the \code{top} rows of the results table ordered by
+  composite loss, and the fit indices (CFI, RMSEA, SRMR, loss) and factor
+  assignment of the best model.
+}
 \description{
 Print method for specification_search
 }

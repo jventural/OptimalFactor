@@ -244,17 +244,17 @@ print.algorithm_stability <- function(x, digits = 3, ...) {
        phi_max = if (nrow(phi)) max(abs(phi$est.std)) else NA_real_)
 }
 
-# A function written at the console has the global environment as its
-# enclosure, and a PSOCK worker does not receive the master's global
-# environment: the objects it mentions (a model syntax, a theory list) would be
-# missing on the workers. The objects it names are copied into a private
-# environment whose parent is the package namespace, so the function travels
-# with what it needs and still finds cfa_boosting() and friends unqualified.
+# A function written at the console is enclosed by the top-level workspace,
+# and a PSOCK worker does not receive that workspace: the objects it mentions
+# (a model syntax, a theory list) would be missing on the workers. A copy of
+# the function gets a NEW private environment, whose parent is the package
+# namespace, holding copies of the objects it names; the user's workspace is
+# only read, never modified, and the user's own function is left untouched.
 .of_portable_function <- function(f) {
-  if (!identical(environment(f), globalenv())) return(f)
-  env <- new.env(parent = asNamespace("OptimalFactor"))
-  for (v in intersect(all.names(body(f)), ls(globalenv(), all.names = TRUE)))
-    assign(v, get(v, envir = globalenv()), envir = env)
-  environment(f) <- env
+  src <- environment(f)
+  if (is.null(src) || isNamespace(src) || !identical(topenv(src), src)) return(f)
+  vars <- intersect(all.names(body(f)), ls(src, all.names = TRUE))
+  environment(f) <- list2env(mget(vars, envir = src),
+                             parent = asNamespace("OptimalFactor"))
   f
 }

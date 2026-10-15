@@ -1,5 +1,13 @@
 # OptimalFactor 1.5.0
 
+## Resubmission after CRAN review (2026-10-15)
+
+* `print.specification_search()` documents its return value (`\value`).
+* The internal helper that lets a user-written `algorithm` run on parallel
+  workers in `algorithm_stability()` no longer refers to the global
+  environment: it copies the objects the function needs into a new private
+  environment and never modifies the user's workspace.
+
 ## Preparation for CRAN
 
 * Title changed to "Item Selection in Factor Analysis by Boosting and
