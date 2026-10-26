@@ -47,6 +47,9 @@ structure.
 - [`item_stability()`](https://jventural.github.io/OptimalFactor/reference/item_stability.md)
   [`print(`*`<item_stability>`*`)`](https://jventural.github.io/OptimalFactor/reference/item_stability.md)
   : Resampling Stability of the EFA-Boosting Item Selection
+- [`cfa_item_stability()`](https://jventural.github.io/OptimalFactor/reference/cfa_item_stability.md)
+  [`print(`*`<cfa_item_stability>`*`)`](https://jventural.github.io/OptimalFactor/reference/cfa_item_stability.md)
+  : Resampling Stability of the Item Assignment in a Confirmatory Model
 - [`algorithm_stability()`](https://jventural.github.io/OptimalFactor/reference/algorithm_stability.md)
   : Split-Half Stability of Any Item-Selection Algorithm
 - [`theory_recovery()`](https://jventural.github.io/OptimalFactor/reference/theory_recovery.md)

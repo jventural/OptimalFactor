@@ -23,3 +23,12 @@ print(x, top = 10, ...)
 - ...:
 
   Ignored.
+
+## Value
+
+The input `x`, an object of class `specification_search`, returned
+invisibly and unchanged. The method is called for its side effect: it
+prints the number of configurations evaluated and how many meet the
+CFI/RMSEA targets, the `top` rows of the results table ordered by
+composite loss, and the fit indices (CFI, RMSEA, SRMR, loss) and factor
+assignment of the best model.

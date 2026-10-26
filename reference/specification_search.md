@@ -226,36 +226,36 @@ res <- specification_search(
 #> --- k = 2 factor(s) ---
 #>   Config: k2_s1 (standard)
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #>     [k2_s1] iter 1: DROP EAF6 from F2 -> CFI=0.9136 RMSEA=0.0950 SRMR=0.0647 loss=0.6131
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #>     [k2_s1] iter 2: DROP EAF5 from F1 -> CFI=0.9713 RMSEA=0.0608 SRMR=0.0448 loss=0.0000
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> 
 #> Models evaluated: 2 

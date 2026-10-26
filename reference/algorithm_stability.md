@@ -174,7 +174,7 @@ st <- algorithm_stability(
   seed = 1)
 #> Reference: running the algorithm on the complete sample (N = 100)...
 #> Running 3 splits (derivation n = 50, validation n = 50)...
-#>   [                          ]   0% (0/3)  elapsed 0s  left ~?       [=========                 ]  33% (1/3)  elapsed 1s  left ~2s       [=================         ]  67% (2/3)  elapsed 3s  left ~1s       [==========================] 100% (3/3)  elapsed 5s  left ~0s     
+#>   [                          ]   0% (0/3)  elapsed 0s  left ~?       [=========                 ]  33% (1/3)  elapsed 1s  left ~2s       [=================         ]  67% (2/3)  elapsed 2s  left ~1s       [==========================] 100% (3/3)  elapsed 4s  left ~0s     
 st
 #> Split-half stability of the item selection
 #> Splits: 3 (successful: 100%)

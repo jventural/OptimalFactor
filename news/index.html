@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">OptimalFactor</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,7 +38,21 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.5.0" id="optimalfactor-150">OptimalFactor 1.5.0<a class="anchor" aria-label="anchor" href="#optimalfactor-150"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.6.0" id="optimalfactor-160">OptimalFactor 1.6.0<a class="anchor" aria-label="anchor" href="#optimalfactor-160"></a></h2>
+<div class="section level3">
+<h3 id="new-function-1-6-0">New function<a class="anchor" aria-label="anchor" href="#new-function-1-6-0"></a></h3>
+<ul><li>
+<code><a href="../reference/cfa_item_stability.html">cfa_item_stability()</a></code> checks, within the confirmatory framework, whether each item of a CFA model stays on its factor across subsamples. On every subsample the model is refitted and, one item at a time, the item is moved to each of the other factors; it lands on the factor whose model has the lowest chi-square (all alternatives have the same degrees of freedom). Reports per item the proportion of subsamples on its own factor, the median loadings on its own and on its best alternative factor, the median chi-square difference and a reading (stable, unstable, prefers other factor), plus the fit and the largest interfactor correlation per subsample. Unlike <code><a href="../reference/item_stability.html">item_stability()</a></code>, no exploratory step is involved, so it suits respecified CFA models.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.5.0" id="optimalfactor-150">OptimalFactor 1.5.0<a class="anchor" aria-label="anchor" href="#optimalfactor-150"></a></h2><p class="text-muted">CRAN release: 2026-10-24</p>
+<div class="section level3">
+<h3 id="resubmission-after-cran-review-1-5-0">Resubmission after CRAN review (2026-10-15)<a class="anchor" aria-label="anchor" href="#resubmission-after-cran-review-1-5-0"></a></h3>
+<ul><li>
+<code><a href="../reference/print.specification_search.html">print.specification_search()</a></code> documents its return value (<code>\value</code>).</li>
+<li>The internal helper that lets a user-written <code>algorithm</code> run on parallel workers in <code><a href="../reference/algorithm_stability.html">algorithm_stability()</a></code> no longer refers to the global environment: it copies the objects the function needs into a new private environment and never modifies the user’s workspace.</li>
+</ul></div>
 <div class="section level3">
 <h3 id="preparation-for-cran-1-5-0">Preparation for CRAN<a class="anchor" aria-label="anchor" href="#preparation-for-cran-1-5-0"></a></h3>
 <ul><li>Title changed to “Item Selection in Factor Analysis by Boosting and Specification Search”. The Description cites Kenny and McCoach (2003) and Shi, Lee and Maydeu-Olivares (2019) for the adaptive fit weights; a non-existent “Kenny, Shi and Savalei (2022)” reference was removed from the Description, README and <code><a href="../reference/efa_boosting.html">efa_boosting()</a></code> help page.</li>

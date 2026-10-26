@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">OptimalFactor</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -92,12 +92,14 @@
 <span class="r-in"><span><span class="va">res_cfa</span> <span class="op">&lt;-</span> <span class="fu"><a href="optimal_cfa_with_ai.html">optimal_cfa_with_ai</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">Data_Personality</span>, max_steps <span class="op">=</span> <span class="fl">5</span>,</span></span>
 <span class="r-in"><span>                               verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lavaan():  </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    the first indicator of the following latent variable(s) is a poor item; </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    switching to another marker item (to set the metric) to avoid convergence </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    -&gt; PPTQ10)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    the first indicator (the marker item) of the following latent variable(s) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is a poor item (low corrected item-total correlation); this may lead to </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    convergence problems; consider using a better indicator to set the metric, </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    or set bad_marker_switch = TRUE to let lavaan switch the marker </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    0.07)</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite; use </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
@@ -109,12 +111,14 @@
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lavaan():  </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    the first indicator of the following latent variable(s) is a poor item; </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    switching to another marker item (to set the metric) to avoid convergence </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    -&gt; PPTQ10)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    the first indicator (the marker item) of the following latent variable(s) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is a poor item (low corrected item-total correlation); this may lead to </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    convergence problems; consider using a better indicator to set the metric, </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    or set bad_marker_switch = TRUE to let lavaan switch the marker </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    0.07)</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite; use </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
@@ -126,12 +130,14 @@
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lavaan():  </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    the first indicator of the following latent variable(s) is a poor item; </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    switching to another marker item (to set the metric) to avoid convergence </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    -&gt; PPTQ10)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    the first indicator (the marker item) of the following latent variable(s) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is a poor item (low corrected item-total correlation); this may lead to </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    convergence problems; consider using a better indicator to set the metric, </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    or set bad_marker_switch = TRUE to let lavaan switch the marker </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    0.07)</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite; use </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
@@ -143,12 +149,14 @@
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lavaan():  </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    the first indicator of the following latent variable(s) is a poor item; </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    switching to another marker item (to set the metric) to avoid convergence </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    -&gt; PPTQ10)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    the first indicator (the marker item) of the following latent variable(s) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is a poor item (low corrected item-total correlation); this may lead to </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    convergence problems; consider using a better indicator to set the metric, </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    or set bad_marker_switch = TRUE to let lavaan switch the marker </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    0.07)</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite; use </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
@@ -160,12 +168,14 @@
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lavaan():  </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    the first indicator of the following latent variable(s) is a poor item; </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    switching to another marker item (to set the metric) to avoid convergence </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    -&gt; PPTQ10)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    the first indicator (the marker item) of the following latent variable(s) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    is a poor item (low corrected item-total correlation); this may lead to </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    convergence problems; consider using a better indicator to set the metric, </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    or set bad_marker_switch = TRUE to let lavaan switch the marker </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    0.07)</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite ; use </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite; use </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
@@ -184,11 +194,11 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ===== Log de modificaciones =====</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   step modification mi_value      rmsea</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1    1 F1 =~ PPTQ15  15.5407 0.08866544</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2    2 F1 =~ PPTQ15  15.5407 0.08866544</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3    3 F1 =~ PPTQ15  15.5407 0.08866544</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4    4 F1 =~ PPTQ15  15.5407 0.08866544</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5    5 F1 =~ PPTQ15  15.5407 0.08866544</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    1 F1 =~ PPTQ15 15.60736 0.08866544</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2    2 F1 =~ PPTQ15 15.60736 0.08866544</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    3 F1 =~ PPTQ15 15.60736 0.08866544</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4    4 F1 =~ PPTQ15 15.60736 0.08866544</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5    5 F1 =~ PPTQ15 15.60736 0.08866544</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ===== Modelo final =====</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> F1 =~ PPTQ1 + PPTQ2 + PPTQ3 + PPTQ4 + PPTQ5</span>

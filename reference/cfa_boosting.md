@@ -165,26 +165,28 @@ result <- cfa_boosting(
 #> MI framework: Saris-Satorra-van der Veld (delta= 0.1 , power>= 0.75 , alpha= 0.05 )
 #> 
 #> Warning: lavaan->lavaan():  
-#>    the first indicator of the following latent variable(s) is a poor item; 
-#>    switching to another marker item (to set the metric) to avoid convergence 
-#>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 
-#>    -> PPTQ10)
+#>    the first indicator (the marker item) of the following latent variable(s) 
+#>    is a poor item (low corrected item-total correlation); this may lead to 
+#>    convergence problems; consider using a better indicator to set the metric, 
+#>    or set bad_marker_switch = TRUE to let lavaan switch the marker 
+#>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = 
+#>    0.07)
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -3.404395e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= -2.226682e-17) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> --- MODELO INICIAL ---
 #> RMSEA: 0.107 | CFI: 0.759 | SRMR: 0.120 | Loss: 2.618 
@@ -199,25 +201,28 @@ result <- cfa_boosting(
 #>    starting values imply a correlation larger than 1; variables involved are: 
 #>    F2 F3
 #> Warning: lavaan->lavaan():  
-#>    the first indicator of the following latent variable(s) is a poor item; 
-#>    switching to another marker item (to set the metric) to avoid convergence 
-#>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 
-#>    -> PPTQ10)
+#>    the first indicator (the marker item) of the following latent variable(s) 
+#>    is a poor item (low corrected item-total correlation); this may lead to 
+#>    convergence problems; consider using a better indicator to set the metric, 
+#>    or set bad_marker_switch = TRUE to let lavaan switch the marker 
+#>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = 
+#>    -0.01)
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= 3.187548e-17) 
-#>    is close to zero. This may be a symptom that the model is not identified.
+#>    appear to be positive definite! The smallest eigenvalue (= -7.093220e-17) 
+#>    is smaller than zero. This may be a symptom that the model is not 
+#>    identified.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #>   -> Eliminado PPTQ13 por carga 0.147 < piso 0.3 
 #> Warning: lavaan->lav_start_check_cov():  
@@ -229,27 +234,22 @@ result <- cfa_boosting(
 #> Warning: lavaan->lav_start_check_cov():  
 #>    starting values imply a correlation larger than 1; variables involved are: 
 #>    F2 F3
-#> Warning: lavaan->lavaan():  
-#>    the first indicator of the following latent variable(s) is a poor item; 
-#>    switching to another marker item (to set the metric) to avoid convergence 
-#>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 
-#>    -> PPTQ10), F3 (PPTQ12 -> PPTQ15)
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -9.139381e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= -2.939767e-17) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #>   -> Eliminado PPTQ11 por carga 0.174 < piso 0.3 
 #> Warning: lavaan->lav_start_check_cov():  
@@ -261,27 +261,22 @@ result <- cfa_boosting(
 #> Warning: lavaan->lav_start_check_cov():  
 #>    starting values imply a correlation larger than 1; variables involved are: 
 #>    F2 F3
-#> Warning: lavaan->lavaan():  
-#>    the first indicator of the following latent variable(s) is a poor item; 
-#>    switching to another marker item (to set the metric) to avoid convergence 
-#>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 
-#>    -> PPTQ10), F3 (PPTQ12 -> PPTQ15)
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -8.563139e-18) 
+#>    appear to be positive definite! The smallest eigenvalue (= -3.086542e-17) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #>   -> Eliminado PPTQ8 por carga 0.238 < piso 0.3 
 #> Warning: lavaan->lav_start_check_cov():  
@@ -293,27 +288,21 @@ result <- cfa_boosting(
 #> Warning: lavaan->lav_start_check_cov():  
 #>    starting values imply a correlation larger than 1; variables involved are: 
 #>    F2 F3
-#> Warning: lavaan->lavaan():  
-#>    the first indicator of the following latent variable(s) is a poor item; 
-#>    switching to another marker item (to set the metric) to avoid convergence 
-#>    problems; use bad.marker.crit = 0 to switch off this behavior: F3 (PPTQ12 
-#>    -> PPTQ15)
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -2.096797e-17) 
-#>    is smaller than zero. This may be a symptom that the model is not 
-#>    identified.
+#>    appear to be positive definite! The smallest eigenvalue (= 9.692214e-18) 
+#>    is close to zero. This may be a symptom that the model is not identified.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #>   -> Eliminado PPTQ7 por carga -0.245 < piso 0.3 
 #> Warning: lavaan->lav_start_check_cov():  
@@ -334,29 +323,24 @@ result <- cfa_boosting(
 #> Warning: lavaan->lav_start_check_cov():  
 #>    starting values imply a correlation larger than 1; variables involved are: 
 #>    F2 F3
-#> Warning: lavaan->lavaan():  
-#>    the first indicator of the following latent variable(s) is a poor item; 
-#>    switching to another marker item (to set the metric) to avoid convergence 
-#>    problems; use bad.marker.crit = 0 to switch off this behavior: F3 (PPTQ12 
-#>    -> PPTQ15)
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -2.127868e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= -3.931387e-18) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
-#>   -> Eliminado PPTQ1 por carga cruzada en F3 (EPC = 17.426 )
+#>   -> Eliminado PPTQ1 por carga cruzada en F3 (EPC = 604.297 )
 #> Warning: lavaan->lav_start_check_cov():  
 #>    starting values imply a correlation larger than 1; variables involved are: 
 #>    F1 F2
@@ -375,29 +359,24 @@ result <- cfa_boosting(
 #> Warning: lavaan->lav_start_check_cov():  
 #>    starting values imply a correlation larger than 1; variables involved are: 
 #>    F2 F3
-#> Warning: lavaan->lavaan():  
-#>    the first indicator of the following latent variable(s) is a poor item; 
-#>    switching to another marker item (to set the metric) to avoid convergence 
-#>    problems; use bad.marker.crit = 0 to switch off this behavior: F3 (PPTQ12 
-#>    -> PPTQ15)
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -5.347706e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= -3.014937e-17) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
-#>   -> Eliminado PPTQ2 por carga cruzada en F3 (EPC = 31.093 )
+#>   -> Eliminado PPTQ2 por carga cruzada en F3 (EPC = 35.890 )
 #> Warning: lavaan->lav_start_check_cov():  
 #>    starting values imply a correlation larger than 1; variables involved are: 
 #>    F1 F2
@@ -431,40 +410,35 @@ result <- cfa_boosting(
 #>   Evaluando 1 pares misespecificados [Saris-Satorra] (4 opciones c/u)...
 #> 
 #>     --- Par: PPTQ9 ~~ PPTQ10 (MI= 6.0 , EPC= 0.272 , Power= 0.147 , => m ) ---
-#> Warning: lavaan->lavaan():  
-#>    the first indicator of the following latent variable(s) is a poor item; 
-#>    switching to another marker item (to set the metric) to avoid convergence 
-#>    problems; use bad.marker.crit = 0 to switch off this behavior: F3 (PPTQ12 
-#>    -> PPTQ15)
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -5.844440e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= -2.733204e-17) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #>       [1] Agregar cov:      RMSEA= 0.148  | CFI= 0.829  | SRMR= 0.103  | Loss= 2.500 
 #>       [2] Eliminar PPTQ9:    NO PERMITIDO (min items)
 #>       [3] Eliminar PPTQ10:    NO PERMITIDO (min items)
 #>       [4] Eliminar ambos:   NO PERMITIDO (min items)
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #>   -> Agregar PPTQ9 ~~ PPTQ10 (MI=6.0) 
 #>      RMSEA: 0.148 | CFI: 0.829 | SRMR: 0.103 | Loss: 2.500 
@@ -502,13 +476,13 @@ result <- cfa_boosting(
 #> 
 #>   No se encontraron mejoras posibles. Deteniendo.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> 
 #> ====================================================================== 

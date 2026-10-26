@@ -82,12 +82,14 @@ res <- cfa_boosting(Data_Personality, model,
                     model_config = list(estimator = "MLR", ordered = FALSE),
                     verbose = FALSE)
 #> Warning: lavaan->lavaan():  
-#>    the first indicator of the following latent variable(s) is a poor item; 
-#>    switching to another marker item (to set the metric) to avoid convergence 
-#>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 
-#>    -> PPTQ10)
+#>    the first indicator (the marker item) of the following latent variable(s) 
+#>    is a poor item (low corrected item-total correlation); this may lead to 
+#>    convergence problems; consider using a better indicator to set the metric, 
+#>    or set bad_marker_switch = TRUE to let lavaan switch the marker 
+#>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = 
+#>    0.07)
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_start_check_cov():  
 #>    starting values imply a correlation larger than 1; variables involved are: 
@@ -99,12 +101,14 @@ res <- cfa_boosting(Data_Personality, model,
 #>    starting values imply a correlation larger than 1; variables involved are: 
 #>    F2 F3
 #> Warning: lavaan->lavaan():  
-#>    the first indicator of the following latent variable(s) is a poor item; 
-#>    switching to another marker item (to set the metric) to avoid convergence 
-#>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 
-#>    -> PPTQ10)
+#>    the first indicator (the marker item) of the following latent variable(s) 
+#>    is a poor item (low corrected item-total correlation); this may lead to 
+#>    convergence problems; consider using a better indicator to set the metric, 
+#>    or set bad_marker_switch = TRUE to let lavaan switch the marker 
+#>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = 
+#>    -0.00)
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_start_check_cov():  
 #>    starting values imply a correlation larger than 1; variables involved are: 
@@ -116,12 +120,14 @@ res <- cfa_boosting(Data_Personality, model,
 #>    starting values imply a correlation larger than 1; variables involved are: 
 #>    F2 F3
 #> Warning: lavaan->lavaan():  
-#>    the first indicator of the following latent variable(s) is a poor item; 
-#>    switching to another marker item (to set the metric) to avoid convergence 
-#>    problems; use bad.marker.crit = 0 to switch off this behavior: F2 (PPTQ6 
-#>    -> PPTQ10)
+#>    the first indicator (the marker item) of the following latent variable(s) 
+#>    is a poor item (low corrected item-total correlation); this may lead to 
+#>    convergence problems; consider using a better indicator to set the metric, 
+#>    or set bad_marker_switch = TRUE to let lavaan switch the marker 
+#>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = 
+#>    -0.00)
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_start_check_cov():  
 #>    starting values imply a correlation larger than 1; variables involved are: 
@@ -132,70 +138,34 @@ res <- cfa_boosting(Data_Personality, model,
 #> Warning: lavaan->lav_start_check_cov():  
 #>    starting values imply a correlation larger than 1; variables involved are: 
 #>    F2 F3
-#> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
-#>    lavInspect(fit, "cov.lv") to investigate.
-#> Warning: lavaan->lav_start_check_cov():  
-#>    starting values imply a correlation larger than 1; variables involved are: 
-#>    F1 F2
-#> Warning: lavaan->lav_start_check_cov():  
-#>    starting values imply a correlation larger than 1; variables involved are: 
-#>    F1 F3
-#> Warning: lavaan->lav_start_check_cov():  
-#>    starting values imply a correlation larger than 1; variables involved are: 
-#>    F2 F3
-#> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
-#>    lavInspect(fit, "cov.lv") to investigate.
-#> Warning: lavaan->lav_start_check_cov():  
-#>    starting values imply a correlation larger than 1; variables involved are: 
-#>    F1 F2
-#> Warning: lavaan->lav_start_check_cov():  
-#>    starting values imply a correlation larger than 1; variables involved are: 
-#>    F1 F3
-#> Warning: lavaan->lav_start_check_cov():  
-#>    starting values imply a correlation larger than 1; variables involved are: 
-#>    F2 F3
-#> Warning: lavaan->lav_start_check_cov():  
-#>    starting values imply a correlation larger than 1; variables involved are: 
-#>    F1 F2
-#> Warning: lavaan->lav_start_check_cov():  
-#>    starting values imply a correlation larger than 1; variables involved are: 
-#>    F1 F3
-#> Warning: lavaan->lav_start_check_cov():  
-#>    starting values imply a correlation larger than 1; variables involved are: 
-#>    F2 F3
-#> Warning: lavaan->lav_start_check_cov():  
-#>    starting values imply a correlation larger than 1; variables involved are: 
-#>    F1 F2
-#> Warning: lavaan->lav_start_check_cov():  
-#>    starting values imply a correlation larger than 1; variables involved are: 
-#>    F1 F3
-#> Warning: lavaan->lav_start_check_cov():  
-#>    starting values imply a correlation larger than 1; variables involved are: 
-#>    F2 F3
-#> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
-#>    lavInspect(fit, "cov.lv") to investigate.
-#> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
-#>    lavInspect(fit, "cov.lv") to investigate.
-#> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
-#>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lavaan():  
-#>    the first indicator of the following latent variable(s) is a poor item; 
-#>    switching to another marker item (to set the metric) to avoid convergence 
-#>    problems; use bad.marker.crit = 0 to switch off this behavior: F1 (PPTQ1 
-#>    -> PPTQ5)
+#>    the first indicator (the marker item) of the following latent variable(s) 
+#>    is a poor item (low corrected item-total correlation); this may lead to 
+#>    convergence problems; consider using a better indicator to set the metric, 
+#>    or set bad_marker_switch = TRUE to let lavaan switch the marker 
+#>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = 
+#>    -0.00)
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F1 F2
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F1 F3
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F2 F3
+#> Warning: lavaan->lavaan():  
+#>    the first indicator (the marker item) of the following latent variable(s) 
+#>    is a poor item (low corrected item-total correlation); this may lead to 
+#>    convergence problems; consider using a better indicator to set the metric, 
+#>    or set bad_marker_switch = TRUE to let lavaan switch the marker 
+#>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = 
+#>    0.02)
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
-#>    lavInspect(fit, "cov.lv") to investigate.
-#> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_start_check_cov():  
 #>    starting values imply a correlation larger than 1; variables involved are: 
@@ -225,28 +195,64 @@ res <- cfa_boosting(Data_Personality, model,
 #>    starting values imply a correlation larger than 1; variables involved are: 
 #>    F2 F3
 #> Warning: lavaan->lavaan():  
-#>    the first indicator of the following latent variable(s) is a poor item; 
-#>    switching to another marker item (to set the metric) to avoid convergence 
-#>    problems; use bad.marker.crit = 0 to switch off this behavior: F1 (PPTQ1 
-#>    -> PPTQ5)
+#>    the first indicator (the marker item) of the following latent variable(s) 
+#>    is a poor item (low corrected item-total correlation); this may lead to 
+#>    convergence problems; consider using a better indicator to set the metric, 
+#>    or set bad_marker_switch = TRUE to let lavaan switch the marker 
+#>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = 
+#>    0.02)
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lavaan():  
-#>    the first indicator of the following latent variable(s) is a poor item; 
-#>    switching to another marker item (to set the metric) to avoid convergence 
-#>    problems; use bad.marker.crit = 0 to switch off this behavior: F1 (PPTQ1 
-#>    -> PPTQ5)
+#>    the first indicator (the marker item) of the following latent variable(s) 
+#>    is a poor item (low corrected item-total correlation); this may lead to 
+#>    convergence problems; consider using a better indicator to set the metric, 
+#>    or set bad_marker_switch = TRUE to let lavaan switch the marker 
+#>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = 
+#>    0.02)
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lavaan():  
-#>    the first indicator of the following latent variable(s) is a poor item; 
-#>    switching to another marker item (to set the metric) to avoid convergence 
-#>    problems; use bad.marker.crit = 0 to switch off this behavior: F1 (PPTQ1 
-#>    -> PPTQ5)
+#>    the first indicator (the marker item) of the following latent variable(s) 
+#>    is a poor item (low corrected item-total correlation); this may lead to 
+#>    convergence problems; consider using a better indicator to set the metric, 
+#>    or set bad_marker_switch = TRUE to let lavaan switch the marker 
+#>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = 
+#>    0.02)
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lavaan():  
+#>    the first indicator (the marker item) of the following latent variable(s) 
+#>    is a poor item (low corrected item-total correlation); this may lead to 
+#>    convergence problems; consider using a better indicator to set the metric, 
+#>    or set bad_marker_switch = TRUE to let lavaan switch the marker 
+#>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = 
+#>    0.02)
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lavaan():  
+#>    the first indicator (the marker item) of the following latent variable(s) 
+#>    is a poor item (low corrected item-total correlation); this may lead to 
+#>    convergence problems; consider using a better indicator to set the metric, 
+#>    or set bad_marker_switch = TRUE to let lavaan switch the marker 
+#>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = 
+#>    0.02)
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lavaan():  
+#>    the first indicator (the marker item) of the following latent variable(s) 
+#>    is a poor item (low corrected item-total correlation); this may lead to 
+#>    convergence problems; consider using a better indicator to set the metric, 
+#>    or set bad_marker_switch = TRUE to let lavaan switch the marker 
+#>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = 
+#>    0.02)
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_start_check_cov():  
 #>    starting values imply a correlation larger than 1; variables involved are: 
@@ -276,12 +282,71 @@ res <- cfa_boosting(Data_Personality, model,
 #>    starting values imply a correlation larger than 1; variables involved are: 
 #>    F2 F3
 #> Warning: lavaan->lavaan():  
-#>    the first indicator of the following latent variable(s) is a poor item; 
-#>    switching to another marker item (to set the metric) to avoid convergence 
-#>    problems; use bad.marker.crit = 0 to switch off this behavior: F1 (PPTQ1 
-#>    -> PPTQ5)
+#>    the first indicator (the marker item) of the following latent variable(s) 
+#>    is a poor item (low corrected item-total correlation); this may lead to 
+#>    convergence problems; consider using a better indicator to set the metric, 
+#>    or set bad_marker_switch = TRUE to let lavaan switch the marker 
+#>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = 
+#>    0.02)
 #> Warning: lavaan->lav_object_post_check():  
-#>    covariance matrix of latent variables is not positive definite ; use 
+#>    covariance matrix of latent variables is not positive definite; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lavaan():  
+#>    the first indicator (the marker item) of the following latent variable(s) 
+#>    is a poor item (low corrected item-total correlation); this may lead to 
+#>    convergence problems; consider using a better indicator to set the metric, 
+#>    or set bad_marker_switch = TRUE to let lavaan switch the marker 
+#>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = 
+#>    0.02)
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lavaan():  
+#>    the first indicator (the marker item) of the following latent variable(s) 
+#>    is a poor item (low corrected item-total correlation); this may lead to 
+#>    convergence problems; consider using a better indicator to set the metric, 
+#>    or set bad_marker_switch = TRUE to let lavaan switch the marker 
+#>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = 
+#>    0.02)
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite; use 
+#>    lavInspect(fit, "cov.lv") to investigate.
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F1 F2
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F1 F3
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F2 F3
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F1 F2
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F1 F3
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F2 F3
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F1 F2
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F1 F3
+#> Warning: lavaan->lav_start_check_cov():  
+#>    starting values imply a correlation larger than 1; variables involved are: 
+#>    F2 F3
+#> Warning: lavaan->lavaan():  
+#>    the first indicator (the marker item) of the following latent variable(s) 
+#>    is a poor item (low corrected item-total correlation); this may lead to 
+#>    convergence problems; consider using a better indicator to set the metric, 
+#>    or set bad_marker_switch = TRUE to let lavaan switch the marker 
+#>    automatically (bad_marker_crit = 0 disables this check): F3 (PPTQ11, r = 
+#>    0.02)
+#> Warning: lavaan->lav_object_post_check():  
+#>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
 #> Warning: lavaan->lav_start_check_cov():  
 #>    starting values imply a correlation larger than 1; variables involved are: 

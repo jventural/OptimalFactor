@@ -97,9 +97,9 @@ resultado <- list(
 
 out <- export_conceptual_analysis(resultado,
                                   file = file.path(tempdir(), "conceptual_analysis.txt"))
-#> Análisis exportado a: /tmp/RtmpNtsLuD/conceptual_analysis.txt
+#> Análisis exportado a: /tmp/Rtmpyl4lrn/conceptual_analysis.txt
 out  # invisible return; prints the path if typed
-#> [1] "/tmp/RtmpNtsLuD/conceptual_analysis.txt"
+#> [1] "/tmp/Rtmpyl4lrn/conceptual_analysis.txt"
 # Read first lines to verify encoding and content:
 head(readLines(out, encoding = "UTF-8"))
 #> [1] ""                                             

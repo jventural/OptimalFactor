@@ -401,15 +401,16 @@ res <- efa_boosting(
 #> Boosting iter 1: 15 items activos, 0 eliminados hasta ahora
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= 8.540726e-18) 
+#>    appear to be positive definite! The smallest eigenvalue (= -3.349896e-17) 
+#>    is smaller than zero. This may be a symptom that the model is not 
+#>    identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 1.199309e-17) 
 #>    is close to zero. This may be a symptom that the model is not identified.
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= 1.397705e-17) 
-#>    is close to zero. This may be a symptom that the model is not identified.
-#> Warning: lavaan->lav_model_vcov():  
-#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= 1.268967e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= 2.763043e-17) 
 #>    is close to zero. This may be a symptom that the model is not identified.
 #> 
 #> ──────────────────────────────────────────────────────────────────────
@@ -438,16 +439,15 @@ res <- efa_boosting(
 #> Boosting iter 2: 14 items activos, 1 eliminados hasta ahora
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -1.842400e-17) 
-#>    is smaller than zero. This may be a symptom that the model is not 
-#>    identified.
-#> Warning: lavaan->lav_model_vcov():  
-#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= 2.161542e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= 3.622037e-17) 
 #>    is close to zero. This may be a symptom that the model is not identified.
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= 5.176050e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= 2.630856e-18) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 8.992786e-17) 
 #>    is close to zero. This may be a symptom that the model is not identified.
 #> 
 #> ──────────────────────────────────────────────────────────────────────
@@ -477,16 +477,16 @@ res <- efa_boosting(
 #> Boosting iter 3: 13 items activos, 2 eliminados hasta ahora
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -4.983443e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= -5.697589e-18) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= 2.201994e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= 3.630464e-18) 
 #>    is close to zero. This may be a symptom that the model is not identified.
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= 5.931251e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= 7.981508e-17) 
 #>    is close to zero. This may be a symptom that the model is not identified.
 #> 
 #> ──────────────────────────────────────────────────────────────────────
@@ -537,18 +537,18 @@ res$removed_items
 #> [1] "PPTQ7"  "PPTQ13"
 res$final_structure
 #>     Items         f1         f2        f3
-#> 1   PPTQ6 -0.6713424  0.0000000 0.0000000
-#> 2  PPTQ12  0.6447529  0.0000000 0.0000000
-#> 3   PPTQ2  0.6403550  0.0000000 0.0000000
-#> 4   PPTQ9  0.0000000  0.6593586 0.0000000
-#> 5   PPTQ4  0.0000000  0.6071600 0.0000000
-#> 6  PPTQ14  0.3643084 -0.5578913 0.0000000
-#> 7   PPTQ5  0.0000000  0.0000000 0.7788308
-#> 8  PPTQ10  0.0000000  0.0000000 0.6900500
-#> 9  PPTQ15  0.0000000  0.0000000 0.6706673
-#> 10  PPTQ3  0.0000000  0.0000000 0.5421446
-#> 11  PPTQ1  0.0000000  0.0000000 0.5200078
-#> 12  PPTQ8  0.0000000  0.0000000 0.3547691
-#> 13 PPTQ11  0.0000000  0.0000000 0.3328500
+#> 1   PPTQ6 -0.6713392  0.0000000 0.0000000
+#> 2  PPTQ12  0.6447500  0.0000000 0.0000000
+#> 3   PPTQ2  0.6403520  0.0000000 0.0000000
+#> 4   PPTQ9  0.0000000  0.6593619 0.0000000
+#> 5   PPTQ4  0.0000000  0.6071658 0.0000000
+#> 6  PPTQ14  0.3643006 -0.5578972 0.0000000
+#> 7   PPTQ5  0.0000000  0.0000000 0.7788295
+#> 8  PPTQ10  0.0000000  0.0000000 0.6900447
+#> 9  PPTQ15  0.0000000  0.0000000 0.6706687
+#> 10  PPTQ3  0.0000000  0.0000000 0.5421433
+#> 11  PPTQ1  0.0000000  0.0000000 0.5200120
+#> 12  PPTQ8  0.0000000  0.0000000 0.3547680
+#> 13 PPTQ11  0.0000000  0.0000000 0.3328473
 # }
 ```

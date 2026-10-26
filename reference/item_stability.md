@@ -173,7 +173,7 @@ st <- item_stability(Data_Expectativas, "EAF", n_factors = 2, R = 3,
                      timeout = 15, seed = 1)
 #> Fitting the reference solution on the full sample...
 #> Fitting 3 resamples sequentially...
-#>   [                          ]   0% (0/3)  elapsed 0s  left ~?       [=========                 ]  33% (1/3)  elapsed 7s  left ~15s       [=================         ]  67% (2/3)  elapsed 9s  left ~5s       [==========================] 100% (3/3)  elapsed 25s  left ~0s     
+#>   [                          ]   0% (0/3)  elapsed 0s  left ~?       [=========                 ]  33% (1/3)  elapsed 6s  left ~13s       [=================         ]  67% (2/3)  elapsed 8s  left ~4s       [==========================] 100% (3/3)  elapsed 2m01s  left ~0s     
 #>   3 of 3 resamples converged.
 #>   1 hit the 15 s cap and report the model reached so far.
 st                      # printed summary

@@ -1,6 +1,37 @@
 # Changelog
 
+## OptimalFactor 1.6.0
+
+### New function
+
+- [`cfa_item_stability()`](https://jventural.github.io/OptimalFactor/reference/cfa_item_stability.md)
+  checks, within the confirmatory framework, whether each item of a CFA
+  model stays on its factor across subsamples. On every subsample the
+  model is refitted and, one item at a time, the item is moved to each
+  of the other factors; it lands on the factor whose model has the
+  lowest chi-square (all alternatives have the same degrees of freedom).
+  Reports per item the proportion of subsamples on its own factor, the
+  median loadings on its own and on its best alternative factor, the
+  median chi-square difference and a reading (stable, unstable, prefers
+  other factor), plus the fit and the largest interfactor correlation
+  per subsample. Unlike
+  [`item_stability()`](https://jventural.github.io/OptimalFactor/reference/item_stability.md),
+  no exploratory step is involved, so it suits respecified CFA models.
+
 ## OptimalFactor 1.5.0
+
+CRAN release: 2026-10-24
+
+### Resubmission after CRAN review (2026-10-15)
+
+- [`print.specification_search()`](https://jventural.github.io/OptimalFactor/reference/print.specification_search.md)
+  documents its return value (`\value`).
+- The internal helper that lets a user-written `algorithm` run on
+  parallel workers in
+  [`algorithm_stability()`](https://jventural.github.io/OptimalFactor/reference/algorithm_stability.md)
+  no longer refers to the global environment: it copies the objects the
+  function needs into a new private environment and never modifies the
+  user’s workspace.
 
 ### Preparation for CRAN
 
