@@ -11,13 +11,13 @@ Source:
 [`DESCRIPTION`](https://github.com/jventural/OptimalFactor/blob/master/DESCRIPTION)
 
 Ventura-Leon J (2026). *OptimalFactor: Item Selection in Factor Analysis
-by Boosting and Specification Search*. R package version 1.6.0,
+by Boosting and Specification Search*. R package version 1.7.0,
 <https://github.com/jventural/OptimalFactor>.
 
     @Manual{,
       title = {OptimalFactor: Item Selection in Factor Analysis by Boosting and Specification Search},
       author = {Jose Ventura-Leon},
       year = {2026},
-      note = {R package version 1.6.0},
+      note = {R package version 1.7.0},
       url = {https://github.com/jventural/OptimalFactor},
     }

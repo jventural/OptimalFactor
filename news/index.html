@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">OptimalFactor</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,6 +37,16 @@
       <small>Source: <a href="https://github.com/jventural/OptimalFactor/blob/master/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.7.0" id="optimalfactor-170">OptimalFactor 1.7.0<a class="anchor" aria-label="anchor" href="#optimalfactor-170"></a></h2>
+<div class="section level3">
+<h3 id="changes-in-cfa_boosting-1-7-0">Changes in <code>cfa_boosting()</code>
+<a class="anchor" aria-label="anchor" href="#changes-in-cfa_boosting-1-7-0"></a></h3>
+<ul><li>Cross-loadings are now judged with the decision table of Saris, Satorra and van der Veld (2009), the same one the function already used for error covariances. For each absent loading toward a foreign factor, the power to detect a standardized loading of size <code>cross_loading</code> (default .30) is computed from the modification index and the standardized expected parameter change; the item is removed only when the decision is a misspecification: a significant MI with low power, or high power with an EPC above <code>cross_loading</code>. A significant MI with high power and a trivial EPC no longer counts, because it reflects sample size, not a misspecified loading. The console and <code>steps_log</code> now report the MI, the EPC, the power and the decision for each removal.</li>
+<li>New option <code>thresholds$cross_loading_method</code>: <code>"saris"</code> (default) or <code>"epc"</code>, which restores the 1.6.0 rule (significant MI and standardized EPC of at least <code>cross_loading</code>).</li>
+<li>With <code>Data_Expectativas</code> both rules reach the same model (EAF6 and EAF5 removed, EAF1 <sub></sub> EAF2 freed).</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.6.0" id="optimalfactor-160">OptimalFactor 1.6.0<a class="anchor" aria-label="anchor" href="#optimalfactor-160"></a></h2>
 <div class="section level3">

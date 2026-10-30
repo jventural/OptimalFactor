@@ -56,140 +56,135 @@ res_efa <- optimal_efa_with_ai(Data_Expectativas, items = paste0("EAF", 1:10),
                                verbose = FALSE)
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -6.425287e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= -5.215148e-17) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -3.961038e-17) 
-#>    is smaller than zero. This may be a symptom that the model is not 
-#>    identified.
-#> Warning: lavaan->lav_model_vcov():  
-#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -3.021074e-17) 
-#>    is smaller than zero. This may be a symptom that the model is not 
-#>    identified.
-#> Warning: lavaan->lav_model_vcov():  
-#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -4.029361e-18) 
-#>    is smaller than zero. This may be a symptom that the model is not 
-#>    identified.
-#> Warning: lavaan->lav_model_vcov():  
-#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -1.146884e-16) 
-#>    is smaller than zero. This may be a symptom that the model is not 
-#>    identified.
-#> Warning: lavaan->lav_model_vcov():  
-#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -1.639397e-18) 
-#>    is smaller than zero. This may be a symptom that the model is not 
-#>    identified.
-#> Warning: lavaan->lav_model_vcov():  
-#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -9.911103e-17) 
-#>    is smaller than zero. This may be a symptom that the model is not 
-#>    identified.
-#> Warning: lavaan->lav_model_vcov():  
-#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -1.312914e-17) 
-#>    is smaller than zero. This may be a symptom that the model is not 
-#>    identified.
-#> Warning: lavaan->lav_model_vcov():  
-#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -1.093761e-16) 
-#>    is smaller than zero. This may be a symptom that the model is not 
-#>    identified.
-#> Warning: lavaan->lav_model_vcov():  
-#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= 5.167954e-18) 
+#>    appear to be positive definite! The smallest eigenvalue (= 6.753579e-18) 
 #>    is close to zero. This may be a symptom that the model is not identified.
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -6.804227e-18) 
+#>    appear to be positive definite! The smallest eigenvalue (= -8.371825e-17) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -4.086421e-18) 
-#>    is smaller than zero. This may be a symptom that the model is not 
-#>    identified.
-#> Warning: lavaan->lav_object_post_check():  
-#>    some estimated ov variances are negative
-#> Warning: lavaan->lav_object_post_check():  
-#>    some estimated ov variances are negative
-#> Warning: lavaan->lav_object_post_check():  
-#>    some estimated ov variances are negative
-#> Warning: lavaan->lav_model_vcov():  
-#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -6.168290e-17) 
-#>    is smaller than zero. This may be a symptom that the model is not 
-#>    identified.
-#> Warning: lavaan->lav_model_vcov():  
-#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -2.769096e-17) 
-#>    is smaller than zero. This may be a symptom that the model is not 
-#>    identified.
-#> Warning: lavaan->lav_object_post_check():  
-#>    some estimated ov variances are negative
-#> Warning: lavaan->lav_object_post_check():  
-#>    some estimated ov variances are negative
-#> Warning: lavaan->lav_object_post_check():  
-#>    some estimated ov variances are negative
-#> Warning: lavaan->lav_model_vcov():  
-#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -2.467097e-17) 
-#>    is smaller than zero. This may be a symptom that the model is not 
-#>    identified.
-#> Warning: lavaan->lav_model_vcov():  
-#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= 1.929053e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= 9.921827e-18) 
 #>    is close to zero. This may be a symptom that the model is not identified.
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -4.557424e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= -7.517662e-17) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= 1.006430e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= 5.373698e-18) 
 #>    is close to zero. This may be a symptom that the model is not identified.
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -6.186043e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= -3.669894e-17) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -2.615004e-17) 
-#>    is smaller than zero. This may be a symptom that the model is not 
-#>    identified.
-#> Warning: lavaan->lav_model_vcov():  
-#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -7.866306e-17) 
-#>    is smaller than zero. This may be a symptom that the model is not 
-#>    identified.
-#> Warning: lavaan->lav_model_vcov():  
-#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= 3.174611e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= 1.126304e-17) 
 #>    is close to zero. This may be a symptom that the model is not identified.
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -3.021074e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= -6.590754e-17) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -4.029361e-18) 
+#>    appear to be positive definite! The smallest eigenvalue (= 7.722432e-18) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= -7.433259e-17) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -4.372041e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= 8.937305e-18) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> Warning: lavaan->lav_object_post_check():  
+#>    some estimated ov variances are negative
+#> Warning: lavaan->lav_object_post_check():  
+#>    some estimated ov variances are negative
+#> Warning: lavaan->lav_object_post_check():  
+#>    some estimated ov variances are negative
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= -8.384103e-17) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= 3.263301e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= -1.275047e-17) 
+#>    is smaller than zero. This may be a symptom that the model is not 
+#>    identified.
+#> Warning: lavaan->lav_object_post_check():  
+#>    some estimated ov variances are negative
+#> Warning: lavaan->lav_object_post_check():  
+#>    some estimated ov variances are negative
+#> Warning: lavaan->lav_object_post_check():  
+#>    some estimated ov variances are negative
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= -3.685278e-17) 
+#>    is smaller than zero. This may be a symptom that the model is not 
+#>    identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= -1.773741e-19) 
+#>    is smaller than zero. This may be a symptom that the model is not 
+#>    identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= -5.200061e-17) 
+#>    is smaller than zero. This may be a symptom that the model is not 
+#>    identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 1.214989e-17) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= -2.872234e-17) 
+#>    is smaller than zero. This may be a symptom that the model is not 
+#>    identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 3.282450e-17) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= -3.921132e-17) 
+#>    is smaller than zero. This may be a symptom that the model is not 
+#>    identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= -4.540120e-18) 
+#>    is smaller than zero. This may be a symptom that the model is not 
+#>    identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= -8.371825e-17) 
+#>    is smaller than zero. This may be a symptom that the model is not 
+#>    identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 9.921827e-18) 
+#>    is close to zero. This may be a symptom that the model is not identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= -2.837673e-17) 
+#>    is smaller than zero. This may be a symptom that the model is not 
+#>    identified.
+#> Warning: lavaan->lav_model_vcov():  
+#>    The variance-covariance matrix of the estimated parameters (vcov) does not 
+#>    appear to be positive definite! The smallest eigenvalue (= 2.327427e-18) 
 #>    is close to zero. This may be a symptom that the model is not identified.
 print_efa_results(res_efa)
 #> 

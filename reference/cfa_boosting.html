@@ -13,7 +13,7 @@ configurable constraints."><meta property="og:image" content="https://jventural.
 
     <a class="navbar-brand me-2" href="../index.html">OptimalFactor</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,7 +60,7 @@ configurable constraints.</p>
 <span>  thresholds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>loading <span class="op">=</span> <span class="fl">0.3</span>, min_items_per_factor <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>    rmsea_target <span class="op">=</span> <span class="fl">0.08</span>, cfi_target <span class="op">=</span> <span class="fl">0.95</span>, srmr_target <span class="op">=</span> <span class="fl">0.08</span>,</span>
 <span>    enforce_loading <span class="op">=</span> <span class="cn">TRUE</span>, cross_loading <span class="op">=</span> <span class="fl">0.3</span>,</span>
-<span>    enforce_simple_structure <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    enforce_simple_structure <span class="op">=</span> <span class="cn">TRUE</span>, cross_loading_method <span class="op">=</span> <span class="st">"saris"</span><span class="op">)</span>,</span>
 <span>  model_config <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>estimator <span class="op">=</span> <span class="st">"WLSMV"</span>, ordered <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>  mod_indices_config <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>max_covs_to_add <span class="op">=</span> <span class="fl">10</span>, only_within_factor <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    delta <span class="op">=</span> <span class="fl">0.1</span>, power_threshold <span class="op">=</span> <span class="fl">0.75</span>, alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span>,</span>
@@ -102,8 +102,10 @@ configurable constraints.</p>
       sat comfortably inside a model with RMSEA = .03. Enforcing the floor can
       leave global fit slightly worse while making the retained set defensible,
       which is the trade this option makes explicit.</p></li>
-<li><p><code>cross_loading</code>: Standardized magnitude above which an item is
-      declared to load on a foreign factor (default 0.30).</p></li>
+<li><p><code>cross_loading</code>: Standardized size of a cross-loading that is
+      worth detecting (default 0.30). With <code>cross_loading_method =
+      "saris"</code> it is the \(\delta\) of the power computation for the absent
+      loading; with <code>"epc"</code> it is the minimum standardized EPC.</p></li>
 <li><p><code>enforce_simple_structure</code>: Remove items that load on a factor
       other than their own (default <code>TRUE</code>). The loading floor catches the
       item that measures nothing; this catches the one that measures two
@@ -112,10 +114,18 @@ configurable constraints.</p>
       either: an omitted cross-loading is absorbed by the interfactor
       correlation, so in simulation six items cross-loading at .60 left RMSEA
       at .053 and CFI at .997. Detection uses the modification index of the
-      absent loading, but never significance alone: the standardized expected
-      parameter change must also reach <code>cross_loading</code>, since a
-      significant index with a trivial EPC is precisely the capitalization on
-      chance this is meant to avoid.</p></li>
+      absent loading, but never significance alone, since a significant index
+      with a trivial EPC is precisely the capitalization on chance this is
+      meant to avoid.</p></li>
+<li><p><code>cross_loading_method</code>: How an absent loading is judged
+      (default <code>"saris"</code>). <code>"saris"</code> applies to the absent loading
+      the same decision table of Saris, Satorra and van der Veld (2009) used
+      for error covariances: from the MI and the standardized EPC it computes
+      the power to detect a loading of size <code>cross_loading</code>, and the item
+      is removed only when the decision is a misspecification (significant MI
+      with low power, or high power with \(|EPC| &gt;\) <code>cross_loading</code>).
+      <code>"epc"</code> restores the rule of version 1.6.0: significant MI and
+      standardized EPC of at least <code>cross_loading</code>, without power.</p></li>
 </ul></dd>
 
 
@@ -183,6 +193,7 @@ configurable constraints.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Min items/factor: 3 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Loading mínimo: 0.3 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> MI framework: Saris-Satorra-van der Veld (delta= 0.1 , power&gt;= 0.75 , alpha= 0.05 )</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cargas cruzadas: tabla de Saris (delta = 0.3) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lavaan():  </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    the first indicator (the marker item) of the following latent variable(s) </span>
@@ -193,7 +204,7 @@ configurable constraints.</p>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    0.07)</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -2.226682e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -2.932767e-17) </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    is smaller than zero. This may be a symptom that the model is not </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    identified.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
@@ -229,7 +240,7 @@ configurable constraints.</p>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    -0.01)</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -7.093220e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -9.540988e-18) </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    is smaller than zero. This may be a symptom that the model is not </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    identified.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
@@ -256,7 +267,7 @@ configurable constraints.</p>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -2.939767e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -3.847021e-17) </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    is smaller than zero. This may be a symptom that the model is not </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    identified.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
@@ -283,7 +294,7 @@ configurable constraints.</p>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -3.086542e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -7.005599e-18) </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    is smaller than zero. This may be a symptom that the model is not </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    identified.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
@@ -310,7 +321,7 @@ configurable constraints.</p>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= 9.692214e-18) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= 1.721159e-17) </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    is close to zero. This may be a symptom that the model is not identified.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite; use </span>
@@ -345,7 +356,7 @@ configurable constraints.</p>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -3.931387e-18) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -9.002834e-18) </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    is smaller than zero. This may be a symptom that the model is not </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    identified.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
@@ -360,7 +371,7 @@ configurable constraints.</p>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite; use </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   -&gt; Eliminado PPTQ1 por carga cruzada en F3 (EPC = 604.297 )</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   -&gt; Eliminado PPTQ1 por carga cruzada en F3 (MI = 18437.3 , EPC = 604.297 , Power = 0.051 , =&gt; m )</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F2</span>
@@ -381,7 +392,7 @@ configurable constraints.</p>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    F2 F3</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -3.014937e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -2.342072e-17) </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    is smaller than zero. This may be a symptom that the model is not </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    identified.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
@@ -396,7 +407,7 @@ configurable constraints.</p>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    covariance matrix of latent variables is not positive definite; use </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    lavInspect(fit, "cov.lv") to investigate.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   -&gt; Eliminado PPTQ2 por carga cruzada en F3 (EPC = 35.890 )</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   -&gt; Eliminado PPTQ2 por carga cruzada en F3 (MI = 887.3 , EPC = 35.890 , Power = 0.057 , =&gt; m )</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_start_check_cov():  </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    starting values imply a correlation larger than 1; variables involved are: </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    F1 F2</span>
@@ -432,7 +443,7 @@ configurable constraints.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     --- Par: PPTQ9 ~~ PPTQ10 (MI= 6.0 , EPC= 0.272 , Power= 0.147 , =&gt; m ) ---</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_model_vcov():  </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    The variance-covariance matrix of the estimated parameters (vcov) does not </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -2.733204e-17) </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>    appear to be positive definite! The smallest eigenvalue (= -5.844798e-17) </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    is smaller than zero. This may be a symptom that the model is not </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>    identified.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>lavaan-&gt;lav_object_post_check():  </span>

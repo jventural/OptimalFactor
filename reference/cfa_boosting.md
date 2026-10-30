@@ -15,7 +15,7 @@ cfa_boosting(
   thresholds = list(loading = 0.3, min_items_per_factor = 3,
     rmsea_target = 0.08, cfi_target = 0.95, srmr_target = 0.08,
     enforce_loading = TRUE, cross_loading = 0.3,
-    enforce_simple_structure = TRUE),
+    enforce_simple_structure = TRUE, cross_loading_method = "saris"),
   model_config = list(estimator = "WLSMV", ordered = TRUE),
   mod_indices_config = list(max_covs_to_add = 10, only_within_factor = TRUE,
     delta = 0.1, power_threshold = 0.75, alpha = 0.05),
@@ -64,8 +64,10 @@ cfa_boosting(
     global fit slightly worse while making the retained set defensible,
     which is the trade this option makes explicit.
 
-  - `cross_loading`: Standardized magnitude above which an item is
-    declared to load on a foreign factor (default 0.30).
+  - `cross_loading`: Standardized size of a cross-loading that is worth
+    detecting (default 0.30). With `cross_loading_method = "saris"` it
+    is the \\\delta\\ of the power computation for the absent loading;
+    with `"epc"` it is the minimum standardized EPC.
 
   - `enforce_simple_structure`: Remove items that load on a factor other
     than their own (default `TRUE`). The loading floor catches the item
@@ -76,9 +78,19 @@ cfa_boosting(
     interfactor correlation, so in simulation six items cross-loading at
     .60 left RMSEA at .053 and CFI at .997. Detection uses the
     modification index of the absent loading, but never significance
-    alone: the standardized expected parameter change must also reach
-    `cross_loading`, since a significant index with a trivial EPC is
-    precisely the capitalization on chance this is meant to avoid.
+    alone, since a significant index with a trivial EPC is precisely the
+    capitalization on chance this is meant to avoid.
+
+  - `cross_loading_method`: How an absent loading is judged (default
+    `"saris"`). `"saris"` applies to the absent loading the same
+    decision table of Saris, Satorra and van der Veld (2009) used for
+    error covariances: from the MI and the standardized EPC it computes
+    the power to detect a loading of size `cross_loading`, and the item
+    is removed only when the decision is a misspecification (significant
+    MI with low power, or high power with \\\|EPC\| \>\\
+    `cross_loading`). `"epc"` restores the rule of version 1.6.0:
+    significant MI and standardized EPC of at least `cross_loading`,
+    without power.
 
 - model_config:
 
@@ -163,6 +175,7 @@ result <- cfa_boosting(
 #> Min items/factor: 3 
 #> Loading mínimo: 0.3 
 #> MI framework: Saris-Satorra-van der Veld (delta= 0.1 , power>= 0.75 , alpha= 0.05 )
+#> Cargas cruzadas: tabla de Saris (delta = 0.3) 
 #> 
 #> Warning: lavaan->lavaan():  
 #>    the first indicator (the marker item) of the following latent variable(s) 
@@ -173,7 +186,7 @@ result <- cfa_boosting(
 #>    0.07)
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -2.226682e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= -2.932767e-17) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_object_post_check():  
@@ -209,7 +222,7 @@ result <- cfa_boosting(
 #>    -0.01)
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -7.093220e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= -9.540988e-18) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_object_post_check():  
@@ -236,7 +249,7 @@ result <- cfa_boosting(
 #>    F2 F3
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -2.939767e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= -3.847021e-17) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_object_post_check():  
@@ -263,7 +276,7 @@ result <- cfa_boosting(
 #>    F2 F3
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -3.086542e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= -7.005599e-18) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_object_post_check():  
@@ -290,7 +303,7 @@ result <- cfa_boosting(
 #>    F2 F3
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= 9.692214e-18) 
+#>    appear to be positive definite! The smallest eigenvalue (= 1.721159e-17) 
 #>    is close to zero. This may be a symptom that the model is not identified.
 #> Warning: lavaan->lav_object_post_check():  
 #>    covariance matrix of latent variables is not positive definite; use 
@@ -325,7 +338,7 @@ result <- cfa_boosting(
 #>    F2 F3
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -3.931387e-18) 
+#>    appear to be positive definite! The smallest eigenvalue (= -9.002834e-18) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_object_post_check():  
@@ -340,7 +353,7 @@ result <- cfa_boosting(
 #> Warning: lavaan->lav_object_post_check():  
 #>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
-#>   -> Eliminado PPTQ1 por carga cruzada en F3 (EPC = 604.297 )
+#>   -> Eliminado PPTQ1 por carga cruzada en F3 (MI = 18437.3 , EPC = 604.297 , Power = 0.051 , => m )
 #> Warning: lavaan->lav_start_check_cov():  
 #>    starting values imply a correlation larger than 1; variables involved are: 
 #>    F1 F2
@@ -361,7 +374,7 @@ result <- cfa_boosting(
 #>    F2 F3
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -3.014937e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= -2.342072e-17) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_object_post_check():  
@@ -376,7 +389,7 @@ result <- cfa_boosting(
 #> Warning: lavaan->lav_object_post_check():  
 #>    covariance matrix of latent variables is not positive definite; use 
 #>    lavInspect(fit, "cov.lv") to investigate.
-#>   -> Eliminado PPTQ2 por carga cruzada en F3 (EPC = 35.890 )
+#>   -> Eliminado PPTQ2 por carga cruzada en F3 (MI = 887.3 , EPC = 35.890 , Power = 0.057 , => m )
 #> Warning: lavaan->lav_start_check_cov():  
 #>    starting values imply a correlation larger than 1; variables involved are: 
 #>    F1 F2
@@ -412,7 +425,7 @@ result <- cfa_boosting(
 #>     --- Par: PPTQ9 ~~ PPTQ10 (MI= 6.0 , EPC= 0.272 , Power= 0.147 , => m ) ---
 #> Warning: lavaan->lav_model_vcov():  
 #>    The variance-covariance matrix of the estimated parameters (vcov) does not 
-#>    appear to be positive definite! The smallest eigenvalue (= -2.733204e-17) 
+#>    appear to be positive definite! The smallest eigenvalue (= -5.844798e-17) 
 #>    is smaller than zero. This may be a symptom that the model is not 
 #>    identified.
 #> Warning: lavaan->lav_object_post_check():  

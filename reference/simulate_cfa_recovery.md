@@ -163,7 +163,7 @@ without knowing which items are faulty.
 # \donttest{
 sim <- simulate_cfa_recovery(n = 300, n_reps = 2, seed = 1)
 #> Condition 1/1: N=300, lambda=0.65, items/factor=5 (17 items total)
-#>   [                          ]   0% (0/2)  elapsed 0s  left ~?       [=============             ]  50% (1/2)  elapsed 3s  left ~3s       [==========================] 100% (2/2)  elapsed 6s  left ~0s     
+#>   [                          ]   0% (0/2)  elapsed 0s  left ~?       [=============             ]  50% (1/2)  elapsed 5s  left ~5s       [==========================] 100% (2/2)  elapsed 10s  left ~0s     
 sim
 #> 
 #> CFA-Boosting recovery simulation
