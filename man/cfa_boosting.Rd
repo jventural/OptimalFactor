@@ -17,7 +17,7 @@ cfa_boosting(
   thresholds = list(loading = 0.3, min_items_per_factor = 3,
     rmsea_target = 0.08, cfi_target = 0.95, srmr_target = 0.08,
     enforce_loading = TRUE, cross_loading = 0.3,
-    enforce_simple_structure = TRUE),
+    enforce_simple_structure = TRUE, cross_loading_method = "saris"),
   model_config = list(estimator = "WLSMV", ordered = TRUE),
   mod_indices_config = list(max_covs_to_add = 10, only_within_factor = TRUE,
     delta = 0.1, power_threshold = 0.75, alpha = 0.05),
@@ -51,8 +51,10 @@ cfa_boosting(
       sat comfortably inside a model with RMSEA = .03. Enforcing the floor can
       leave global fit slightly worse while making the retained set defensible,
       which is the trade this option makes explicit.
-    \item \code{cross_loading}: Standardized magnitude above which an item is
-      declared to load on a foreign factor (default 0.30).
+    \item \code{cross_loading}: Standardized size of a cross-loading that is
+      worth detecting (default 0.30). With \code{cross_loading_method =
+      "saris"} it is the \eqn{\delta} of the power computation for the absent
+      loading; with \code{"epc"} it is the minimum standardized EPC.
     \item \code{enforce_simple_structure}: Remove items that load on a factor
       other than their own (default \code{TRUE}). The loading floor catches the
       item that measures nothing; this catches the one that measures two
@@ -61,10 +63,18 @@ cfa_boosting(
       either: an omitted cross-loading is absorbed by the interfactor
       correlation, so in simulation six items cross-loading at .60 left RMSEA
       at .053 and CFI at .997. Detection uses the modification index of the
-      absent loading, but never significance alone: the standardized expected
-      parameter change must also reach \code{cross_loading}, since a
-      significant index with a trivial EPC is precisely the capitalization on
-      chance this is meant to avoid.
+      absent loading, but never significance alone, since a significant index
+      with a trivial EPC is precisely the capitalization on chance this is
+      meant to avoid.
+    \item \code{cross_loading_method}: How an absent loading is judged
+      (default \code{"saris"}). \code{"saris"} applies to the absent loading
+      the same decision table of Saris, Satorra and van der Veld (2009) used
+      for error covariances: from the MI and the standardized EPC it computes
+      the power to detect a loading of size \code{cross_loading}, and the item
+      is removed only when the decision is a misspecification (significant MI
+      with low power, or high power with \eqn{|EPC| >} \code{cross_loading}).
+      \code{"epc"} restores the rule of version 1.6.0: significant MI and
+      standardized EPC of at least \code{cross_loading}, without power.
   }
 }
 

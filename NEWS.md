@@ -1,3 +1,24 @@
+# OptimalFactor 1.7.0
+
+## Changes in `cfa_boosting()`
+
+* Cross-loadings are now judged with the decision table of Saris, Satorra and
+  van der Veld (2009), the same one the function already used for error
+  covariances. For each absent loading toward a foreign factor, the power to
+  detect a standardized loading of size `cross_loading` (default .30) is
+  computed from the modification index and the standardized expected
+  parameter change; the item is removed only when the decision is a
+  misspecification: a significant MI with low power, or high power with an
+  EPC above `cross_loading`. A significant MI with high power and a trivial
+  EPC no longer counts, because it reflects sample size, not a misspecified
+  loading. The console and `steps_log` now report the MI, the EPC, the power
+  and the decision for each removal.
+* New option `thresholds$cross_loading_method`: `"saris"` (default) or
+  `"epc"`, which restores the 1.6.0 rule (significant MI and standardized EPC
+  of at least `cross_loading`).
+* With `Data_Expectativas` both rules reach the same model (EAF6 and EAF5
+  removed, EAF1 ~~ EAF2 freed).
+
 # OptimalFactor 1.6.0
 
 ## New function
