@@ -54,7 +54,7 @@ efa_boosting(
     use_pclose_if_available = TRUE, pclose_bonus = 0.1),
   use_ai_analysis = FALSE,
   ai_config = list(api_key = NULL, generate_names = FALSE,
-    only_removed = TRUE, gpt_model = "gpt-3.5-turbo", language = "english",
+    only_removed = TRUE, gpt_model = "claude-haiku-5-5", language = "english",
     analysis_detail = "detailed", domain_name = "Default Domain",
     scale_title = "Default Scale Title", construct_definition = "",
     model_name = "EFA Model", item_definitions = NULL),
@@ -176,8 +176,8 @@ Enable GPT-based conceptual analysis of removed (and optionally retained) items.
 \item{ai_config}{
 AI analysis configuration:
 \itemize{
-  \item \code{api_key}: OpenAI API key.
-  \item \code{gpt_model}: Model (e.g., \code{"gpt-4"}, \code{"gpt-3.5-turbo"}).
+  \item \code{api_key}: API key of the provider (Anthropic for the default model).
+  \item \code{gpt_model}: Model (e.g., \code{"claude-haiku-5-5"}).
   \item \code{language}: "spanish" or "english".
   \item \code{analysis_detail}: "brief", "standard", "detailed".
   \item \code{domain_name}, \code{scale_title}, \code{model_name}: Metadata included in prompts.
@@ -267,6 +267,8 @@ A list containing:
       \item \code{cfi}: CFI value at the moment of removal (scaled when WLSMV is used)
     }
   \item \code{iterations}: Number of optimization iterations.
+  \item \code{reverted_items}: Items whose removal was undone because the EFA
+    without them could not be estimated (empty in most runs).
   \item \code{final_rmsea}: Final RMSEA.
   \item \code{bondades_original}: Fit indices from the final model.
   \item \code{stop_reason}: Why the loop ended (\code{"all_criteria_met"},

@@ -1,3 +1,56 @@
+# OptimalFactor 1.8.0
+
+## Breaking changes
+
+* `optimal_cfa_with_ai()` and `optimal_efa_with_ai()` have been removed. Use
+  `cfa_boosting()` and `efa_boosting(use_ai_analysis = TRUE)`. `print_cfa_results()`,
+  which only printed the output of the former, is removed too; see
+  `print_cfa_boosting()`. `print_efa_results()` prints the output of
+  `efa_boosting()` and `efa_optimizer()`.
+
+## Bug fixes
+
+* `discriminant_boosting()` compared interfactor correlations with their sign,
+  so a correlation of -1.63 was reported as "OK". Correlations are now judged
+  and minimised by their absolute value. When no candidate is admissible the
+  function says so instead of calling the returned model admissible, and
+  `print()` marks it as inadmissible.
+* `efa_boosting()` could stop after removing an item and before refitting
+  without it, so the item appeared both in `removed_items` and in
+  `final_structure`. The model is now refitted; if it cannot be estimated, the
+  removal is undone and listed in the new element `reverted_items`.
+* `efa_optimizer()` had the same problem and is fixed the same way.
+* `cfa_boosting()` read the model line by line. Items on a continuation line, or
+  in a second declaration of the same factor, were lost without a warning. It
+  now reads it as lavaan does and warns about lines it does not use. Items
+  written with a modifier (`NA*x1`) can now be removed.
+* `cfa_boosting()` kept the residual covariances of items it had removed, which
+  brought those items back into the final model as free-standing observed
+  variables. Such covariances are now dropped.
+* `bifactor_indices()` left the covariances among specific factors out of the
+  total variance. With correlated specific factors, as in a bifactor S-1 model,
+  omega was understated and omega hierarchical overstated when those covariances
+  are positive. Orthogonal models are not affected. It also warns when the
+  general factor correlates with a specific factor.
+* The `timeout` of `algorithm_stability()` did not stop a search whose own error
+  handlers absorbed it. With callr installed (new in Suggests) each split runs in
+  its own R process, which is stopped at the limit.
+
+## Artificial intelligence
+
+* The default model is `claude-haiku-5-5`, called through the Claude Messages API
+  with an Anthropic key; the former default, `gpt-3.5-turbo`, was shut down on
+  2026-10-23. Other models still work through `gpt_model`, and
+  `OPENAI_BASE_URL` still redirects to any compatible provider. A key is never
+  sent to the API of another provider: a mismatch stops with a clear message.
+* Requests to compatible providers are repeated without `temperature` and with
+  `max_completion_tokens` when a model rejects the classic parameters.
+
+## Documentation
+
+* The README and the vignettes used arguments that no longer exist
+  (`name_items = "item"`, `use_gpt`, `target_RMSEA`, ...). All examples now run.
+
 # OptimalFactor 1.7.0
 
 ## Changes in `cfa_boosting()`

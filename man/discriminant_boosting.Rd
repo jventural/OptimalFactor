@@ -116,8 +116,10 @@ the threshold, and finally cleaned of items below the loading floor.
 The winner is the model that meets every criterion \emph{with the largest
 number of factors}, not the one with the best fit: the aim is to depart as
 little as possible from the intended structure. If none qualifies, the
-admissible model with the lowest \eqn{\phi} is returned and \code{reason}
-says so.
+admissible model with the lowest \eqn{|\phi|} is returned and \code{reason}
+says so; if no model is admissible, \code{reason} warns against interpreting
+the solution. Interfactor correlations are always judged by their absolute
+value.
 
 Reliability floors are \emph{adaptive}: a model already below the floor is not
 frozen, its effective bar becomes its current value, so removals that do not

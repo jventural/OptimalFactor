@@ -44,14 +44,12 @@ reference:
   contents:
   - efa_boosting
   - efa_optimizer
-  - optimal_efa_with_ai
   - redundancy_short_form
 
 - title: CFA Optimization
   desc: Functions for Confirmatory Factor Analysis optimization
   contents:
   - cfa_boosting
-  - optimal_cfa_with_ai
   - specification_search_theory
   - cross_validate_cfa
   - bifactor_indices
@@ -79,7 +77,6 @@ reference:
   desc: Functions for displaying and exporting results
   contents:
   - print_efa_results
-  - print_cfa_results
   - print_cfa_boosting
   - report_efa_results
   - report_cfa_results

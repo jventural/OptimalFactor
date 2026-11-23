@@ -11,7 +11,9 @@
 #'
 #' @details
 #' The model must be a bifactor structure with one general factor loading on all
-#' items plus orthogonal specific factors. Standardized loadings are used. With
+#' items plus specific factors orthogonal to it. The specific factors may correlate
+#' with each other, as in the bifactor S-1 model (Eid et al., 2017): their
+#' covariances are part of the total variance. Standardized loadings are used. With
 #' general loadings \eqn{g_i}, specific loadings \eqn{s_i} and errors
 #' \eqn{e_i = 1 - g_i^2 - s_i^2}:
 #' \itemize{
@@ -25,8 +27,8 @@
 #'   \item \code{IECV_i} = \eqn{g_i^2 / (g_i^2 + s_i^2)} (item purity toward G).
 #' }
 #'
-#' @param fit A fitted bifactor \code{lavaan} object (general factor + orthogonal
-#'   specific factors).
+#' @param fit A fitted bifactor \code{lavaan} object (general factor + specific
+#'   factors orthogonal to it).
 #' @param general Name of the general factor. If \code{NULL} (default) it is
 #'   auto-detected as the latent variable that loads on all items.
 #' @param verbose Logical. If \code{TRUE} (default), prints the rounded indices
@@ -38,6 +40,10 @@
 #'   I-ECV). Printed rounded to three decimals.
 #'
 #' @section References:
+#' Eid, M., Geiser, C., Koch, T., & Heene, M. (2017). Anomalous results in
+#'   G-factor models: Explanations and alternatives. \emph{Psychological Methods,
+#'   22}(3), 541--562. \doi{10.1037/met0000083}
+#'
 #' Rodriguez, A., Reise, S. P., & Haviland, M. G. (2016). Evaluating bifactor
 #'   models: Calculating and interpreting statistical indices. \emph{Psychological
 #'   Methods, 21}(2), 137--150.
@@ -105,8 +111,21 @@ bifactor_indices <- function(fit, general = NULL, verbose = TRUE) {
   # omegas
   SSg     <- sum(g)^2
   grpsum2 <- sum(sapply(spec_facs, function(f) sum(s[in_f(f)])^2))
-  Vtot    <- SSg + grpsum2 + sum(ei)
-  omega   <- (SSg + grpsum2) / Vtot
+  # Specific factors that correlate with each other also share variance in the
+  # total score; leaving it out overstates omega_H.
+  lv_cor <- std[std$op == "~~" & std$lhs != std$rhs &
+                std$lhs %in% facs & std$rhs %in% facs, c("lhs", "rhs", "est.std")]
+  with_g <- lv_cor[(lv_cor$lhs == general | lv_cor$rhs == general) &
+                   abs(lv_cor$est.std) > 1e-6, , drop = FALSE]
+  if (nrow(with_g))
+    warning("The general factor correlates with: ",
+            paste(setdiff(c(with_g$lhs, with_g$rhs), general), collapse = ", "),
+            ". These indices assume it is orthogonal to the specific factors.", call. = FALSE)
+  sp_cor  <- lv_cor[lv_cor$lhs %in% spec_facs & lv_cor$rhs %in% spec_facs, , drop = FALSE]
+  sp_sum  <- vapply(spec_facs, function(f) sum(s[in_f(f)]), numeric(1))
+  covsp   <- if (nrow(sp_cor)) 2 * sum(sp_cor$est.std * sp_sum[sp_cor$lhs] * sp_sum[sp_cor$rhs]) else 0
+  Vtot    <- SSg + grpsum2 + covsp + sum(ei)
+  omega   <- (SSg + grpsum2 + covsp) / Vtot
   omegaH  <- SSg / Vtot
   bysub <- t(sapply(spec_facs, function(f) {
     idx <- in_f(f); sg <- sum(g[idx]); ss <- sum(s[idx]); ve <- sum(ei[idx])

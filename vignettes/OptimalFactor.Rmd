@@ -27,7 +27,7 @@ You can install the latest version of OptimalFactor from GitHub:
 if (!require("devtools")) {
   install.packages("devtools")
 }
-devtools::install_github("jventural/OptimalFactor")
+devtools::install_github("jventural/OptimalFactor", dependencies = TRUE)
 ```
 
 ## Main Features
@@ -42,7 +42,7 @@ The `efa_boosting()` function implements an advanced iterative optimization algo
 - **Cross-loading identification** and removal
 - **Minimum items per factor** enforcement
 - **Interfactor correlation verification**
-- **Optional AI-assisted conceptual analysis** via GPT models
+- **Optional AI-assisted conceptual analysis** via a language model
 
 ### CFA Optimization
 
@@ -61,15 +61,14 @@ library(OptimalFactor)
 
 # Run EFA-Boosting
 result <- efa_boosting(
-  data = your_data,
-  name_items = "item",
-  n_factors = 3,
-  verbose = TRUE
+  data = Data_Personality,
+  name_items = "PPTQ",
+  n_factors = 3
 )
 
 # View results
 print(result$final_structure)
-print(result$fit_indices)
+print(result$bondades_original)
 ```
 
 ## Theoretical Background

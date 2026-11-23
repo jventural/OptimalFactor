@@ -58,8 +58,10 @@ cluster (works on Windows). Default 1.}
 \item{timeout}{Seconds allowed for the algorithm on one split; a split that
 exceeds it is counted as failed instead of stalling the whole run. Small
 derivation halves can send an iterative search into a loop that never
-ends. Requires the R.utils package; \code{NULL} or \code{Inf} disables
-it. Default 300.}
+ends. With the callr package installed each split runs in its own R process,
+which is stopped when the limit is reached. Without it the limit relies on
+R.utils and is only approximate, because a search may absorb the
+interruption and go on. \code{NULL} or \code{Inf} disables it. Default 300.}
 
 \item{verbose}{Print progress. Default \code{TRUE}.}
 }

@@ -32,7 +32,7 @@ efa_optimizer(
     api_key = NULL,
     generate_names = FALSE,
     only_removed = TRUE,
-    gpt_model = "gpt-3.5-turbo",
+    gpt_model = "claude-haiku-5-5",
     language = "english",
     analysis_detail = "detailed",
     domain_name = "Default Domain",
@@ -162,7 +162,7 @@ res_ai <- efa_optimizer(
   n_factors  = 3,
   use_ai_analysis = TRUE,
   ai_config = list(
-    api_key = Sys.getenv("OPENAI_API_KEY"),
+    api_key = Sys.getenv("ANTHROPIC_API_KEY"),
     item_definitions = as.list(stats::setNames(
       paste("Item", 1:15, "content"), paste0("PPTQ", 1:15))),
     language = "spanish",

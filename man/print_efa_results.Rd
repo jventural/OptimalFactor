@@ -1,14 +1,14 @@
 \name{print_efa_results}
 \alias{print_efa_results}
-\title{Print Results from AI-Assisted EFA Refinement}
+\title{Print Results from an EFA Refinement}
 \description{
-Prints a structured summary of the key outputs from \code{optimal_efa_with_ai}, including the removed items, final RMSEA, iteration count, final factor structure, step-by-step log, and final fit indices.
+Prints a structured summary of the key outputs from \code{\link{efa_boosting}} or \code{\link{efa_optimizer}}, including the removed items, final RMSEA, iteration count, final factor structure, step-by-step log, and final fit indices.
 }
 \usage{
 print_efa_results(res)
 }
 \arguments{
-  \item{res}{A \code{list} returned by \code{optimal_efa_with_ai}, containing at least the components
+  \item{res}{A \code{list} returned by \code{\link{efa_boosting}} or \code{\link{efa_optimizer}}, containing at least the components
     \code{removed_items}, \code{final_rmsea}, \code{iterations},
     \code{final_structure}, \code{steps_log}, and \code{bondades_original}.}
 }
@@ -33,9 +33,8 @@ The function prints to the console in the following order:
 \examples{
 \donttest{
 data(Data_Expectativas)
-res_efa <- optimal_efa_with_ai(Data_Expectativas, items = paste0("EAF", 1:10),
-                               name_items = "EAF", n_factors = 2,
-                               verbose = FALSE)
+res_efa <- efa_boosting(Data_Expectativas, name_items = "EAF", n_factors = 2,
+                        verbose = FALSE)
 print_efa_results(res_efa)
 }
 }

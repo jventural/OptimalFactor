@@ -7,8 +7,8 @@
 bifactor_indices(fit, general = NULL, verbose = TRUE)
 }
 \arguments{
-\item{fit}{A fitted bifactor \code{lavaan} object (general factor + orthogonal
-specific factors).}
+\item{fit}{A fitted bifactor \code{lavaan} object (general factor + specific
+factors orthogonal to it).}
 
 \item{general}{Name of the general factor. If \code{NULL} (default) it is
 auto-detected as the latent variable that loads on all items.}
@@ -33,7 +33,9 @@ scored with a single total score (Rodriguez, Reise & Haviland, 2016).
 }
 \details{
 The model must be a bifactor structure with one general factor loading on all
-items plus orthogonal specific factors. Standardized loadings are used. With
+items plus specific factors orthogonal to it. The specific factors may correlate
+with each other, as in the bifactor S-1 model (Eid et al., 2017): their
+covariances are part of the total variance. Standardized loadings are used. With
 general loadings \eqn{g_i}, specific loadings \eqn{s_i} and errors
 \eqn{e_i = 1 - g_i^2 - s_i^2}:
 \itemize{
@@ -48,6 +50,10 @@ general loadings \eqn{g_i}, specific loadings \eqn{s_i} and errors
 }
 }
 \section{References}{
+
+Eid, M., Geiser, C., Koch, T., & Heene, M. (2017). Anomalous results in
+  G-factor models: Explanations and alternatives. \emph{Psychological Methods,
+  22}(3), 541--562. \doi{10.1037/met0000083}
 
 Rodriguez, A., Reise, S. P., & Haviland, M. G. (2016). Evaluating bifactor
   models: Calculating and interpreting statistical indices. \emph{Psychological

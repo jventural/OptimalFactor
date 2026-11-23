@@ -9,7 +9,7 @@
 - **Admissibility over fit (CFA)**: `cfa_boosting()` removes items below the loading floor, and items loading on a foreign factor, even when the fit targets are already met — because global fit does not reveal either of them
 - **Monte Carlo validation**: `simulate_recovery()` and `simulate_cfa_recovery()` measure how often each pipeline recovers a structure that is known in advance
 - **Global Search**: Multi-item removal optimization
-- **AI Integration**: Optional GPT-powered conceptual analysis of removed items
+- **AI Integration**: Optional conceptual analysis by a language model of removed items
 - **Specification Search (CFA)**: Heuristic hill-climbing over seed configurations following MacCallum (1986), with move / drop / cov operations and optional bifactor variant
 
 > **Looking for the interactive app?** The *OptimalFactor Wizard* (guided
@@ -26,7 +26,8 @@ You can install the latest version of OptimalFactor from GitHub:
 if (!require("devtools")) {
   install.packages("devtools")
 }
-devtools::install_github("jventural/OptimalFactor")
+# dependencies = TRUE also installs the suggested packages (semTools, callr, ...)
+devtools::install_github("jventural/OptimalFactor", dependencies = TRUE)
 ```
 
 ## Quick Start
@@ -36,11 +37,11 @@ devtools::install_github("jventural/OptimalFactor")
 ```r
 library(OptimalFactor)
 
+# Items must be named with a common prefix and a number: PPTQ1, PPTQ2, ...
 result <- efa_boosting(
-  data = your_data,
-  name_items = "item",
-  n_factors = 3,
-  verbose = TRUE
+  data = Data_Personality,
+  name_items = "PPTQ",
+  n_factors = 3
 )
 ```
 
@@ -69,7 +70,7 @@ it empirically: it re-runs the whole pipeline over resamples and reports how
 often each item survives and how stable its factor assignment is.
 
 ```r
-st <- item_stability(your_data, "item", n_factors = 3, R = 100)
+st <- item_stability(Data_Personality, "PPTQ", n_factors = 3, R = 100)
 st              # retention rates, factor agreement, unstable decisions
 ```
 

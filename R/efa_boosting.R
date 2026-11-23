@@ -68,7 +68,7 @@ efa_boosting <- function(data,
                            api_key = NULL,
                            generate_names = FALSE,
                            only_removed = TRUE,
-                           gpt_model = "gpt-3.5-turbo",
+                           gpt_model = "claude-haiku-5-5",
                            language = "english",
                            analysis_detail = "detailed",
                            domain_name = "Default Domain",
@@ -175,9 +175,10 @@ efa_boosting <- function(data,
   # IA (hook intacto)
   default_ai <- list(api_key=NULL, generate_names=FALSE, only_removed=TRUE, item_definitions=NULL,
                      domain_name="Default Domain", scale_title="Default Scale Title",
-                     construct_definition="", model_name="EFA Model", gpt_model="gpt-3.5-turbo",
+                     construct_definition="", model_name="EFA Model", gpt_model="claude-haiku-5-5",
                      language="english", analysis_detail="detailed")
   ai_config <- modifyList(default_ai, ai_config)
+  if (isTRUE(use_ai_analysis)) .of_check_ai_key(ai_config$api_key, ai_config$gpt_model)
 
   if (use_ai_analysis && (!requireNamespace("httr", quietly = TRUE) ||
                           !requireNamespace("jsonlite", quietly = TRUE))) {
@@ -348,22 +349,10 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     max_attempts <- 3
     for (attempt in 1:max_attempts) {
       resp <- tryCatch({
-        httr::POST(
-          .openai_chat_url(),
-          httr::add_headers(
-            Authorization = paste("Bearer", ai_config$api_key),
-            `Content-Type` = "application/json"
-          ),
-          httr::timeout(60),
-          body = jsonlite::toJSON(list(
-            model = ai_config$gpt_model,
-            messages = list(
-              list(role = "system", content = system_msg),
-              list(role = "user", content = prompt)
-            ),
-            temperature = 0.3,
-            max_tokens = max_tokens_config
-          ), auto_unbox = TRUE)
+        .of_chat_post(
+          api_key = ai_config$api_key, model = ai_config$gpt_model,
+          system = system_msg, user = prompt,
+          temperature = 0.3, max_tokens = max_tokens_config, timeout = 60
         )
       }, error = function(e) {
         return(NULL)
@@ -374,7 +363,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
         if (status == 200) {
           content <- httr::content(resp)
           return(tryCatch(
-            content$choices[[1]]$message$content,
+            .of_chat_text(content),
             error = function(e) "Error extracting GPT response."
           ))
         } else if (status %in% c(502,503,504)) {
@@ -408,7 +397,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
             return("Rate limit exceeded after multiple attempts")
           }
         } else {
-          return(paste("GPT error - HTTP", status))
+          return(paste("AI error - HTTP", status))
         }
       } else {
         if (attempt < max_attempts) {
@@ -1206,6 +1195,41 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
 
   if (is.null(mod) || is.null(mod$result_df)) stop("Could not generate a valid EFA model.")
 
+  # The loop can stop between removing an item and refitting without it (too few
+  # items left, step cap, timeout, or a refit that failed). `mod` would then still
+  # contain an item listed in `removed_items`. Refit so both agree; if that EFA
+  # cannot be estimated, undo the pending removals instead of reporting them.
+  reverted_items <- character()
+  pending <- intersect(removed_items, mod$result_df$Items)
+  if (length(pending)) {
+    refit <- if (identical(stop_reason, "efa_convergence_failed")) NULL else tryCatch({
+      fit_rest <- function() .of_efa_modern(
+        data=data, n_factors=n_factors, n_items=n_items, name_items=name_items,
+        estimator=model_config$estimator, rotation=model_config$rotation,
+        apply_threshold=FALSE, exclude_items=c(exclude_items, removed_items), ...)
+      if (use_timeouts)
+        R.utils::withTimeout(fit_rest(), timeout=performance$timeout_efa, onTimeout="error")
+      else fit_rest()
+    }, error=function(e) NULL)
+    if (!is.null(refit) && !is.null(refit$Bondades_Original) && !is.null(refit$result_df)) {
+      mod <- refit
+      curr_rmsea <- as.numeric(extract_fit(mod, n_factors)$rmsea)
+      phi_r <- if (!is.null(mod$InterFactor)) as.matrix(mod$InterFactor) else diag(n_factors)
+      df_r  <- mod$result_df
+      lc_r  <- which(startsWith(names(df_r), "f"))
+      df_r[lc_r] <- lapply(df_r[lc_r], function(x) ifelse(abs(x) < thresholds$loading, 0, round(x, 3)))
+      last_ev <- tryCatch(evaluate_structure(df_r, phi_r, thresholds), error=function(e) last_ev)
+    } else {
+      reverted_items <- pending
+      removed_items  <- setdiff(removed_items, pending)
+      steps_log      <- steps_log[!(steps_log$removed_item %in% pending), , drop = FALSE]
+      item_removal_stats[pending] <- NULL
+      step_counter   <- nrow(steps_log)
+      if (verbose) cat("\n\u26A0 The model without ", paste(pending, collapse = ", "),
+                       " could not be estimated; the removal was undone.\n", sep = "")
+    }
+  }
+
   # Estructura final (umbral de reporte)
   df_final  <- mod$result_df
   load_cols <- which(startsWith(names(df_final), "f"))
@@ -1407,6 +1431,7 @@ IMPORTANT: DO NOT use markdown formatting. Write in continuous plain text.",
     steps_log         = steps_log,
     iterations        = step_counter,
     stop_reason       = stop_reason,
+    reverted_items    = reverted_items,
     final_rmsea       = as.numeric(extract_fit(mod, n_factors)$rmsea),
     bondades_original = mod$Bondades_Original,
     specifications    = mod$Specifications,

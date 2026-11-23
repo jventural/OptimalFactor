@@ -73,14 +73,15 @@ The algorithm stops when:
 
 ### Basic Usage
 
+Items must be named with a common prefix and a number (`PPTQ1`, `PPTQ2`, ...).
+
 ```{r}
 library(OptimalFactor)
 
 result <- efa_boosting(
   data = Data_Personality,
-  name_items = "item",
-  n_factors = 5,
-  verbose = TRUE
+  name_items = "PPTQ",
+  n_factors = 3
 )
 ```
 
@@ -89,62 +90,65 @@ result <- efa_boosting(
 ```{r}
 result <- efa_boosting(
   data = Data_Personality,
-  name_items = "item",
-  n_factors = 5,
-  rotation = "oblimin",
-  target_RMSEA = 0.05,
-  target_SRMR = 0.05,
-  target_CFI = 0.95,
-  min_loading = 0.40,
-  cross_loading_threshold = 0.32,
-  min_items_per_factor = 3,
-  global_search = TRUE,
-  global_max_remove = 3,
-  verbose = TRUE
+  name_items = "PPTQ",
+  n_factors = 3,
+  thresholds = list(loading = 0.40, min_items_per_factor = 3, min_omega = 0.60),
+  model_config = list(estimator = "WLSMV", rotation = "oblimin"),
+  fit_config = list(targets = list(rmsea = 0.06, srmr = 0.06, cfi = 0.95)),
+  use_global = TRUE,
+  global_opt = list(max_drop = 2)
 )
 ```
 
 ### With AI Analysis
 
+The default model is `claude-haiku-5-5` and needs an Anthropic API key. Each item
+is sent with the definition you provide.
+
 ```{r}
 result <- efa_boosting(
   data = Data_Personality,
-  name_items = "item",
-  n_factors = 5,
-  use_gpt = TRUE,
-  gpt_model = "gpt-4o-mini",
-  verbose = TRUE
+  name_items = "PPTQ",
+  n_factors = 3,
+  use_ai_analysis = TRUE,
+  ai_config = list(
+    api_key = Sys.getenv("ANTHROPIC_API_KEY"),
+    language = "english",
+    scale_title = "Scale title",
+    construct_definition = "Definition of the construct",
+    item_definitions = list(PPTQ1 = "Wording of item 1", PPTQ2 = "Wording of item 2")
+  )
 )
 
 # Print AI analysis
 print_conceptual_analysis(result$conceptual_analysis)
 ```
 
-## Parameters
+## Main Parameters
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `data` | - | Data frame with items |
 | `name_items` | - | Prefix of item columns |
-| `n_factors` | - | Number of factors to extract |
-| `rotation` | "oblimin" | Rotation method |
-| `target_RMSEA` | 0.06 | Target RMSEA value |
-| `target_SRMR` | 0.06 | Target SRMR value |
-| `target_CFI` | 0.95 | Target CFI value |
-| `min_loading` | 0.40 | Minimum acceptable loading |
-| `cross_loading_threshold` | 0.32 | Cross-loading threshold |
-| `min_items_per_factor` | 3 | Minimum items per factor |
-| `global_search` | FALSE | Enable global search |
-| `global_max_remove` | 2 | Max items in global search |
-| `use_gpt` | FALSE | Enable AI analysis |
+| `n_factors` | 3 | Number of factors to extract |
+| `thresholds$loading` | 0.30 | Minimum acceptable loading |
+| `thresholds$min_items_per_factor` | 3 | Minimum items per factor |
+| `thresholds$min_omega` | NULL | Reliability floor per factor |
+| `model_config$rotation` | "oblimin" | Rotation method |
+| `fit_config$targets` | RMSEA .08, SRMR .06, CFI .95 | Fit targets |
+| `use_global` | FALSE | Enable global search |
+| `global_opt$max_drop` | 2 | Max items removed at once in global search |
+| `use_ai_analysis` | FALSE | Enable AI analysis |
 | `verbose` | TRUE | Print progress |
 
 ## Output
 
-The function returns a list containing:
+The function returns a list containing, among others:
 
-- `final_structure`: Final factor loadings matrix
-- `fit_indices`: Final fit indices
-- `removed_items`: List of removed items with reasons
-- `iteration_history`: Details of each iteration
+- `final_structure`: Final factor loadings
+- `removed_items`: Items removed, in order
+- `steps_log`: Reason and fit at each removal
+- `stop_reason`: Why the search ended
+- `bondades_original`: Fit indices of the final model
+- `omega_final`: Reliability per factor
 - `conceptual_analysis`: AI analysis (if enabled)

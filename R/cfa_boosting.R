@@ -157,30 +157,39 @@ cfa_boosting <- function(data,
 
   # ───────────────── Parsear modelo inicial ─────────────────
   parse_model <- function(model_syntax) {
-    lines <- strsplit(model_syntax, "\n")[[1]]
-    lines <- trimws(lines)
-    lines <- lines[lines != "" & !grepl("^#", lines)]
+    lines   <- .of_model_lines(model_syntax)
+    is_fac  <- grepl("=~", lines, fixed = TRUE)
+    is_cov  <- !is_fac & grepl("~~", lines, fixed = TRUE)
+    ignored <- lines[!is_fac & !is_cov]
+    if (length(ignored))
+      warning("These lines of 'model' are not used by cfa_boosting(): ",
+              paste(ignored, collapse = "; "), call. = FALSE)
+    list(factors = .of_model_factors(lines), covs = lines[is_cov])
+  }
 
-    factors <- list()
-    covs <- character(0)
-
-    for (line in lines) {
-      if (grepl("=~", line)) {
-        parts <- strsplit(line, "=~")[[1]]
-        factor_name <- trimws(parts[1])
-        items_str <- trimws(parts[2])
-        items <- trimws(strsplit(items_str, "\\+")[[1]])
-        factors[[factor_name]] <- items
-      } else if (grepl("~~", line)) {
-        covs <- c(covs, line)
-      }
-    }
-
-    list(factors = factors, covs = covs)
+  # Covarianzas que siguen teniendo sentido: si uno de sus items ya se elimino,
+  # dejarla en la sintaxis lo devolveria al modelo como variable observada suelta.
+  item_name <- .of_item_name
+  initial_items <- unique(item_name(unlist(.of_model_factors(.of_model_lines(model)))))
+  live_covs <- function(covs, factors) {
+    gone <- setdiff(initial_items, item_name(unlist(factors)))
+    if (!length(gone) || !length(covs)) return(covs)
+    out <- vapply(covs, function(cv) {
+      sides <- strsplit(cv, "~~", fixed = TRUE)[[1]]
+      if (length(sides) != 2L) return(cv)
+      if (item_name(sides[1]) %in% gone) return(NA_character_)
+      terms <- trimws(strsplit(sides[2], "+", fixed = TRUE)[[1]])
+      keep  <- terms[!(item_name(terms) %in% gone)]
+      if (!length(keep)) return(NA_character_)
+      if (length(keep) == length(terms)) return(cv)
+      paste0(trimws(sides[1]), " ~~ ", paste(keep, collapse = " + "))
+    }, character(1), USE.NAMES = FALSE)
+    out[!is.na(out)]
   }
 
   # Reconstruir sintaxis del modelo
   build_model_syntax <- function(factors, covs = character(0)) {
+    covs <- live_covs(covs, factors)
     lines <- character(0)
     for (fname in names(factors)) {
       items <- factors[[fname]]
@@ -340,7 +349,7 @@ cfa_boosting <- function(data,
 
     item_to_factor <- list()
     for (fname in names(factors))
-      for (item in factors[[fname]]) item_to_factor[[item]] <- fname
+      for (item in factors[[fname]]) item_to_factor[[item_name(item)]] <- fname
 
     # Solo items del modelo, y solo cargas hacia un factor que no es el suyo.
     keep <- vapply(seq_len(nrow(mi_load)), function(i) {
@@ -388,7 +397,7 @@ cfa_boosting <- function(data,
     item_to_factor <- list()
     for (fname in names(factors)) {
       for (item in factors[[fname]]) {
-        item_to_factor[[item]] <- fname
+        item_to_factor[[item_name(item)]] <- fname
       }
     }
 
@@ -510,6 +519,8 @@ cfa_boosting <- function(data,
   # Loop de optimización
   while (iteration < performance$max_iterations) {
     iteration <- iteration + 1
+    current_covs <- live_covs(current_covs, current_factors)
+    added_covs   <- live_covs(added_covs, current_factors)
 
     # Verificar si ya cumple targets
     targets_check <- meets_targets(current_indices)
@@ -552,7 +563,7 @@ cfa_boosting <- function(data,
       f_peor <- problematic[[peor]]$factor
 
       test_factors <- current_factors
-      test_factors[[f_peor]] <- setdiff(test_factors[[f_peor]], peor)
+      test_factors[[f_peor]] <- .of_drop_items(test_factors[[f_peor]], peor)
       test_syntax <- build_model_syntax(test_factors, current_covs)
       test_fit <- fit_cfa(test_syntax)
 
@@ -596,7 +607,7 @@ cfa_boosting <- function(data,
         info <- cruzados[[peor]]
 
         test_factors <- current_factors
-        test_factors[[info$factor]] <- setdiff(test_factors[[info$factor]], peor)
+        test_factors[[info$factor]] <- .of_drop_items(test_factors[[info$factor]], peor)
         test_syntax <- build_model_syntax(test_factors, current_covs)
         test_fit <- fit_cfa(test_syntax)
 
@@ -658,7 +669,7 @@ cfa_boosting <- function(data,
 
         # Crear modelo sin el item
         test_factors <- current_factors
-        test_factors[[factor_name]] <- setdiff(test_factors[[factor_name]], item)
+        test_factors[[factor_name]] <- .of_drop_items(test_factors[[factor_name]], item)
         test_syntax <- build_model_syntax(test_factors, current_covs)
 
         test_fit <- fit_cfa(test_syntax)
@@ -699,7 +710,7 @@ cfa_boosting <- function(data,
       item_to_factor <- list()
       for (fname in names(current_factors)) {
         for (item in current_factors[[fname]]) {
-          item_to_factor[[item]] <- fname
+          item_to_factor[[item_name(item)]] <- fname
         }
       }
 
@@ -758,7 +769,7 @@ cfa_boosting <- function(data,
         opt2_indices <- NULL
         if (!is.null(factor1) && length(current_factors[[factor1]]) > thresholds$min_items_per_factor) {
           test_factors <- current_factors
-          test_factors[[factor1]] <- setdiff(test_factors[[factor1]], item1)
+          test_factors[[factor1]] <- .of_drop_items(test_factors[[factor1]], item1)
           test_syntax <- build_model_syntax(test_factors, current_covs)
           test_fit <- fit_cfa(test_syntax)
 
@@ -794,7 +805,7 @@ cfa_boosting <- function(data,
         opt3_indices <- NULL
         if (!is.null(factor2) && length(current_factors[[factor2]]) > thresholds$min_items_per_factor) {
           test_factors <- current_factors
-          test_factors[[factor2]] <- setdiff(test_factors[[factor2]], item2)
+          test_factors[[factor2]] <- .of_drop_items(test_factors[[factor2]], item2)
           test_syntax <- build_model_syntax(test_factors, current_covs)
           test_fit <- fit_cfa(test_syntax)
 
@@ -837,15 +848,15 @@ cfa_boosting <- function(data,
           if (factor1 == factor2) {
             can_remove_both <- length(current_factors[[factor1]]) > thresholds$min_items_per_factor + 1
             if (can_remove_both) {
-              test_factors[[factor1]] <- setdiff(test_factors[[factor1]], c(item1, item2))
+              test_factors[[factor1]] <- .of_drop_items(test_factors[[factor1]], c(item1, item2))
             }
           } else {
             # Factores diferentes
             can_remove_both <- (length(current_factors[[factor1]]) > thresholds$min_items_per_factor &&
                                 length(current_factors[[factor2]]) > thresholds$min_items_per_factor)
             if (can_remove_both) {
-              test_factors[[factor1]] <- setdiff(test_factors[[factor1]], item1)
-              test_factors[[factor2]] <- setdiff(test_factors[[factor2]], item2)
+              test_factors[[factor1]] <- .of_drop_items(test_factors[[factor1]], item1)
+              test_factors[[factor2]] <- .of_drop_items(test_factors[[factor2]], item2)
             }
           }
 
@@ -898,7 +909,7 @@ cfa_boosting <- function(data,
 
     if (best_action == "remove_item") {
       # Eliminación por carga baja
-      current_factors[[best_factor]] <- setdiff(current_factors[[best_factor]], best_item)
+      current_factors[[best_factor]] <- .of_drop_items(current_factors[[best_factor]], best_item)
       removed_items <- c(removed_items, best_item)
       action_label <- "Remove Item (low loading)"
 
@@ -911,7 +922,7 @@ cfa_boosting <- function(data,
     } else if (best_action == "remove_cov_item") {
       # Eliminar un item en lugar de covarianza
       for (item_info in best_items_to_remove) {
-        current_factors[[item_info$factor]] <- setdiff(current_factors[[item_info$factor]], item_info$item)
+        current_factors[[item_info$factor]] <- .of_drop_items(current_factors[[item_info$factor]], item_info$item)
         removed_items <- c(removed_items, item_info$item)
       }
       action_label <- "Remove Item (instead of cov)"
@@ -919,7 +930,7 @@ cfa_boosting <- function(data,
     } else if (best_action == "remove_cov_items_both") {
       # Eliminar ambos items en lugar de covarianza
       for (item_info in best_items_to_remove) {
-        current_factors[[item_info$factor]] <- setdiff(current_factors[[item_info$factor]], item_info$item)
+        current_factors[[item_info$factor]] <- .of_drop_items(current_factors[[item_info$factor]], item_info$item)
         removed_items <- c(removed_items, item_info$item)
       }
       action_label <- "Remove Both Items (instead of cov)"
@@ -953,6 +964,8 @@ cfa_boosting <- function(data,
 
   # ───────────────── RESULTADOS FINALES ─────────────────
 
+  current_covs <- live_covs(current_covs, current_factors)
+  added_covs   <- live_covs(added_covs, current_factors)
   final_indices <- extract_fit(current_fit)
   final_targets <- meets_targets(final_indices)
 

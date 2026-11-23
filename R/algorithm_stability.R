@@ -63,8 +63,10 @@
 #' @param timeout Seconds allowed for the algorithm on one split; a split that
 #'   exceeds it is counted as failed instead of stalling the whole run. Small
 #'   derivation halves can send an iterative search into a loop that never
-#'   ends. Requires the R.utils package; \code{NULL} or \code{Inf} disables
-#'   it. Default 300.
+#'   ends. With the callr package installed each split runs in its own R process,
+#'   which is stopped when the limit is reached. Without it the limit relies on
+#'   R.utils and is only approximate, because a search may absorb the
+#'   interruption and go on. \code{NULL} or \code{Inf} disables it. Default 300.
 #' @param n_cores Number of cores. Values above 1 run the splits on a PSOCK
 #'   cluster (works on Windows). Default 1.
 #' @param verbose Print progress. Default \code{TRUE}.
@@ -112,8 +114,13 @@ algorithm_stability <- function(data, algorithm, n_splits = 30, theory = NULL,
   cl <- match.call()
   algorithm <- .of_portable_function(algorithm)
   use_timeout <- !is.null(timeout) && is.finite(timeout) && timeout > 0
-  if (use_timeout && !requireNamespace("R.utils", quietly = TRUE)) {
-    warning("Package 'R.utils' is needed for 'timeout'; running without it.", call. = FALSE)
+  # A hard limit needs a process that can be stopped. An error raised inside the
+  # search is not enough: the tryCatch() of the search, or a try() inside lavaan's
+  # rotation, takes it for a failed fit and continues.
+  hard_limit <- use_timeout && requireNamespace("callr", quietly = TRUE)
+  if (use_timeout && !hard_limit && !requireNamespace("R.utils", quietly = TRUE)) {
+    warning("Package 'callr' (or 'R.utils') is needed for 'timeout'; running without it.",
+            call. = FALSE)
     use_timeout <- FALSE
   }
   targets <- utils::modifyList(list(cfi = 0.95, rmsea = 0.08, srmr = 0.08), as.list(targets))
@@ -128,11 +135,25 @@ algorithm_stability <- function(data, algorithm, n_splits = 30, theory = NULL,
   if (!is.null(seed)) set.seed(seed)
   n_der  <- floor(nrow(data) / 2)
   splits <- lapply(seq_len(n_splits), function(i) sample.int(nrow(data), n_der))
+  # The rotation of lavaan uses random starts: a child process needs its own seed
+  # for the run to be reproducible.
+  child_seeds <- if (hard_limit && !is.null(seed)) sample.int(.Machine$integer.max, n_splits)
+  splits <- lapply(seq_along(splits), function(i)
+    list(idx = splits[[i]], seed = if (is.null(child_seeds)) NULL else child_seeds[i]))
 
-  one_split <- function(idx) {
+  one_split <- function(sp) {
+    idx <- sp$idx
     der <- data[idx, , drop = FALSE]; val <- data[-idx, , drop = FALSE]
     run_alg <- function() {
-      if (use_timeout)
+      if (hard_limit)
+        callr::r(function(alg, d, seed) {
+                   if (!is.null(seed)) set.seed(seed)
+                   suppressMessages(suppressWarnings(alg(d)))
+                 },
+                 args = list(alg = algorithm, d = der, seed = sp$seed),
+                 libpath = .libPaths(), timeout = timeout, spinner = FALSE,
+                 stdout = NULL, stderr = NULL)
+      else if (use_timeout)
         R.utils::withTimeout(suppressMessages(suppressWarnings(algorithm(der))),
                              timeout = timeout, onTimeout = "error")
       else suppressMessages(suppressWarnings(algorithm(der)))

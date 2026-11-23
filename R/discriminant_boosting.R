@@ -71,8 +71,10 @@
 #' The winner is the model that meets every criterion \emph{with the largest
 #' number of factors}, not the one with the best fit: the aim is to depart as
 #' little as possible from the intended structure. If none qualifies, the
-#' admissible model with the lowest \eqn{\phi} is returned and \code{reason}
-#' says so.
+#' admissible model with the lowest \eqn{|\phi|} is returned and \code{reason}
+#' says so; if no model is admissible, \code{reason} warns against interpreting
+#' the solution. Interfactor correlations are always judged by their absolute
+#' value.
 #'
 #' Reliability floors are \emph{adaptive}: a model already below the floor is not
 #' frozen, its effective bar becomes its current value, so removals that do not
@@ -193,7 +195,7 @@ discriminant_boosting <- function(data,
 
   meets <- function(m) {
     if (is.null(m)) return(FALSE)
-    ok_phi <- is.na(m$phi) || (m$phi < phi_max && m$admissible)
+    ok_phi <- is.na(m$phi) || (abs(m$phi) < phi_max && m$admissible)
     ok_phi && m$cfi >= cfi_target && m$rmsea <= rmsea_target &&
       m$omega_min >= omega_min && m$min_loading >= min_loading
   }
@@ -246,7 +248,7 @@ discriminant_boosting <- function(data,
                       omega_min = round(m$omega_min, 3), stringsAsFactors = FALSE)
     step <- 0L
     repeat {
-      done <- if (objective == "phi") !is.na(m$phi) && m$phi < phi_max else m$cfi >= cfi_target
+      done <- if (objective == "phi") !is.na(m$phi) && abs(m$phi) < phi_max else m$cfi >= cfi_target
       if (done) break
 
       cand <- unlist(lapply(names(m$asig), function(f)
@@ -269,10 +271,10 @@ discriminant_boosting <- function(data,
         # starting model sits below it; requiring that fit does not worsen is
         # enough.
         ok <- ok[ok$cfi >= m$cfi - 0.005, , drop = FALSE]
-        ok <- ok[order(ok$phi), , drop = FALSE]
-        improves <- nrow(ok) > 0 && ok$phi[1] < m$phi
+        ok <- ok[order(abs(ok$phi)), , drop = FALSE]
+        improves <- nrow(ok) > 0 && abs(ok$phi[1]) < abs(m$phi)
       } else {
-        ok <- ok[is.na(ok$phi) | ok$phi < phi_max, , drop = FALSE]
+        ok <- ok[is.na(ok$phi) | abs(ok$phi) < phi_max, , drop = FALSE]
         ok <- ok[order(-ok$cfi), , drop = FALSE]
         improves <- nrow(ok) > 0 && ok$cfi[1] > m$cfi
       }
@@ -318,7 +320,7 @@ discriminant_boosting <- function(data,
   if (is.null(base)) stop("The theoretical model does not converge; check data and assignment.")
   say(sprintf("   %d factors, %d items | max phi = %.3f | CFI = %.3f | admissible = %s\n",
               base$n_factors, base$n_items, base$phi, base$cfi, base$admissible))
-  if (!is.na(base$phi) && base$phi > 1)
+  if (!is.na(base$phi) && abs(base$phi) > 1)
     say("   [!] Correlation above 1: inadmissible solution\n")
 
   drop_reverse <- FALSE
@@ -373,7 +375,7 @@ discriminant_boosting <- function(data,
     m <- evaluate(candidates[[nm]]$asig, candidates[[nm]]$extra)
     row_of(m, nm)
   }))
-  ladder <- ladder[order(-ladder$n_factors, ladder$phi), ]
+  ladder <- ladder[order(-ladder$n_factors, abs(ladder$phi)), ]
   if (verbose) print(ladder, row.names = FALSE)
 
   # ---- Phases 2-4: pruning per level ------------------------------
@@ -392,7 +394,7 @@ discriminant_boosting <- function(data,
 
   for (nf in levels_k) {
     sub <- ladder[ladder$converged & ladder$n_factors == nf, , drop = FALSE]
-    sub <- sub[order(sub$phi, na.last = TRUE), , drop = FALSE]
+    sub <- sub[order(abs(sub$phi), na.last = TRUE), , drop = FALSE]
     nm  <- sub$model[1]
     say(sprintf("\n   [%d factors] candidate: %s\n", nf, nm))
 
@@ -415,15 +417,22 @@ discriminant_boosting <- function(data,
                                      function(nm) row_of(refined[[nm]]$m, paste(nm, "[pruned]"))))
   eligible <- table_ref[table_ref$meets, , drop = FALSE]
   if (nrow(eligible)) {
-    eligible <- eligible[order(-eligible$n_factors, eligible$phi), ]
+    eligible <- eligible[order(-eligible$n_factors, abs(eligible$phi)), ]
     winner <- names(refined)[which(paste(names(refined), "[pruned]") == eligible$model[1])]
     reason <- "meets every criterion with the largest number of factors"
   } else {
     adm <- table_ref[table_ref$converged & table_ref$admissible, , drop = FALSE]
-    adm <- adm[order(adm$phi), , drop = FALSE]
-    winner <- if (nrow(adm))
-      names(refined)[which(paste(names(refined), "[pruned]") == adm$model[1])] else names(refined)[1]
-    reason <- "no model qualifies: the admissible one with the lowest phi is returned"
+    adm <- adm[order(abs(adm$phi)), , drop = FALSE]
+    if (nrow(adm)) {
+      winner <- names(refined)[which(paste(names(refined), "[pruned]") == adm$model[1])]
+      reason <- "no model qualifies: the admissible one with the lowest phi is returned"
+    } else {
+      # Nothing to recommend: every model has a correlation beyond +/-1. The
+      # first level is returned so the output can be inspected, but the reason
+      # must not call it admissible.
+      winner <- names(refined)[1]
+      reason <- "no model qualifies and none is admissible: do not interpret this solution"
+    }
   }
 
   say(sprintf("\n== Result: %s (%s) ==\n", winner, reason))
@@ -467,7 +476,9 @@ print.discriminant_boosting <- function(x, ...) {
               m$df, m$chisq, m$cfi, m$tli, m$rmsea, m$srmr))
   if (!is.na(m$phi))
     cat(sprintf("  phi = %.3f [%.3f, %.3f]%s\n", m$phi, m$phi_lo, m$phi_hi,
-                if (m$phi < x$config$phi_max) "  OK" else "  (above the threshold)"))
+                if (!isTRUE(m$admissible)) "  [INADMISSIBLE]"
+                else if (abs(m$phi) < x$config$phi_max) "  OK"
+                else "  (above the threshold)"))
   cat("  omega:", paste(sprintf("%s = %.3f", names(m$omega), m$omega), collapse = " | "), "\n")
   cat(sprintf("  minimum loading = %.3f\n", m$min_loading))
   cat("\nComposition:\n")
