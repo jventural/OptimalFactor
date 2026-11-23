@@ -346,7 +346,7 @@ head(out$fit_indices)
 #> 2        CFI  0.89375006   >= 0.95 FALSE
 #> 3        TLI  0.84062508   >= 0.95 FALSE
 #> 4       SRMR  0.08239623   <= 0.08 FALSE
-#> 5 Chi-square 43.41409175              NA
+#> 5 Chi-square 43.41409174              NA
 #> 6         df 30.00000000              NA
 head(out$loadings)
 #>   Factor  Item Loading    SE p_value

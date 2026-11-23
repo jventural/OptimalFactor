@@ -173,7 +173,11 @@ st <- item_stability(Data_Expectativas, "EAF", n_factors = 2, R = 3,
                      timeout = 15, seed = 1)
 #> Fitting the reference solution on the full sample...
 #> Fitting 3 resamples sequentially...
-#>   [                          ]   0% (0/3)  elapsed 0s  left ~?       [=========                 ]  33% (1/3)  elapsed 10s  left ~20s       [=================         ]  67% (2/3)  elapsed 13s  left ~6s       [==========================] 100% (3/3)  elapsed 5m37s  left ~0s     
+#> 
+  [                          ]   0% (0/3)  elapsed 0s  left ~?     
+  [=========                 ]  33% (1/3)  elapsed 8s  left ~16s     
+  [=================         ]  67% (2/3)  elapsed 10s  left ~5s     
+  [==========================] 100% (3/3)  elapsed 3m05s  left ~0s     
 #>   3 of 3 resamples converged.
 #>   1 hit the 15 s cap and report the model reached so far.
 st                      # printed summary
@@ -188,12 +192,12 @@ st                      # printed summary
 #>   EAF7              0          0.000             3        1.000           NA
 #>   EAF1              2          0.667             1        0.333            2
 #>   EAF4              2          0.667             1        0.333            2
+#>   EAF8              2          0.667             1        0.333            2
 #>  EAF10              3          1.000             0        0.000            2
 #>   EAF2              3          1.000             0        0.000            2
 #>   EAF3              3          1.000             0        0.000            1
 #>   EAF5              3          1.000             0        0.000            1
 #>   EAF6              3          1.000             0        0.000            1
-#>   EAF8              3          1.000             0        0.000            2
 #>   EAF9              3          1.000             0        0.000            2
 #>  factor_agreement in_reference
 #>                NA        FALSE
@@ -219,18 +223,18 @@ st                      # printed summary
 #>                        timeout 
 #>                              1 
 #> 
-#> Unstable decisions (retained in 25-75% of resamples): EAF1, EAF4
+#> Unstable decisions (retained in 25-75% of resamples): EAF1, EAF4, EAF8
 st$retention            # per-item detail
 #>     item times_retained retention_rate times_removed removal_rate modal_factor
 #> 1   EAF7              0          0.000             3        1.000           NA
 #> 2   EAF1              2          0.667             1        0.333            2
 #> 3   EAF4              2          0.667             1        0.333            2
-#> 4  EAF10              3          1.000             0        0.000            2
-#> 5   EAF2              3          1.000             0        0.000            2
-#> 6   EAF3              3          1.000             0        0.000            1
-#> 7   EAF5              3          1.000             0        0.000            1
-#> 8   EAF6              3          1.000             0        0.000            1
-#> 9   EAF8              3          1.000             0        0.000            2
+#> 4   EAF8              2          0.667             1        0.333            2
+#> 5  EAF10              3          1.000             0        0.000            2
+#> 6   EAF2              3          1.000             0        0.000            2
+#> 7   EAF3              3          1.000             0        0.000            1
+#> 8   EAF5              3          1.000             0        0.000            1
+#> 9   EAF6              3          1.000             0        0.000            1
 #> 10  EAF9              3          1.000             0        0.000            2
 #>    factor_agreement in_reference
 #> 1                NA        FALSE

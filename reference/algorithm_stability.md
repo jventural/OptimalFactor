@@ -99,7 +99,10 @@ algorithm_stability(
   Seconds allowed for the algorithm on one split; a split that exceeds
   it is counted as failed instead of stalling the whole run. Small
   derivation halves can send an iterative search into a loop that never
-  ends. Requires the R.utils package; `NULL` or `Inf` disables it.
+  ends. With the callr package installed each split runs in its own R
+  process, which is stopped when the limit is reached. Without it the
+  limit relies on R.utils and is only approximate, because a search may
+  absorb the interruption and go on. `NULL` or `Inf` disables it.
   Default 300.
 
 - verbose:
@@ -174,20 +177,17 @@ st <- algorithm_stability(
   seed = 1)
 #> Reference: running the algorithm on the complete sample (N = 100)...
 #> Running 3 splits (derivation n = 50, validation n = 50)...
-#>   [                          ]   0% (0/3)  elapsed 0s  left ~?       [=========                 ]  33% (1/3)  elapsed 1s  left ~2s       [=================         ]  67% (2/3)  elapsed 3s  left ~1s       [==========================] 100% (3/3)  elapsed 5s  left ~0s     
+#> 
+  [                          ]   0% (0/3)  elapsed 0s  left ~?     
+  [=========                 ]  33% (1/3)  elapsed 1s  left ~1s     
+  [=================         ]  67% (2/3)  elapsed 1s  left ~1s     
+  [==========================] 100% (3/3)  elapsed 2s  left ~0s     
 st
 #> Split-half stability of the item selection
-#> Splits: 3 (successful: 100%)
+#> Splits: 3 (successful: 0%)
 #> 
 #> Means over successful splits (fit on the validation half):
-#>  k n_items   cfi   tli rmsea  srmr phi_max jaccard ari_reference recovery
-#>  2       7 0.888 0.819 0.128 0.074   0.887   0.857             1      0.7
-#>  ari_theory meets_rate success_rate
-#>           1      0.333            1
-#> 
-#> Items whose fate is not settled (retained in 20-80% of splits):
-#>   item in_reference retention
-#>   EAF5        FALSE      0.33
-#>  EAF10        FALSE      0.67
+#>  n_items meets_rate success_rate
+#>       NA         NA            0
 # }
 ```

@@ -19,8 +19,8 @@ bifactor_indices(fit, general = NULL, verbose = TRUE)
 
 - fit:
 
-  A fitted bifactor `lavaan` object (general factor + orthogonal
-  specific factors).
+  A fitted bifactor `lavaan` object (general factor + specific factors
+  orthogonal to it).
 
 - general:
 
@@ -42,9 +42,11 @@ Printed rounded to three decimals.
 ## Details
 
 The model must be a bifactor structure with one general factor loading
-on all items plus orthogonal specific factors. Standardized loadings are
-used. With general loadings \\g_i\\, specific loadings \\s_i\\ and
-errors \\e_i = 1 - g_i^2 - s_i^2\\:
+on all items plus specific factors orthogonal to it. The specific
+factors may correlate with each other, as in the bifactor S-1 model (Eid
+et al., 2017): their covariances are part of the total variance.
+Standardized loadings are used. With general loadings \\g_i\\, specific
+loadings \\s_i\\ and errors \\e_i = 1 - g_i^2 - s_i^2\\:
 
 - `ECV` = \\\sum g_i^2 / \sum (g_i^2 + s_i^2)\\.
 
@@ -61,6 +63,11 @@ errors \\e_i = 1 - g_i^2 - s_i^2\\:
 - `IECV_i` = \\g_i^2 / (g_i^2 + s_i^2)\\ (item purity toward G).
 
 ## References
+
+Eid, M., Geiser, C., Koch, T., & Heene, M. (2017). Anomalous results in
+G-factor models: Explanations and alternatives. *Psychological Methods,
+22*(3), 541–562.
+[doi:10.1037/met0000083](https://doi.org/10.1037/met0000083)
 
 Rodriguez, A., Reise, S. P., & Haviland, M. G. (2016). Evaluating
 bifactor models: Calculating and interpreting statistical indices.

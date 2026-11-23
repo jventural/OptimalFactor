@@ -8,8 +8,6 @@ Functions for Exploratory Factor Analysis optimization
   : EFA-Boosting Optimization
 - [`efa_optimizer()`](https://jventural.github.io/OptimalFactor/reference/efa_optimizer.md)
   : Exploratory Factor Analysis Optimizer with Optional LLM Support
-- [`optimal_efa_with_ai()`](https://jventural.github.io/OptimalFactor/reference/optimal_efa_with_ai.md)
-  : Exploratory Factor Analysis Optimization with AI Assistance
 - [`redundancy_short_form()`](https://jventural.github.io/OptimalFactor/reference/redundancy_short_form.md)
   : Redundancy-Guided Short Form of a Unidimensional Scale
 
@@ -19,8 +17,6 @@ Functions for Confirmatory Factor Analysis optimization
 
 - [`cfa_boosting()`](https://jventural.github.io/OptimalFactor/reference/cfa_boosting.md)
   : CFA-Boosting Optimization
-- [`optimal_cfa_with_ai()`](https://jventural.github.io/OptimalFactor/reference/optimal_cfa_with_ai.md)
-  : Confirmatory Factor Analysis Optimization with AI Assistance
 - [`specification_search_theory()`](https://jventural.github.io/OptimalFactor/reference/specification_search_theory.md)
   : Theory-Guided Specification Search for CFA Models
 - [`cross_validate_cfa()`](https://jventural.github.io/OptimalFactor/reference/cross_validate_cfa.md)
@@ -70,9 +66,7 @@ structure.
 Functions for displaying and exporting results
 
 - [`print_efa_results()`](https://jventural.github.io/OptimalFactor/reference/print_efa_results.md)
-  : Print Results from AI-Assisted EFA Refinement
-- [`print_cfa_results()`](https://jventural.github.io/OptimalFactor/reference/print_cfa_results.md)
-  : Print Results from AI-Assisted CFA Refinement
+  : Print Results from an EFA Refinement
 - [`print_cfa_boosting()`](https://jventural.github.io/OptimalFactor/reference/print_cfa_boosting.md)
   : Print CFA-Boosting Results
 - [`report_efa_results()`](https://jventural.github.io/OptimalFactor/reference/report_efa_results.md)

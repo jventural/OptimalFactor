@@ -179,7 +179,13 @@ data(Data_Expectativas)
 model <- list(F1 = paste0("EAF", 1:5), F2 = paste0("EAF", 6:10))
 st <- cfa_item_stability(Data_Expectativas, model, R = 5, seed = 1)
 #> Fitting 5 subsamples sequentially...
-#>   [                          ]   0% (0/5)  elapsed 0s  left ~?       [=====                     ]  20% (1/5)  elapsed 5s  left ~21s       [==========                ]  40% (2/5)  elapsed 10s  left ~16s       [================          ]  60% (3/5)  elapsed 16s  left ~10s       [=====================     ]  80% (4/5)  elapsed 21s  left ~5s       [==========================] 100% (5/5)  elapsed 26s  left ~0s     
+#> 
+  [                          ]   0% (0/5)  elapsed 0s  left ~?     
+  [=====                     ]  20% (1/5)  elapsed 4s  left ~16s     
+  [==========                ]  40% (2/5)  elapsed 8s  left ~11s     
+  [================          ]  60% (3/5)  elapsed 11s  left ~7s     
+  [=====================     ]  80% (4/5)  elapsed 15s  left ~4s     
+  [==========================] 100% (5/5)  elapsed 18s  left ~0s     
 st
 #> 
 #> CFA item-assignment stability

@@ -31,8 +31,8 @@ and CFA using machine-learning inspired boosting algorithms.
   measure how often each pipeline recovers a structure that is known in
   advance
 - **Global Search**: Multi-item removal optimization
-- **AI Integration**: Optional GPT-powered conceptual analysis of
-  removed items
+- **AI Integration**: Optional conceptual analysis by a language model
+  of removed items
 - **Specification Search (CFA)**: Heuristic hill-climbing over seed
   configurations following MacCallum (1986), with move / drop / cov
   operations and optional bifactor variant
@@ -52,7 +52,8 @@ You can install the latest version of OptimalFactor from GitHub:
 if (!require("devtools")) {
   install.packages("devtools")
 }
-devtools::install_github("jventural/OptimalFactor")
+# dependencies = TRUE also installs the suggested packages (semTools, callr, ...)
+devtools::install_github("jventural/OptimalFactor", dependencies = TRUE)
 ```
 
 ## Quick Start
@@ -63,11 +64,11 @@ devtools::install_github("jventural/OptimalFactor")
 
 library(OptimalFactor)
 
+# Items must be named with a common prefix and a number: PPTQ1, PPTQ2, ...
 result <- efa_boosting(
-  data = your_data,
-  name_items = "item",
-  n_factors = 3,
-  verbose = TRUE
+  data = Data_Personality,
+  name_items = "PPTQ",
+  n_factors = 3
 )
 ```
 
@@ -99,7 +100,7 @@ assignment is.
 
 ``` r
 
-st <- item_stability(your_data, "item", n_factors = 3, R = 100)
+st <- item_stability(Data_Personality, "PPTQ", n_factors = 3, R = 100)
 st              # retention rates, factor agreement, unstable decisions
 ```
 

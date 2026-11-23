@@ -143,8 +143,10 @@ floor.
 The winner is the model that meets every criterion *with the largest
 number of factors*, not the one with the best fit: the aim is to depart
 as little as possible from the intended structure. If none qualifies,
-the admissible model with the lowest \\\phi\\ is returned and `reason`
-says so.
+the admissible model with the lowest \\\|\phi\|\\ is returned and
+`reason` says so; if no model is admissible, `reason` warns against
+interpreting the solution. Interfactor correlations are always judged by
+their absolute value.
 
 Reliability floors are *adaptive*: a model already below the floor is
 not frozen, its effective bar becomes its current value, so removals
@@ -194,41 +196,42 @@ if (requireNamespace("semTools", quietly = TRUE)) {
 #> 
 #> == Phase 0: theoretical model ==
 #>    3 factors, 15 items | max phi = -1.620 | CFI = 0.687 | admissible = FALSE
+#>    [!] Correlation above 1: inadmissible solution
 #> 
 #> == Phase 1: ladder of structures ==
 #>           model converged n_factors n_items   cfi   tli rmsea  srmr    phi
 #>     theoretical      TRUE         3      15 0.687 0.623 0.083 0.098 -1.620
 #>        bifactor      TRUE         3      15 0.721 0.609 0.085 0.092     NA
-#>  2F: F1_F2 | F3      TRUE         2      15 0.688 0.631 0.082 0.099 -1.502
 #>  2F: F1 | F2_F3      TRUE         2      15 0.686 0.629 0.083 0.101  1.189
 #>  2F: F2 | F1_F3      TRUE         2      15 0.643 0.578 0.088 0.100  1.200
+#>  2F: F1_F2 | F3      TRUE         2      15 0.688 0.631 0.082 0.099 -1.502
 #>  phi_hi phi_over omega_min min_loading admissible meets
 #>  -0.523        3     0.002       0.103      FALSE FALSE
 #>      NA       NA     0.323       0.013       TRUE FALSE
-#>  -0.701        1     0.003       0.104      FALSE FALSE
 #>   1.387        1     0.174       0.119      FALSE FALSE
 #>   1.645        1     0.171       0.108      FALSE FALSE
+#>  -0.701        1     0.003       0.104      FALSE FALSE
 #> 
 #> == Phases 2-4: pruning per level ==
 #> 
 #>    [3 factors] candidate: theoretical
 #>       -> n=15 | phi=-1.620 | CFI=0.687 | omega_min=0.002 | min_loading=0.103 | meets=FALSE
 #> 
-#>    [2 factors] candidate: 2F: F1_F2 | F3
-#>       -> n=15 | phi=-1.502 | CFI=0.688 | omega_min=0.003 | min_loading=0.104 | meets=FALSE
+#>    [2 factors] candidate: 2F: F1 | F2_F3
+#>       -> n=15 | phi=1.189 | CFI=0.686 | omega_min=0.174 | min_loading=0.119 | meets=FALSE
 #> 
-#> == Result: theoretical (no model qualifies: the admissible one with the lowest phi is returned) ==
+#> == Result: theoretical (no model qualifies and none is admissible: do not interpret this solution) ==
 #>            model converged n_factors n_items   cfi   tli rmsea  srmr    phi
 #> 1    theoretical      TRUE         3      15 0.687 0.623 0.083 0.098 -1.620
 #> 2       bifactor      TRUE         3      15 0.721 0.609 0.085 0.092     NA
-#> 4 2F: F1_F2 | F3      TRUE         2      15 0.688 0.631 0.082 0.099 -1.502
 #> 3 2F: F1 | F2_F3      TRUE         2      15 0.686 0.629 0.083 0.101  1.189
 #> 5 2F: F2 | F1_F3      TRUE         2      15 0.643 0.578 0.088 0.100  1.200
+#> 4 2F: F1_F2 | F3      TRUE         2      15 0.688 0.631 0.082 0.099 -1.502
 #>   phi_hi phi_over omega_min min_loading admissible meets
 #> 1 -0.523        3     0.002       0.103      FALSE FALSE
 #> 2     NA       NA     0.323       0.013       TRUE FALSE
-#> 4 -0.701        1     0.003       0.104      FALSE FALSE
 #> 3  1.387        1     0.174       0.119      FALSE FALSE
 #> 5  1.645        1     0.171       0.108      FALSE FALSE
+#> 4 -0.701        1     0.003       0.104      FALSE FALSE
 # }
 ```
